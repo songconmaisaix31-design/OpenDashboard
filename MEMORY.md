@@ -83,3 +83,11 @@
 - The verified application, Chinese media sources, and local MP4 are recorded
   by candidate commit `ed15b0397cf2891e4ea17d9b7351b1654e5ffbc8` on the
   isolated `chinese-release-integration` branch.
+- The verified candidate was published to the public GitHub repository
+  `https://github.com/songconmaisaix31-design/OpenDashboard`, with remote
+  `origin` and default branch `main`. The release tag
+  `competition-demo-2026-08-16` carries
+  `OpenDashboard-source-3316590.zip` (1,103,963 bytes, SHA-256
+  `5A4BD67E6B977E0FDFA708DB2BF7C30A89E0DE4903ED9CAC4C5C933F91D4FE95`).
+  The archive excludes the exported MP4 and generated/cache directories; no
+  credential values were read or stored during publication.
