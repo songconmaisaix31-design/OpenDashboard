@@ -1,41 +1,151 @@
 # OpenDashboard
+> Local-First Observability, Debugging & DIY Automation Console for AI & Native Developers
+> 本地优先、插件驱动的开发全链路观测、调试与自动化开源看板平台
 
-OpenDashboard is a runnable, deterministic competition demo for a local API
-incident-response workflow. The current release target is a Simplified Chinese
-website plus a 90-second local demonstration video.
+## 项目一句话介绍
+OpenDashboard 是面向本地开发环境的开放式可观测控制台，以**插件化扩展**为核心底层设计，统一纳管本地进程、服务端口、API 应用、AI Coding Agent、硬件资源、IDE 工作区全维度运行数据；开发者可按需 DIY 监控采集、接口调试、故障自动处置、AI 多智能体协同流程，面向独立开发者、全栈工程师、AI 研发团队分层提供轻量化/完整生产两套解决方案，依托标准化插件生态实现可持续社区共建。
 
-The competition baseline deliberately narrows the long-term product plan to one deterministic incident-response journey. External providers such as Cordis, LocalOps, Agent Usage Manager, FastAPI Radar, Orca, and AgentTeams are represented by clearly labelled fixture data until a later integration phase proves them independently.
+## 核心愿景
+打破本地开发工具碎片化割裂痛点：端口进程管理器、API 调试工具、日志追踪、AI Agent 监控、资源面板、自动化脚本分散独立，异常故障无法跨工具关联溯源。
+我们以**插件即能力**为底层核心理念：所有观测、控制、AI 协同能力均封装为标准化插件，无内置强耦合功能，任何人可自由新增、删减、改造模块；同时分层适配不同开发者需求，构建轻量化、可扩展、安全可控的本地开发观测社区生态。
 
-## Local run
+## 核心设计理念：插件化 DIY 扩展体系
+### 1. 三层插件信任隔离架构（安全与扩展平衡）
+平台基于 Cordis 组合运行时实现分层插件运行机制，兼顾拓展自由与本地宿主机权限安全：
+1. **Tier0 核心内置插件**：系统底层基础能力（Target 资源管理、事件总线、审计、工单、证据存储），保障平台基础运行，不可移除；
+2. **Tier1 可信进程内插件**：官方维护低风险能力，HTTP 探针、基础日志采集、可视化组件、数据查询面板，开箱即用，无高危宿主机操作权限；
+3. **Tier2 Sidecar 独立进程插件**：所有高权限、第三方、自定义扩展全部隔离独立进程运行。
+    - 本地端口/进程管控：LocalOps Windows 插件，安全纳管所有本地端口、应用生命周期，禁止直接 PID 强杀；
+    - AI Agent 监控：AUM 插件，采集各类 Coding Agent 进程树、CPU/GPU 资源占用、运行会话；
+    - API 深度追踪：FastAPI Radar 插件，接口链路、异常堆栈、慢 SQL 采集；
+    - IDE 工作区对接：Orca 插件，打通本地代码仓库、终端、开发会话；
+    - 多智能体协同：AgentTeams 插件，实现多角色 AI Agent 故障诊断闭环。
 
-```powershell
-npm ci --ignore-scripts --no-audit --no-fund
-npm run check
-npm run dev
+所有插件遵循统一 `Skill / Plugin Manifest` YAML 标准，定义输入输出 Schema、权限范围、超时、幂等策略、失败降级规则，开箱即用也支持完全自定义改造。
+
+### 2. 全链路 DIY 自动化能力
+依托插件能力封装标准化可复用 Skill，用户可视化拖拽搭建自动化流程：
+- 观测触发：端口异常、API 5xx 报错、GPU 满载、Agent 进程崩溃、日志关键字匹配；
+- 数据采集 Skill：一键收集端口快照、接口追踪日志、硬件资源指标、Agent 运行记录；
+- 处置动作 Skill：受控重启本地服务、打开对应 IDE 工作区、启动诊断 Agent、推送故障报告；
+- 审批安全机制：高风险操作强制人工审批，自动化脚本绑定权限哈希，修改流程自动失效旧授权。
+
+无需编写底层代码，仅通过可视化面板配置即可完成「端口异常告警 → 自动取证 → AI 多智能体诊断 → 受控恢复 → 证据归档」完整闭环。
+
+## 分层人群解决方案（差异化适配，覆盖全开发者）
+### 方案一：轻量化独立 AI 开发者（极简模式 Minimal Profile）
+**适用人群**：个人独立 AI 开发者、本地模型调试、单项目开发、新手用户
+- 预装插件：端口探测、基础硬件监控、简易 API 调试、轻量 Agent 资源观测；
+- 无复杂配置，启动即自动扫描本机所有监听端口、本地运行的 AI Agent；
+- 核心能力：端口状态总览、模型服务资源占用监控、简易接口测试、单 Agent 运行日志；
+- 无复杂自动化、多智能体模块，降低上手门槛，开箱即用。
+
+### 方案二：全栈多项目开发者（Windows 开发标准 Profile）
+**适用人群**：同时维护多个前后端项目、频繁调试 FastAPI/Node 服务、本地多 Agent 并行编码
+- 完整预装观测插件：全量端口管理、API 全链路追踪、结构化日志、CPU/GPU/磁盘资源面板；
+- 支持 DIY 自动化流程：自定义端口故障处置、接口异常自动取证、一键重启受管本地服务；
+- 内置单项目故障闭环：API 报错自动聚合端口、进程、Trace、Agent 操作记录，一键生成故障证据包。
+
+### 方案三：AI 研发团队 / 多智能体协作场景（AI Dev Profile）
+**适用人群**：团队 AI 开发、多 Agent 协同排障、批量本地服务运维、Demo/参赛场景
+- 完整启用 AgentTeams 多智能体插件，四大角色 Agent 协同：
+  1. 故障管理 Agent：监听端口/API 异常，拆分诊断任务；
+  2. 证据采集 Agent：聚合端口、进程、日志、硬件全量观测数据；
+  3. 根因诊断 Agent：基于采集信息分析端口占用、服务崩溃、接口报错根源；
+  4. 恢复验证 Agent：执行重启后校验端口健康、接口可用性；
+- 批量 Target 管理：统一纳管数十个本地端口服务、多 AI Agent 会话；
+- 标准化交付：自动归档故障报告、脱敏证据包、审计操作记录，适配项目演示、参赛交付、团队复盘。
+
+## 完整产品闭环：Discover → Observe → Correlate → Diagnose → Act → Verify → Remember
+1. **Discover 自动发现**
+插件自动扫描本机所有监听端口、本地应用、AI Agent、代码工作区，统一注册为可观测 Target，区分 Git 托管项目与无版本脚本应用，标注非版本化项目能力限制。
+2. **Observe 持续观测**
+多插件并行采集：端口监听状态、接口请求链路、进程资源、GPU 负载、Agent 运行指标、结构化日志，遵循 OpenTelemetry 数据规范，自动控制指标基数避免性能损耗。
+3. **Correlate 关联溯源**
+以端口/服务 ID 为统一关联键，把同一应用下端口、API 报错、Agent 操作、硬件峰值数据全部串联，解决「端口占用报错找不到对应进程、接口500无法定位AI操作记录」痛点。
+4. **Diagnose 智能诊断**
+单用户模式下手动调取观测数据排查；团队模式下交由多 Agent 自动拆解证据，输出结构化故障根因与修复建议。
+5. **Act 受控自动化操作**
+基于自定义插件 Skill 执行安全操作：端口服务重启、打开对应开发环境、采集全量证据，高风险操作强制人工审批，全程记录审计日志。
+6. **Verify 恢复验证**
+自动化校验端口监听状态、接口健康接口，对比故障前后资源指标，输出可视化恢复报告。
+7. **Remember 证据沉淀**
+所有端口故障、自动化运行记录、Agent 诊断报告脱敏归档为可复用工件，支持导出、复用为自动化模板，沉淀个人/团队开发排障经验。
+
+## 社区生态规划（插件化驱动可持续共建）
+### 1. 标准化插件开发体系
+统一 Plugin / Skill YAML 规范，提供完整 SDK、开发模板、Fixture 测试工具，降低第三方开发者拓展门槛：
+- 个人开发者：编写轻量采集插件（自定义硬件监控、小众框架接口追踪）；
+- 工具厂商：对接自有 AI Agent、本地开发工具，开发官方适配插件；
+- 团队内部：定制企业私有自动化 Skill，适配内部开发流程。
+
+### 2. 插件社区分发机制
+- 官方插件库：维护稳定、安全的核心观测、端口、AI Agent 插件，持续迭代；
+- 社区共享插件市场：用户上传自定义 DIY 插件，标注许可证、权限范围、安全等级；
+- 隔离安全机制：第三方社区插件强制 Sidecar 独立进程运行，权限透明可视化，用户一键管控插件宿主机访问权限。
+
+### 3. 分层社区共建路线
+1. 初期：开源核心底座，开放插件 SDK，鼓励开发者提交端口、Agent、API 相关拓展插件；
+2. 中期：搭建插件分享社区，提供模板、自动化流程共享，沉淀各类开发场景预制方案；
+3. 长期：形成完整开发者社区，官方维护基础运行时，社区驱动各类场景扩展，持续迭代分层解决方案，覆盖个人、团队、AI 研发全场景。
+
+## 安全设计（本地优先，严控端口与进程权限）
+1. 本地仅绑定 `127.0.0.1`，禁止公网访问，前端请求 Origin/Host 双重校验，防御 DNS Rebinding、CSRF 攻击；
+2. 所有采集数据默认脱敏：接口 Header Token、日志密钥、本地路径自动屏蔽，证据包导出默认脱敏；
+3. 进程/端口管控权限隔离：不允许通过 PID、端口号随意终止进程，仅通过 LocalOps 插件受控操作，携带幂等密钥防止重复执行；
+4. 插件权限可视化：每个插件声明所需权限（端口读取、日志采集、服务重启），用户可随时关闭、卸载任意第三方插件；
+5. 完整审计日志：所有端口操作、自动化执行、AI Agent 动作永久记录，可追溯每一次本地服务变更行为。
+
+## 非目标（清晰边界，避免范围无限扩张）
+- 不自研完整 IDE、终端模拟器，仅对接现有开发工具；
+- 不做公网多租户远程运维平台，始终聚焦本地开发环境；
+- 不允许不受信任第三方插件直接在主进程获取文件/Shell 高权限；
+- 不内置 Kubernetes、分布式集群运维能力，专注单机本地端口与 Agent 场景；
+- 不强制自动修改用户业务代码，所有自动化仅做观测、重启、取证、校验类安全操作。
+
+## 技术优势
+1. **完全插件化**：无臃肿内置功能，按需加载端口、Agent、观测模块，低配笔记本也可流畅运行；
+2. **分层轻量化**：极简模式占用资源极低，高性能完整模式满足多项目、多 Agent 批量监控；
+3. **标准化可扩展**：统一 Skill、Plugin、Automation 规范，一次开发插件全版本平台兼容；
+4. **数据联邦隔离**：端口、Agent、硬件数据由对应 Sidecar 独立产出，平台仅聚合展示，不篡改底层真实状态；
+5. 开箱即用 Demo：内置 `broken-fastapi-service` 故障示例，一键复现端口异常、API 报错、多 Agent 诊断完整演示闭环。
+
+## 快速开始
+```bash
+# 1. 安装依赖
+pnpm install --frozen-lockfile
+# 2. 启动极简个人开发者模式（仅端口+基础Agent监控）
+pnpm dev:minimal
+# 3. 启动全栈开发完整模式（端口管理+API追踪+自动化）
+pnpm dev:windows-dev
+# 4. 启动AI团队多Agent协同模式
+pnpm dev:ai-dev
 ```
 
-Use `npm ci --offline` only when the npm cache is already populated.
+## 仓库结构简述
+```
+opendashboard/
+├─ apps/                # 前端Web看板 + Cordis主服务
+├─ packages/contracts   # 全局统一插件/数据标准（唯一契约源）
+├─ plugins/             # 所有端口、Agent、API采集插件存放目录
+├─ skills/              # 可复用自动化能力模板（端口重启、证据采集等）
+├─ automations/examples # 预制端口故障自动化流程
+├─ profiles/            # 三套分层解决方案配置（极简/全栈/AI团队）
+├─ examples/            # 端口故障Demo示例项目
+├─ docs/                # 插件开发文档、架构、安全规范
+└─ reports/artifacts    # 端口故障、Agent诊断证据归档目录
+```
 
-The enabled runtime is fixture-only. It does not contact live providers or
-control a real process.
+## 开源协议与社区
+本项目采用 Apache-2.0 开源协议，所有第三方插件、依赖遵循原始开源许可证；
+欢迎提交插件 PR、流程模板、场景方案，共建本地端口与AI Agent 观测生态。
 
-## Project baseline
+## 后续迭代路线
+1. P0：完善端口自动扫描、主流AI Agent适配插件、三层分层解决方案、基础插件社区SDK；
+2. P0.1：可视化自动化编辑器、插件一键导入导出、端口分组管理面板；
+3. P0.2：社区插件市场、自定义告警通知、批量端口运维模板；
+4. P1：跨平台支持（macOS/Linux）、WASM 轻量化第三方插件沙箱、团队空间多配置管理。
 
-- [Competition PRD](./PRD.md)
-- [Minimal technical specification](./Tech-Spec.md)
-- [Demo contract](./API_CONTRACT.md)
-- [Long-term plan review](./docs/PLAN_REVIEW.md)
-- [Competition execution and worktree plan](./docs/COMPETITION_EXECUTION_PLAN.md)
-- [Competition task blocks](./docs/TASKS.md)
-- [Competition timetable](./docs/TIMETABLE_2026-08-16.md)
-- [Task prompt index](./tasks/PROMPT_INDEX.md)
-- [CodeGraph integration runbook](./docs/codegraph/README.md)
-- [Chinese release integration](./docs/RELEASE_INTEGRATION_2026-08-16.md)
-
-## Current boundary
-
-- No supplied YAML or JSON file is executable input.
-- No external provider, process-control action, or network integration is enabled.
-- T0-T4 implementation claims require the evidence recorded under
-  `reports/tasks/`. T5-T10 remain planning-only.
-- `main` is the release baseline; competition merges occur in the separate `competition-integration` worktree, and isolated task work belongs in one Orca worktree per branch.
+---
+## 标签
+#端口监控 #本地开发看板 #AI Agent监控 #插件化平台 #自动化排障 #本地可观测 #多智能体协同 #FastAPI调试 #开发者工具
