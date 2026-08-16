@@ -1,93 +1,44 @@
 # OpenDashboard Memory
 
-## Project context
-
-- Created: 2026-08-16
-- At the start of the Codex MCP repair task, the repository contained only Git metadata.
-- The `competition-integration` branch now contains a runnable local fixture
-  application, npm lockfile, deterministic engine, guided React interface,
-  submission package, and T4 verification record. There is still no deployment
-  target or live provider.
-- The Codex MCP repair objective was superseded by the OpenDashboard competition planning request on 2026-08-16; its durable non-secret findings remain below for reference.
-
 ## Current objective
 
-- Deliver a verified Simplified Chinese competition candidate and a local,
-  editable 90-second demonstration video from the deterministic fixture flow.
-- Optimize for reviewer clarity and truthful evidence; winning is an objective,
-  not a claim the project can verify.
-- Keep all secret values out of this repository and this file.
+- Date: 2026-08-17.
+- Use the public plugin-first README as a product vision while correcting its implementation claims.
+- Build the smallest verified architecture seam: shared contracts, static trusted plugin lifecycle, and the existing Fixture provider as the first plugin.
+- Keep the Chinese demo runnable throughout the migration.
 
-## Decisions and findings
+## Repository facts
 
-- The active Orca Codex runtime configuration is stored under the Orca-managed Codex home, not only the default user Codex home.
-- The latest runtime startup initialized `node_repl`, `codegraph`, `open-design`, and `codex_apps` successfully.
-- The default user Codex home reports an OAuth state for `chatcut`, while the
-  Orca runtime home reports ChatCut as not logged in. An isolated Codex TUI
-  launched with `CODEX_HOME=C:\Users\DW\.codex` exposed the full ChatCut tool
-  manifest and completed a read-only `list_projects` call. ChatCut manifest
-  loading and authentication are therefore no longer the video blocker.
-- `vercel` remains not logged in and is outside the local release scope.
-- Do not copy credential files between Codex homes. Reuse the authenticated
-  user-level Codex home only in a bounded isolated video session; never record
-  credential values in the repository.
-- A temporary `codegraph` command-path change was tested and fully reverted after current runtime logs showed that `codegraph` already initialized successfully.
+- Public `origin/main` is `9a2268901569cd407d5a16fc8f79a936285ec185`; local root `main` remains the older ancestor `6b9fb7e2884f61a078a52cdf7a0440a4d9f7df68` and must not be used as an inferred base.
+- The architecture worktree is based explicitly on `origin/main` and uses branch `songconmaisaix31-design/plugin-first-architecture`.
+- The immutable release tag `competition-demo-2026-08-16` points to `33165902fc997c6000b4e159d9e5473b4eaf7e15`.
+- The public repository uses npm, not pnpm. Current source is a deterministic Fixture demo; it has no plugin loader, host scan, daemon, database, or real process control.
+- T5-T10 planning branches and `local-console-planning@9853ed0` contain unpublished unique commits. They must be selectively migrated or archived before their worktrees are removed.
 
-## Competition planning decisions
+## Architecture decisions
 
-- Git uses `main` as the protected release baseline; Orca's repository base ref is `main`.
-- Competition implementation will merge through the separate `competition-integration` worktree, with T1, T2, and T3 worktrees created just in time from an explicit immutable T0 commit.
-- The competition baseline is one deterministic incident-to-recovery journey with all external providers explicitly mocked.
-- Real Cordis, LocalOps, AUM, Radar, Hardware, Orca, and AgentTeams integration is deferred beyond P0.
-- Three top-level read-only review worktrees were created: `review-product-scope`, `review-architecture-mocks`, and `review-coordination-git`.
-- The supplied source pack has extensive filename/content mismatches. `AGENT_COORDINATION_RULES (1).md` and `OpenDashboard_MASTER_PLAN.md` share SHA-256 `6110D7BB2011503BF5811BFB9D4527913A427799CFEC3A97B27F4664EAAE44EC`; several `.yaml`, `.json`, and Agent packet names contain different document types.
-- Never automate against the supplied pack until filenames, content types, hashes, and missing Agent packets are repaired.
-- The execution plan is organized as five independent task blocks:
-  T0 foundation; T1 demo engine; T2 web demo; T3 submission package; and T4
-  CodeGraph-backed integration and QA.
-- T1, T2, and T3 must use separate worktrees from the same immutable T0 commit.
-  Their write paths are disjoint, and only T4 may merge their local commits
-  into `competition-integration`.
-- `planning/codegraph/integration-graph.ts` is a planning-only dependency
-  sentinel. It must never be imported or cited as proof that application
-  integration works.
+- Plugin-first does not authorize arbitrary code. PF0/PF1 uses only explicit compile-time imports and rejects Tier 2 activation.
+- Manifest capabilities are a closed audit vocabulary, not an operating-system permission system.
+- The plugin runtime must support dependency ordering, failure rollback, reverse disposal, typed services, and deterministic snapshots.
+- Preserve the existing Fixture state machine and provenance; move it behind a plugin service without changing behavior.
+- The first real adapter, when authorized, is an explicit opt-in read-only loopback health adapter. Real Windows actions require a separate threat review and process/service ownership contract.
+- Do not embed PM2, Glances, OpenTelemetry Collector, Beszel, or a remote agent in the first architecture milestone.
+- `systeminformation` is a future candidate behind a narrow adapter, not a current dependency.
 
-## Implemented competition baseline
+## Research and licensing
 
-- T0-T4 are implemented or integrated in the local candidate recorded by
-  `reports/tasks/T4.md`. The current source candidate before Chinese release
-  work is `df32f6800b2fe65d8b86e7046e3d07ce0c4031fb`.
-- T5-T10 are independent planning-only branches. Their completion does not
-  authorize or prove runtime integration.
-- The Chinese release uses direct in-repository copy because only one locale is
-  required. No localization dependency or speculative multilingual framework
-  is justified for the timebox.
-- Product/provider names, opaque IDs, HTTP paths, JSON keys, and contract enum
-  values may remain English; all human-facing application explanations and
-  controls must be Chinese.
-- Release changes are isolated in the `chinese-release-integration` child
-  worktree and merge only into `competition-integration` after verification.
-- Chinese video source frames come from the production entry after completing
-  the real fixture flow in Chrome. A third-party translation extension overlay
-  was removed only from the browser capture DOM through a temporary CDP action;
-  application source and product content were not altered.
-- The accelerated 2026-08-16 handoff prioritizes a smooth local demonstration
-  and a usable captioned video over additional narration or visual-polish
-  passes.
-- ChatCut project `OpenDashboard GOAI Chinese Demo 2026-08-16` has project ID
-  `c3aee252-8e03-4e2a-b9ab-89f27c9d1dbd` and timeline ID
-  `5b3cab4d-48c4-4f2f-99f0-66ffe0d67b12`. Render
-  `944df8bb-42d6-4fcc-af86-f82c3a8fa635` completed locally as
-  `artifacts/demo/OpenDashboard-GOAI-ZH-90s.mp4`; no upload or public share was
-  performed.
-- The verified application, Chinese media sources, and local MP4 are recorded
-  by candidate commit `ed15b0397cf2891e4ea17d9b7351b1654e5ffbc8` on the
-  isolated `chinese-release-integration` branch.
-- The verified candidate was published to the public GitHub repository
-  `https://github.com/songconmaisaix31-design/OpenDashboard`, with remote
-  `origin` and default branch `main`. The release tag
-  `competition-demo-2026-08-16` carries
-  `OpenDashboard-source-3316590.zip` (1,103,963 bytes, SHA-256
-  `5A4BD67E6B977E0FDFA708DB2BF7C30A89E0DE4903ED9CAC4C5C933F91D4FE95`).
-  The archive excludes the exported MP4 and generated/cache directories; no
-  credential values were read or stored during publication.
+- Useful patterns come from Cordis/Koishi lifecycle, VS Code manifests/disposables, OpenTelemetry Collector component factories, Uptime Kuma probe/incident separation, and go-plugin version/health semantics.
+- PM2 is AGPL-3.0, Glances is LGPL-3.0, HashiCorp go-plugin is MPL-2.0, and no source from them is copied into the core.
+- Open Design provides a strong local daemon/contracts/plugin-runtime folder pattern, but its full repository is far beyond OpenDashboard scope.
+- The README claimed Apache-2.0 while the public tree had no `LICENSE`; a license decision and file must exist before accepting external source contributions.
+
+## Cleanup and recovery
+
+- Competition video, generated screenshots, T0-T4 prompts/reports, submission copy, and demo Skill descriptors are historical release material rather than active architecture.
+- They may leave the active branch only after a recovery ledger points to the immutable tag and GitHub Release. Removing them from the branch does not shrink existing Git history.
+- Never remove unpublished planning worktrees merely because their visible files look stale.
+
+## Operational safety
+
+- Never record secret values or read credential stores.
+- CodeGraph state under `.codegraph/` is generated and ignored; it is not architecture evidence by itself.
