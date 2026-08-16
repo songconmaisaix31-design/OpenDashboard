@@ -1,0 +1,29 @@
+{
+  "name": "open-dashboard",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "npm@11.13.0",
+  "scripts": {
+    "dev": "vite apps/web",
+    "build": "vite build apps/web",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"apps/web/**/*.test.ts*\"",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "typescript": "6.0.3",
+    "tsx": "4.21.0",
+    "vite": "6.4.3"
+  }
+}
