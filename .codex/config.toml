@@ -1,0 +1,6 @@
+# Project-scoped registration for the independent frontend recovery plan.
+# Authentication remains local to each Codex home and is never stored here.
+
+[mcp_servers.motionsites]
+url = "https://xgdzyqfalbibzelpdpvr.supabase.co/functions/v1/mcp"
+enabled = true

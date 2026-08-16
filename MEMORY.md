@@ -64,8 +64,10 @@
   `https://motionsites.ai/mcp` on 2026-08-16. The server was added and enabled in
   the default Codex home, but OAuth remains pending user sign-in. Adding it to
   the active Orca runtime home was deferred because the add command did not
-  complete while that home was in active use; do not force-edit that config or
-  copy credential stores.
+  complete while that home was in active use. The `independent-planning` branch
+  therefore carries a project-scoped public registration in
+  `.codex/config.toml`; do not force-edit the shared runtime config or copy
+  credential stores.
 - The machine-local `ui-ux-pro-max` skill was reversibly quarantined at
   `C:\Users\DW\.agents\skills-disabled\OpenDashboard-20260816\ui-ux-pro-max`.
   Existing sessions may retain cached instructions; new sessions should no
