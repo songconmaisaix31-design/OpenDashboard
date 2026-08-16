@@ -12,10 +12,13 @@
 
 ## Current objective
 
-- Deliver a verified Simplified Chinese competition candidate and a local,
-  editable 90-second demonstration video from the deterministic fixture flow.
-- Optimize for reviewer clarity and truthful evidence; winning is an objective,
-  not a claim the project can verify.
+- Preserve the verified Simplified Chinese competition candidate while
+  repositioning the next product phase as a truthful local computer console
+  for one developer machine.
+- Plan the shortest safe path from the Fixture workflow to read-only local host
+  state, evidence-limited diagnosis, and controlled action decisions.
+- Keep runtime implementation and public publication outside the current
+  planning-only worktree.
 - Keep all secret values out of this repository and this file.
 
 ## Decisions and findings
@@ -91,3 +94,26 @@
   `5A4BD67E6B977E0FDFA708DB2BF7C30A89E0DE4903ED9CAC4C5C933F91D4FE95`).
   The archive excludes the exported MP4 and generated/cache directories; no
   credential values were read or stored during publication.
+
+## Local computer console planning decisions
+
+- Public `main` advanced from the published candidate to
+  `9a2268901569cd407d5a16fc8f79a936285ec185` through a README-only commit. That
+  README described long-term providers, directories, commands, process
+  control, audit persistence, and licensing as if they already existed, while
+  the runtime remained the verified Fixture demo.
+- The target is now stated narrowly as a local computer console for a single
+  developer machine: read-only local state, evidence-limited diagnosis,
+  explicit decisions, verification, and ordered audit records.
+- “T0-T10 complete” must remain split into T0-T4 implemented Fixture runtime
+  and T5-T10 planning-only deliverables.
+- The first real milestone is read-only. Default target discovery is explicit
+  registration, not an automatic scan of all ports or processes.
+- Arbitrary Shell, remote control, unknown-process termination, plugin
+  execution, autonomous repair, credential access, and unbounded host
+  enumeration remain prohibited.
+- LC0 freezes the future contract and security Gate. LC1-LC6 then work from the
+  same immutable SHA with disjoint paths; LC7 alone performs CodeGraph-backed
+  integration. The planning DAG is not runtime proof.
+- The repository still has no `LICENSE` file, so it must not claim Apache-2.0
+  or another open-source license until one is explicitly selected and added.

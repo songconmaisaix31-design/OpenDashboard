@@ -2,16 +2,17 @@
 
 ## Project status
 
-- The `competition-integration` branch contains a runnable React 19,
-  TypeScript, and Vite fixture demo with an npm lockfile and verified T0-T4
-  evidence.
+- The public `main` line contains a runnable React 19, TypeScript, and Vite
+  fixture demo with an npm lockfile, verified T0-T4 evidence, a Chinese release,
+  and a local demonstration video.
 - T5-T10 are completed planning deliverables only. They are not implemented
   runtime modules and must not be described as integrated capabilities.
-- The current authorized scope is the isolated Chinese competition release
-  integration defined in `docs/RELEASE_INTEGRATION_2026-08-16.md`, including
-  local verification and a local editable demo-video deliverable.
-- No deployment, public upload, push, `main` update, or live-provider work is
-  authorized.
+- The current authorized scope is planning-only repositioning in the isolated
+  `local-console-planning` worktree. It may update README, project rules,
+  project memory, local-console planning documents, task prompts, and the
+  planning-only CodeGraph DAG.
+- No runtime implementation, live host access, deployment, public upload,
+  push, `main` update, or live-provider work is authorized.
 
 ## Working rules
 
@@ -29,6 +30,20 @@
 - Keep mock provenance visible and machine-readable.
 - Real process control, arbitrary shell, external requests, plugin execution, and destructive actions are out of scope.
 - Never describe designed or mocked capabilities as implemented or live.
+
+## Local computer console planning boundary
+
+- Position the product as a local computer console for one developer machine,
+  with read-only host state, evidence-limited diagnosis, and controlled action
+  decisions as the first real milestone.
+- Keep browser UI separated from host capability by an explicit typed
+  loopback boundary.
+- Default to explicit target registration and deny-by-default permissions.
+- Arbitrary shell, remote host control, unknown-process termination, plugin
+  execution, and autonomous repair remain out of scope.
+- Future implementation starts only after LC0 freezes a contract and immutable
+  Gate SHA. LC1-LC6 use independent worktrees and disjoint write paths; LC7 is
+  the only integration task.
 
 ## Git and worktree isolation
 

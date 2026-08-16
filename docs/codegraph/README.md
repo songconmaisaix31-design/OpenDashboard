@@ -42,3 +42,15 @@ release-candidate conclusions belong in the current release report.
 
 CodeGraph does not grant permission to edit reached files and does not replace
 Git diff review, build, type checking, lint, tests, or visual QA.
+
+## Local computer console roadmap
+
+`planning/codegraph/local-console-graph.ts` encodes the planned LC0-LC7 task
+shape. It is planning-only and must never be imported by the application.
+Execution boundaries, per-task paths and the future integration sequence are
+defined in `docs/LOCAL_COMPUTER_CONSOLE_PLAN.md`.
+
+For future LC1-LC6 task delivery, reject a branch when `impact` or `affected`
+shows a direct dependency on another LC leaf module. LC7 re-indexes after each
+accepted commit and is the only task allowed to add cross-module adapters under
+`apps/web/src/local-console/integration/**`.

@@ -1,6 +1,6 @@
 # OpenDashboard Competition Demo PRD
 
-- Status: implemented local fixture candidate; Chinese release integration in progress
+- Status: verified local fixture candidate; Chinese release complete and published
 - Date: 2026-08-16
 - Hard delivery target: draft uploaded by 22:15 Asia/Shanghai
 

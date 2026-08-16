@@ -1,6 +1,6 @@
 # Competition Task Blocks
 
-Status: T0-T4 complete; T5-T10 planning complete; Chinese release integration in progress
+Status: T0-T4 complete; T5-T10 planning complete; Chinese release complete
 
 ## Shared constraints
 

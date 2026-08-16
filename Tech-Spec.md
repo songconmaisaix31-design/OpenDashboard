@@ -1,6 +1,6 @@
 # OpenDashboard Competition Demo Technical Specification
 
-Status: implemented local fixture architecture; Chinese release delta in progress
+Status: implemented local fixture architecture; Chinese release complete
 
 ## Decision summary
 

@@ -16,3 +16,14 @@ separate worktrees. T4 merges and verifies them in that order.
 Before dispatch, append the exact worktree, branch, and 40-character base SHA
 to the selected prompt. Without explicit implementation authorization and
 those values, the prompt permits planning inspection only.
+
+## Local computer console phase
+
+The next product phase is planned separately under
+`tasks/local-console/README.md`. LC0 freezes a new contract and safety Gate;
+LC1-LC6 then run from the same immutable SHA in disjoint worktrees. LC7 is the
+only block allowed to integrate accepted commits after separate authorization.
+
+These prompts do not redefine T0-T10 as implemented local-console modules and
+do not authorize host access, real actions, plugin execution, merge, push or
+deployment.

@@ -1,6 +1,6 @@
 # Competition Execution and Worktree Plan
 
-Status: T0-T4 implemented; Chinese release integration in progress
+Status: T0-T4 implemented; Chinese release complete
 
 ## Execution shape
 
