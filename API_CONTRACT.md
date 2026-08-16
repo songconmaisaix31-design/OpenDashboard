@@ -1,7 +1,7 @@
 # OpenDashboard Demo Contract
 
-Status: v0.1 planning contract  
-Transport: in-process for the competition build; no network API is required
+- Status: v0.1 planning contract
+- Transport: in-process for the competition build; no network API is required
 
 ## Contract goals
 

@@ -1,8 +1,8 @@
 # OpenDashboard Competition Demo PRD
 
-Status: scope-freeze candidate  
-Date: 2026-08-16  
-Hard delivery target: draft uploaded by 22:15 Asia/Shanghai
+- Status: scope-freeze candidate
+- Date: 2026-08-16
+- Hard delivery target: draft uploaded by 22:15 Asia/Shanghai
 
 ## Product decision
 

@@ -80,4 +80,3 @@ API failure
 ```
 
 This preserves the product's differentiator while removing every integration that is not required to understand it.
-
