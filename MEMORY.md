@@ -10,7 +10,7 @@
 ## Current objective
 
 - Review the supplied long-term OpenDashboard plan without executing it.
-- Define a sharply reduced competition demo, explicit mock fallbacks, and isolated Agent worktrees.
+- Define a sharply reduced competition demo, explicit mock fallbacks, and isolated task worktrees.
 - Keep all secret values out of this repository and this file.
 
 ## Decisions and findings
@@ -25,10 +25,18 @@
 ## Competition planning decisions
 
 - Git uses `main` as the protected release baseline; Orca's repository base ref is `main`.
-- Competition implementation will merge through a separate Integrator-owned `competition-integration` worktree, with builder worktrees created just in time from an explicit immutable Gate commit.
+- Competition implementation will merge through the separate `competition-integration` worktree, with T1, T2, and T3 worktrees created just in time from an explicit immutable T0 commit.
 - The competition baseline is one deterministic incident-to-recovery journey with all external providers explicitly mocked.
 - Real Cordis, LocalOps, AUM, Radar, Hardware, Orca, and AgentTeams integration is deferred beyond P0.
-- The proposed implementation team is one Integrator, three path-isolated builders, and one read-only claim reviewer rather than eight parallel builders.
 - Three top-level read-only review worktrees were created: `review-product-scope`, `review-architecture-mocks`, and `review-coordination-git`.
 - The supplied source pack has extensive filename/content mismatches. `AGENT_COORDINATION_RULES (1).md` and `OpenDashboard_MASTER_PLAN.md` share SHA-256 `6110D7BB2011503BF5811BFB9D4527913A427799CFEC3A97B27F4664EAAE44EC`; several `.yaml`, `.json`, and Agent packet names contain different document types.
 - Never automate against the supplied pack until filenames, content types, hashes, and missing Agent packets are repaired.
+- The execution plan is organized as five independent task blocks:
+  T0 foundation; T1 demo engine; T2 web demo; T3 submission package; and T4
+  CodeGraph-backed integration and QA.
+- T1, T2, and T3 must use separate worktrees from the same immutable T0 commit.
+  Their write paths are disjoint, and only T4 may merge their local commits
+  into `competition-integration`.
+- `planning/codegraph/integration-graph.ts` is a planning-only dependency
+  sentinel. It must never be imported or cited as proof that application
+  integration works.

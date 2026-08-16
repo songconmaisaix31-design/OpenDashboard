@@ -26,13 +26,13 @@
 
 ## Git and worktree isolation
 
-- `main` is the protected release baseline and is Integrator-owned.
+- `main` is the protected release baseline.
 - `competition-integration` is the only pre-release merge branch and has its own top-level Orca worktree.
-- One writable Agent task uses one isolated Orca worktree and one branch from the frozen baseline.
-- No Agent writes outside the owned paths declared in `docs/COMPETITION_EXECUTION_PLAN.md`.
+- One writable task uses one isolated Orca worktree and one branch from the frozen baseline.
+- No task writes outside the paths declared in `docs/TASKS.md`.
 - Implementation worktrees are created just in time as Orca children of `competition-integration`; their Git base is the explicit immutable Gate commit, not inferred lineage.
-- Agents hand off commits and evidence; they do not copy files between worktrees or merge into `competition-integration` or `main`.
-- The Integrator is the only owner of root configuration, lockfiles, and final merge resolution.
+- T1, T2, and T3 hand off commits and evidence; they do not copy files between worktrees or merge into `competition-integration` or `main`.
+- T0 owns root configuration and lockfiles; T4 owns local integration into `competition-integration`.
 - Do not remove a dirty worktree or use destructive Git commands.
 
 ## Diagnosis and verification

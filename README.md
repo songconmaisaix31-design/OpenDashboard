@@ -11,6 +11,10 @@ The competition baseline deliberately narrows the long-term product plan to one 
 - [Demo contract](./API_CONTRACT.md)
 - [Long-term plan review](./docs/PLAN_REVIEW.md)
 - [Competition execution and worktree plan](./docs/COMPETITION_EXECUTION_PLAN.md)
+- [Competition task blocks](./docs/TASKS.md)
+- [Competition timetable](./docs/TIMETABLE_2026-08-16.md)
+- [Task prompt index](./tasks/PROMPT_INDEX.md)
+- [CodeGraph integration runbook](./docs/codegraph/README.md)
 
 ## Current boundary
 
