@@ -1,9 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
+import { createFixtureDataSource } from './demo/index.ts'
 import { App } from './pages/App.tsx'
 
 const rootElement = document.getElementById('root')
+const dataSource = createFixtureDataSource()
 
 if (!rootElement) {
   throw new Error('OpenDashboard root element was not found.')
@@ -11,6 +13,6 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <App dataSource={dataSource} />
   </StrictMode>,
 )
