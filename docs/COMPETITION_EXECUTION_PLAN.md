@@ -1,6 +1,6 @@
 # Competition Execution and Worktree Plan
 
-Status: planning only; product implementation has not started
+Status: T0-T4 implemented; Chinese release integration in progress
 
 ## Execution shape
 
@@ -10,6 +10,7 @@ T0 Foundation
   |-- T2 Web Demo
   `-- T3 Submission Package
         -> T4 Integration and QA
+        -> R0 Chinese Release Integration
 ```
 
 T1, T2, and T3 start from the same immutable T0 commit and run in separate
@@ -24,6 +25,7 @@ after each merge.
 | T1 | `task/demo-engine` | `C:\Users\DW\orca\workspaces\OpenDashboard\demo-engine` |
 | T2 | `task/web-demo` | `C:\Users\DW\orca\workspaces\OpenDashboard\web-demo` |
 | T3 | `task/submission-package` | `C:\Users\DW\orca\workspaces\OpenDashboard\submission-package` |
+| R0 | `chinese-release-integration` | `C:\Users\DW\orca\workspaces\OpenDashboard\chinese-release-integration` |
 
 `main` remains unchanged until a separately authorized release step. Task
 worktrees are created only after T0 records the exact base SHA. Files are moved

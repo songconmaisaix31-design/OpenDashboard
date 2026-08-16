@@ -13,7 +13,7 @@ describe('T2 presentation preview flow', () => {
     const dataSource = createPreviewDataSource()
     let snapshot = await dataSource.loadInitialSnapshot()
 
-    assertPhase(snapshot, 'incident_open', 'Run read-only triage')
+    assertPhase(snapshot, 'incident_open', '运行只读排查')
 
     snapshot = unwrap(
       await dataSource.collectEvidence({
@@ -22,7 +22,7 @@ describe('T2 presentation preview flow', () => {
         idempotencyKey: 'preview:collect',
       }),
     )
-    assertPhase(snapshot, 'evidence_collected', 'Request simulated restart')
+    assertPhase(snapshot, 'evidence_collected', '申请模拟重启')
 
     snapshot = unwrap(
       await dataSource.requestRestart({
@@ -31,7 +31,7 @@ describe('T2 presentation preview flow', () => {
         idempotencyKey: 'preview:request',
       }),
     )
-    assertPhase(snapshot, 'approval_pending', 'Approve simulated restart')
+    assertPhase(snapshot, 'approval_pending', '批准模拟重启')
 
     const approvalId = snapshot.approval?.id
     assert(approvalId)
@@ -42,7 +42,7 @@ describe('T2 presentation preview flow', () => {
         idempotencyKey: 'preview:approve',
       }),
     )
-    assertPhase(snapshot, 'action_confirmed', 'Verify recovery')
+    assertPhase(snapshot, 'action_confirmed', '验证恢复结果')
 
     snapshot = unwrap(
       await dataSource.verifyRecovery({
@@ -51,7 +51,7 @@ describe('T2 presentation preview flow', () => {
         idempotencyKey: 'preview:verify',
       }),
     )
-    assertPhase(snapshot, 'recovered', 'Inspect redacted report')
+    assertPhase(snapshot, 'recovered', '查看脱敏报告')
 
     const reportResult = await dataSource.exportEvidence({
       runId: snapshot.runId,
@@ -81,7 +81,7 @@ function assertPhase(snapshot: DemoSnapshot, expectedPhase: DemoSnapshot['phase'
 
   assert.equal(snapshot.phase, expectedPhase)
   assert.match(markup, new RegExp(label))
-  assert.match(markup, /Fixture Demo/)
+  assert.match(markup, /固定样例演示/)
 }
 
 function unwrap<T>(result: Awaited<ReturnType<DemoDataSourceMethod<T>>>): T {

@@ -22,45 +22,44 @@ export function DemoDecisionPanel({
 }: DemoDecisionPanelProps) {
   const approval = snapshot.approval
   const isPending = pendingCommand !== null
-  const primaryLabel = isPending ? 'Applying fixture step…' : action.label
+  const primaryLabel = isPending ? '正在应用样例步骤…' : action.label
 
   return (
     <section aria-labelledby="decision-heading" className="panel panel--decision">
       <div className="panel__heading">
         <div>
-          <p className="eyebrow">Bounded recovery</p>
-          <h2 id="decision-heading">Decision gate</h2>
+          <p className="eyebrow">有边界的恢复</p>
+          <h2 id="decision-heading">决策门</h2>
         </div>
         <DemoBadge
-          label={approval?.status === 'granted' ? 'Approved' : approval?.status === 'pending' ? 'Pending' : 'Not requested'}
+          label={approval?.status === 'granted' ? '已批准' : approval?.status === 'pending' ? '待审批' : '未申请'}
           tone={approval?.status === 'granted' ? 'healthy' : approval?.status === 'pending' ? 'warning' : 'neutral'}
         />
       </div>
 
       <div className="decision-explainer">
-        <span className="decision-explainer__rule">Safety rule 01</span>
+        <span className="decision-explainer__rule">安全规则 01</span>
         <p>
-          Approval clears only a fixture-owned transient latch. It does not control a real process or
-          claim to repair source code.
+          审批只确认模拟样例操作；只有后续恢复验证才会更新样例健康状态。整个流程不会控制真实进程，也不会声称修复了源代码。
         </p>
       </div>
 
       <dl className="decision-facts">
         <div>
-          <dt>Requested action</dt>
-          <dd>Simulated managed-runtime restart</dd>
+          <dt>申请的操作</dt>
+          <dd>模拟托管运行时重启</dd>
         </div>
         <div>
-          <dt>External side effect</dt>
-          <dd>None</dd>
+          <dt>外部副作用</dt>
+          <dd>无</dd>
         </div>
         <div>
-          <dt>Approval record</dt>
-          <dd>{approval?.id ?? 'Awaiting request'}</dd>
+          <dt>审批记录</dt>
+          <dd>{approval?.id ?? '等待申请'}</dd>
         </div>
         <div>
-          <dt>Requested at</dt>
-          <dd>{approval ? formatUtcTime(approval.requestedAt) : 'Not requested'}</dd>
+          <dt>申请时间</dt>
+          <dd>{approval ? formatUtcTime(approval.requestedAt) : '尚未申请'}</dd>
         </div>
       </dl>
 
@@ -68,7 +67,7 @@ export function DemoDecisionPanel({
         <div className="action-confirmation">
           <div>
             <span className="status-dot status-dot--healthy" />
-            <strong>Simulated action confirmed</strong>
+            <strong>模拟操作已确认</strong>
           </div>
           <span>{snapshot.action.id}</span>
         </div>
@@ -93,11 +92,11 @@ export function DemoDecisionPanel({
         <div className="decision-actions__secondary">
           {action.command !== 'exportEvidence' ? (
             <button className="button button--secondary" disabled={isPending} onClick={onExport} type="button">
-              Inspect report
+              查看报告
             </button>
           ) : null}
           <button className="button button--ghost" disabled={isPending} onClick={onReset} type="button">
-            Reset fixture
+            重置固定样例
           </button>
         </div>
       </div>

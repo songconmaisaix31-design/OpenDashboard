@@ -38,16 +38,16 @@ const fixtureProvenance = (
 })
 
 const providerDefinitions = [
-  ['cordis', 'Fixture composition only; no Cordis runtime is connected.'],
-  ['localops', 'Restart behavior is simulated; no process is controlled.'],
+  ['cordis', '仅进行固定样例组合；未连接 Cordis 运行时。'],
+  ['localops', '重启行为为模拟操作；不会控制任何进程。'],
   [
     'agent-usage-manager',
-    'Resource observations are fixed fixture values, not host telemetry.',
+    '资源观测是固定样例值，不是主机遥测。',
   ],
-  ['fastapi-radar', 'Trace and exception evidence is bundled fixture data.'],
-  ['hardware', 'Hardware telemetry is not collected in the competition build.'],
-  ['orca', 'No Orca workspace or session data is read by this fixture.'],
-  ['agentteams', 'The triage workflow is simulated and read-only.'],
+  ['fastapi-radar', '追踪和异常证据是内置固定样例数据。'],
+  ['hardware', '竞赛版本不会采集硬件遥测。'],
+  ['orca', '这个固定样例不会读取 Orca 工作区或会话数据。'],
+  ['agentteams', '排查流程为只读模拟。'],
 ] as const
 
 export const FIXTURE_PROVIDER_HEALTH: readonly DemoProviderHealth[] =
@@ -61,41 +61,41 @@ export const FIXTURE_EVIDENCE: readonly DemoEvidence[] = [
   {
     id: 'evidence-http-001',
     kind: 'http',
-    summary: 'POST /orders returned a redacted HTTP 500 response.',
+    summary: 'POST /orders 返回了一条已脱敏的 HTTP 500 响应。',
     redacted: true,
     provenance: fixtureProvenance(
       'cordis',
-      'The HTTP observation is bundled fixture data; no request was sent.',
+      'HTTP 观测是内置固定样例数据；没有发送任何请求。',
     ),
   },
   {
     id: 'evidence-trace-001',
     kind: 'trace',
-    summary: 'The fixture trace links the request to the order-api incident.',
+    summary: '固定样例追踪把请求与 order-api 故障关联起来。',
     redacted: true,
     provenance: fixtureProvenance(
       'fastapi-radar',
-      'The trace is illustrative fixture data, not a live capture.',
+      '这条追踪是说明性固定样例数据，不是实时采集。',
     ),
   },
   {
     id: 'evidence-log-001',
     kind: 'log',
-    summary: 'A redacted fixture log records the transient runtime latch.',
+    summary: '一条脱敏样例日志记录了临时运行时故障锁。',
     redacted: true,
     provenance: fixtureProvenance(
       'fastapi-radar',
-      'The log is bundled and contains no host or request identifiers.',
+      '这条日志已内置，不包含主机或请求标识。',
     ),
   },
   {
     id: 'evidence-resource-001',
     kind: 'resource',
-    summary: 'Fixture resource usage remains within the demo threshold.',
+    summary: '固定样例资源使用量保持在演示阈值内。',
     redacted: true,
     provenance: fixtureProvenance(
       'agent-usage-manager',
-      'The resource values are fixed and do not inspect the local machine.',
+      '资源数值是固定值，不会检查本机。',
     ),
   },
 ]
@@ -109,7 +109,7 @@ export const FIXTURE_APPROVAL_PENDING: DemoApproval = {
   grantedAt: null,
   provenance: fixtureProvenance(
     'localops',
-    'Approval applies only to a fixture-owned transient latch.',
+    '审批只作用于固定样例持有的临时故障锁。',
   ),
 }
 
@@ -129,7 +129,7 @@ export const FIXTURE_ACTION: DemoAction = {
   confirmedAt: FIXTURE_TIMESTAMPS.actionConfirmed,
   provenance: fixtureProvenance(
     'localops',
-    'No real process was restarted; only the fixture latch was cleared.',
+    '只确认模拟样例操作；没有重启真实进程，健康状态等待后续验证。',
   ),
 }
 
@@ -140,7 +140,7 @@ export const FIXTURE_VERIFICATION: DemoVerification = {
   verifiedAt: FIXTURE_TIMESTAMPS.recoveryVerified,
   provenance: fixtureProvenance(
     'open-dashboard-fixture',
-    'Recovery verifies deterministic fixture state only.',
+    '恢复只验证可重复的固定样例状态。',
   ),
 }
 
@@ -157,7 +157,7 @@ const auditEntry = (
   mocked: true,
   provenance: fixtureProvenance(
     'open-dashboard-fixture',
-    'This audit entry records a deterministic simulated event.',
+    '这条审计记录描述一个可重复的模拟事件。',
   ),
 })
 
@@ -203,8 +203,8 @@ export const FIXTURE_REPORT_GENERATED_AT: Readonly<Record<DemoPhase, string>> = 
 }
 
 export const FIXTURE_UNVERIFIED_CLAIMS = [
-  'No live provider execution was verified.',
-  'No real process restart was performed.',
+  '尚未验证任何实时提供器执行。',
+  '没有执行真实进程重启。',
 ] as const
 
 /** Creates the only mutable run boundary; all observations remain fixture data. */
@@ -220,7 +220,7 @@ export const createInitialFixtureSnapshot = (): DemoSnapshot => ({
     versionControl: 'git',
     provenance: fixtureProvenance(
       'cordis',
-      'The target is declared by the fixture; no service was discovered.',
+      '目标由固定样例声明；没有发现任何真实服务。',
     ),
   },
   incident: {
@@ -233,7 +233,7 @@ export const createInitialFixtureSnapshot = (): DemoSnapshot => ({
     evidenceIds: [],
     provenance: fixtureProvenance(
       'fastapi-radar',
-      'The incident is deterministic and not derived from a live exception.',
+      '故障是可重复的，不来自实时异常。',
     ),
   },
   workflow: {
@@ -244,7 +244,7 @@ export const createInitialFixtureSnapshot = (): DemoSnapshot => ({
     evidenceIds: [],
     provenance: fixtureProvenance(
       'agentteams',
-      'The workflow is a fixture transition, not an agent execution.',
+      '流程是固定样例状态转换，不是智能体执行。',
     ),
   },
   providerHealth: FIXTURE_PROVIDER_HEALTH,

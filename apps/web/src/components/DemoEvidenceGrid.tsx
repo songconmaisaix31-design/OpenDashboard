@@ -4,9 +4,9 @@ import { formatProviderName } from './format.ts'
 
 const evidenceLabels: Readonly<Record<DemoEvidenceKind, string>> = {
   http: 'HTTP',
-  trace: 'Trace',
-  log: 'Log',
-  resource: 'Resource',
+  trace: '追踪',
+  log: '日志',
+  resource: '资源',
 }
 
 interface DemoEvidenceGridProps {
@@ -19,12 +19,12 @@ export function DemoEvidenceGrid({ evidence, workflow }: DemoEvidenceGridProps) 
     <section aria-labelledby="evidence-heading" className="panel panel--evidence">
       <div className="panel__heading">
         <div>
-          <p className="eyebrow">Evidence board</p>
-          <h2 id="evidence-heading">Normalized signals</h2>
+          <p className="eyebrow">证据面板</p>
+          <h2 id="evidence-heading">标准化信号</h2>
         </div>
         <div className="badge-row">
           <DemoBadge label={workflow.id} tone="neutral" />
-          <DemoBadge label="Read-only" tone="fixture" />
+          <DemoBadge label="只读" tone="fixture" />
         </div>
       </div>
 
@@ -32,10 +32,9 @@ export function DemoEvidenceGrid({ evidence, workflow }: DemoEvidenceGridProps) 
         <div className="evidence-empty">
           <span className="evidence-empty__index">00 / 04</span>
           <div>
-            <h3>Evidence is intentionally gated</h3>
+            <h3>证据收集受到明确控制</h3>
             <p>
-              Run the read-only triage workflow to collect redacted HTTP, trace, log, and resource
-              signals from the fixture.
+              运行只读排查流程，从固定样例中收集已脱敏的 HTTP、追踪、日志和资源信号。
             </p>
           </div>
         </div>
@@ -50,8 +49,8 @@ export function DemoEvidenceGrid({ evidence, workflow }: DemoEvidenceGridProps) 
       <div className="workflow-summary">
         <span className={`status-dot status-dot--${workflow.status === 'completed' ? 'healthy' : 'neutral'}`} />
         <div>
-          <strong>{workflow.status === 'completed' ? 'Triage complete' : 'Triage ready'}</strong>
-          <span>{workflow.summary ?? 'No evidence has been collected for this fixture run.'}</span>
+          <strong>{workflow.status === 'completed' ? '排查完成' : '排查就绪'}</strong>
+          <span>{workflow.summary ?? '这次固定样例运行尚未收集证据。'}</span>
         </div>
       </div>
     </section>
@@ -76,17 +75,17 @@ function EvidenceCard({ evidence, index }: EvidenceCardProps) {
       </div>
       <p>{evidence.summary}</p>
       <div className="evidence-card__source">
-        <span>Source</span>
+        <span>来源</span>
         <strong>{formatProviderName(evidence.provenance.source)}</strong>
       </div>
       <div className="badge-row">
         <DemoBadge
-          label={evidence.provenance.mode === 'fixture' ? 'Fixture' : 'Live'}
+          label={evidence.provenance.mode === 'fixture' ? '固定样例' : '实时'}
           tone={evidence.provenance.mode === 'fixture' ? 'fixture' : 'healthy'}
           title={limitationTitle}
         />
-        {evidence.provenance.mocked ? <DemoBadge label="Mocked" tone="mocked" /> : null}
-        <DemoBadge label="Redacted" tone="neutral" />
+        {evidence.provenance.mocked ? <DemoBadge label="模拟" tone="mocked" /> : null}
+        <DemoBadge label="已脱敏" tone="neutral" />
       </div>
     </article>
   )

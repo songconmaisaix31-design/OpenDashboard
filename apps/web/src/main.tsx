@@ -8,7 +8,7 @@ const rootElement = document.getElementById('root')
 const dataSource = createFixtureDataSource()
 
 if (!rootElement) {
-  throw new Error('OpenDashboard root element was not found.')
+  throw new Error('未找到 OpenDashboard 根元素。')
 }
 
 createRoot(rootElement).render(

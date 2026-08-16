@@ -9,7 +9,7 @@ export function DemoPhaseRail({ phase }: DemoPhaseRailProps) {
   const currentIndex = getPhaseIndex(phase)
 
   return (
-    <nav aria-label="Demo progress" className="phase-rail">
+    <nav aria-label="演示进度" className="phase-rail">
       <ol>
         {DEMO_PHASES.map((item, index) => {
           const state = index < currentIndex ? 'complete' : index === currentIndex ? 'current' : 'upcoming'

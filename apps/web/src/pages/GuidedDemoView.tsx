@@ -12,6 +12,7 @@ import {
   DemoPhaseRail,
   DemoProviderStrip,
 } from '../components/index.ts'
+import { formatHealth, formatIncidentStatus } from '../components/format.ts'
 import { getPrimaryAction } from './presentation.ts'
 
 export interface GuidedDemoViewProps {
@@ -45,7 +46,7 @@ export function GuidedDemoView({
   return (
     <div className="demo-app">
       <a className="skip-link" href="#demo-workspace">
-        Skip to demo workspace
+        跳到演示工作区
       </a>
 
       <header className="demo-header">
@@ -55,40 +56,39 @@ export function GuidedDemoView({
           </span>
           <div>
             <strong>OpenDashboard</strong>
-            <span>Incident response cockpit</span>
+            <span>故障响应控制台</span>
           </div>
         </div>
         <div className="demo-header__trust">
-          <DemoBadge label="Fixture Demo" tone="fixture" />
-          <DemoBadge label="Mocked evidence" tone="mocked" />
-          <DemoBadge label="Live adapters planned" tone="planned" />
+          <DemoBadge label="固定样例演示" tone="fixture" />
+          <DemoBadge label="模拟证据" tone="mocked" />
+          <DemoBadge label="实时适配器待开发" tone="planned" />
         </div>
       </header>
 
       <main className="demo-workspace" id="demo-workspace">
         <section className="demo-hero">
           <div className="demo-hero__copy">
-            <p className="eyebrow">90-second guided response · Run {snapshot.runId}</p>
-            <h1>Trace the failure. Approve the recovery.</h1>
+            <p className="eyebrow">90 秒引导式响应 · 运行 {snapshot.runId}</p>
+            <h1>定位故障，审批恢复。</h1>
             <p>
-              Follow one deterministic incident from a degraded API to verified recovery, with the
-              trust boundary visible at every step.
+              沿着一个可重复的故障，从 API 降级走到已验证恢复；每一步都清楚展示可信边界。
             </p>
           </div>
           <div className="target-card">
             <div className="target-card__topline">
-              <span>Application</span>
-              <DemoBadge label={snapshot.target.health} tone={targetTone} />
+              <span>应用</span>
+              <DemoBadge label={formatHealth(snapshot.target.health)} tone={targetTone} />
             </div>
             <strong>{snapshot.target.name}</strong>
             <div className="target-card__meta">
               <span>{snapshot.incident.ruleId}</span>
-              <span>{snapshot.incident.status}</span>
+              <span>{formatIncidentStatus(snapshot.incident.status)}</span>
             </div>
             <div className="badge-row">
-              <DemoBadge label="Fixture" tone="fixture" />
-              <DemoBadge label="Mocked" tone="mocked" />
-              <DemoBadge label={snapshot.incident.severity} tone="degraded" />
+              <DemoBadge label="固定样例" tone="fixture" />
+              <DemoBadge label="模拟" tone="mocked" />
+              <DemoBadge label="高危" tone="degraded" />
             </div>
           </div>
         </section>
@@ -124,8 +124,8 @@ export function GuidedDemoView({
         ) : null}
 
         <footer className="demo-footer">
-          <span>Fixture mode is the only enabled P0 data source.</span>
-          <span>No network requests · No real process control · No secret access</span>
+          <span>P0 仅启用固定样例数据源。</span>
+          <span>无外部或提供器请求 · 无真实进程控制 · 不访问机密信息</span>
         </footer>
       </main>
     </div>

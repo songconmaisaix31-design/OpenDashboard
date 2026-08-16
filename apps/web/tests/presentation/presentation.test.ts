@@ -44,8 +44,8 @@ describe('presentation command mapping', () => {
   })
 
   it('uses bounded UI copy for contract error codes', () => {
-    assert.match(getCommandErrorMessage('invalid_demo_transition'), /current fixture phase/)
-    assert.match(getCommandErrorMessage('invalid_demo_reference'), /No action was applied/)
-    assert.match(getCommandErrorMessage('idempotency_conflict'), /Reset the fixture/)
+    assert.match(getCommandErrorMessage('invalid_demo_transition'), /当前固定样例阶段/)
+    assert.match(getCommandErrorMessage('invalid_demo_reference'), /没有应用任何操作/)
+    assert.match(getCommandErrorMessage('idempotency_conflict'), /重置固定样例/)
   })
 })

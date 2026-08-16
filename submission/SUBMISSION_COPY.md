@@ -1,32 +1,34 @@
 # OpenDashboard Competition Submission Copy
 
-Release status: `designed` until T4 verifies the integrated runtime, claim, and
-visual gates in [`CLAIMS.md`](./CLAIMS.md).
+Release status: local fixture candidate verified by T4; Chinese release visual
+verification is tracked in
+[`RELEASE_INTEGRATION_2026-08-16.md`](../docs/RELEASE_INTEGRATION_2026-08-16.md).
 
 ## One-line summary
 
-OpenDashboard is designed to turn one deterministic local API incident into
+OpenDashboard turns one deterministic local API incident into
 explainable evidence, an approval-gated simulated recovery, and a redacted
 audit record.
 
 ## Short description
 
-OpenDashboard's competition scope defines a 90-second Fixture Demo for a solo
-AI-native developer. The intended journey presents `order-api` in a degraded
+OpenDashboard's competition scope delivers a 90-second Fixture Demo for a solo
+AI-native developer. The journey presents `order-api` in a degraded
 state, gathers normalized HTTP, trace, log, and resource evidence, runs the
 read-only `api-500-triage` workflow, requests explicit approval for a
 simulated managed-runtime restart, verifies fixture recovery, and exports a
 redacted evidence report.
 
 The narrow scope is deliberate: the reviewer can understand why an action was
-proposed, who approved it, what changed, and which evidence is mocked without
-switching tools or trusting an opaque automation step.
+proposed, whether the fixture approval event was recorded, what changed, and
+which evidence is mocked without switching tools or trusting an opaque
+automation step.
 
 ## Capability disclosure
 
-- `designed` — the deterministic five-phase engine, guided UI, approval gate,
-  recovery verification, reset, and evidence export require integrated T1/T2
-  evidence before release.
+- `implemented` — the deterministic five-phase engine, guided UI, approval
+  gate, recovery verification, reset, and evidence export have local tests and
+  an integrated T4 browser run.
 - `mocked` — any Cordis, LocalOps, Agent Usage Manager, FastAPI Radar,
   Hardware, Orca, or AgentTeams observations in P0 must be fixture-backed and
   visibly labelled. They are not live integrations.
@@ -39,6 +41,6 @@ switching tools or trusting an opaque automation step.
 ## Required trust statement
 
 The demo fault is a fixture-owned transient latch, not a source-code defect.
-The approved action clears only that fixture latch. It does not restart a real
-process, repair code, contact an external service, or prove production
-availability.
+Approval confirms only a simulated fixture action. The later verification
+transition clears the fixture latch. Neither step restarts a real process,
+repairs code, contacts an external service, or proves production availability.

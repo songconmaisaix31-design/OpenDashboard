@@ -1,6 +1,6 @@
 # Competition Task Blocks
 
-Status: planning only; implementation requires separate authorization
+Status: T0-T4 complete; T5-T10 planning complete; Chinese release integration in progress
 
 ## Shared constraints
 
@@ -113,3 +113,25 @@ or visual checks.
 
 Result: one local candidate SHA, CodeGraph impact record, exact check outcomes,
 known blockers, and a frozen local evidence package.
+
+## R0 — Chinese Release Integration
+
+Goal: produce a verified Simplified Chinese local candidate and the source
+package for a 90-second demonstration video.
+
+Files:
+
+- Human-facing copy under `apps/web/**`
+- Matching presentation, domain, and production-entry tests
+- Root release documentation and project memory
+- `submission/**`, `docs/demo/**`, and `reports/release/**`
+
+Constraints: work only in `chinese-release-integration` until the complete
+candidate passes. Preserve the fixture-only contract and do not add a live
+provider, dependency, deployment, upload, push, or `main` change. Provider
+names, IDs, JSON keys, and enum values may remain English; explanations and
+controls shown to users must be Chinese.
+
+Result: one verified commit that may be merged into
+`competition-integration`, plus a local editable video project/export or an
+exact authentication/tooling blocker.

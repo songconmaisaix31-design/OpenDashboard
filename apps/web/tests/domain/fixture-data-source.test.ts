@@ -70,6 +70,51 @@ const runToRecovered = async (
   ).value
 }
 
+const runToPhase = async (
+  dataSource: DemoDataSource,
+  phase: DemoSnapshot['phase'],
+  keyPrefix: string,
+): Promise<DemoSnapshot> => {
+  let snapshot = await dataSource.loadInitialSnapshot()
+  if (phase === 'incident_open') return snapshot
+
+  snapshot = expectSuccess(
+    await dataSource.collectEvidence({
+      runId: snapshot.runId,
+      incidentId: snapshot.incident.id,
+      idempotencyKey: `${keyPrefix}-collect`,
+    }),
+  ).value
+  if (phase === 'evidence_collected') return snapshot
+
+  snapshot = expectSuccess(
+    await dataSource.requestRestart({
+      runId: snapshot.runId,
+      targetId: snapshot.target.id,
+      idempotencyKey: `${keyPrefix}-request`,
+    }),
+  ).value
+  if (phase === 'approval_pending') return snapshot
+
+  assert(snapshot.approval)
+  snapshot = expectSuccess(
+    await dataSource.approveAction({
+      runId: snapshot.runId,
+      approvalId: snapshot.approval.id,
+      idempotencyKey: `${keyPrefix}-approve`,
+    }),
+  ).value
+  if (phase === 'action_confirmed') return snapshot
+
+  return expectSuccess(
+    await dataSource.verifyRecovery({
+      runId: snapshot.runId,
+      targetId: snapshot.target.id,
+      idempotencyKey: `${keyPrefix}-verify`,
+    }),
+  ).value
+}
+
 describe('FixtureDataSource golden path', () => {
   it('runs the deterministic approval-gated incident recovery flow', async () => {
     const dataSource = createFixtureDataSource()
@@ -131,6 +176,14 @@ describe('FixtureDataSource golden path', () => {
     assert.equal(approved.value.approval?.status, 'granted')
     assert.equal(approved.value.action?.executionMode, 'simulated')
     assert.equal(approved.value.target.health, 'degraded')
+    assert.match(
+      approved.value.action?.provenance.limitations.join(' ') ?? '',
+      /健康状态等待后续验证/,
+    )
+    assert.doesNotMatch(
+      approved.value.action?.provenance.limitations.join(' ') ?? '',
+      /清除/,
+    )
 
     const recovered = expectSuccess(
       await dataSource.verifyRecovery({
@@ -182,8 +235,8 @@ describe('FixtureDataSource golden path', () => {
       ),
     )
     assert.deepEqual(exported.value.unverifiedClaims, [
-      'No live provider execution was verified.',
-      'No real process restart was performed.',
+      '尚未验证任何实时提供器执行。',
+      '没有执行真实进程重启。',
     ])
 
     const serializedReport = JSON.stringify(exported.value)
@@ -330,35 +383,45 @@ describe('FixtureDataSource command safety', () => {
 
 describe('FixtureDataSource reset and evidence export', () => {
   it('resets every phase to the same clean initial fixture state', async () => {
-    const dataSource = createFixtureDataSource()
-    const recovered = await runToRecovered(dataSource, 'first-run')
-    const resetInput = {
-      runId: recovered.runId,
-      idempotencyKey: 'reset-after-recovery',
+    const phases: readonly DemoSnapshot['phase'][] = [
+      'incident_open',
+      'evidence_collected',
+      'approval_pending',
+      'action_confirmed',
+      'recovered',
+    ]
+
+    for (const phase of phases) {
+      const dataSource = createFixtureDataSource()
+      const snapshot = await runToPhase(dataSource, phase, `reset-${phase}`)
+      const resetInput = {
+        runId: snapshot.runId,
+        idempotencyKey: `reset-from-${phase}`,
+      }
+      const reset = expectSuccess(await dataSource.resetDemo(resetInput))
+
+      assert.equal(reset.value.phase, 'incident_open')
+      assert.equal(reset.value.target.health, 'degraded')
+      assert.equal(reset.value.incident.status, 'open')
+      assert.equal(reset.value.evidence.length, 0)
+      assert.equal(reset.value.approval, null)
+      assert.equal(reset.value.action, null)
+      assert.equal(reset.value.verification, null)
+      assert.equal(reset.value.audit.length, 0)
+
+      const replay = expectSuccess(await dataSource.resetDemo(resetInput))
+      assert.equal(replay.replayed, true)
+      assert.deepEqual(replay.value, reset.value)
+
+      const rerun = expectSuccess(
+        await dataSource.collectEvidence({
+          runId: reset.value.runId,
+          incidentId: reset.value.incident.id,
+          idempotencyKey: `rerun-after-${phase}`,
+        }),
+      )
+      assert.equal(rerun.value.phase, 'evidence_collected')
     }
-
-    const reset = expectSuccess(await dataSource.resetDemo(resetInput))
-    assert.equal(reset.value.phase, 'incident_open')
-    assert.equal(reset.value.target.health, 'degraded')
-    assert.equal(reset.value.incident.status, 'open')
-    assert.equal(reset.value.evidence.length, 0)
-    assert.equal(reset.value.approval, null)
-    assert.equal(reset.value.action, null)
-    assert.equal(reset.value.verification, null)
-    assert.equal(reset.value.audit.length, 0)
-
-    const replay = expectSuccess(await dataSource.resetDemo(resetInput))
-    assert.equal(replay.replayed, true)
-    assert.deepEqual(replay.value, reset.value)
-
-    const rerun = expectSuccess(
-      await dataSource.collectEvidence({
-        runId: reset.value.runId,
-        incidentId: reset.value.incident.id,
-        idempotencyKey: 'second-run-collect',
-      }),
-    )
-    assert.equal(rerun.value.phase, 'evidence_collected')
   })
 
   it('exports an explicitly incomplete report before recovery', async () => {

@@ -28,7 +28,7 @@ export const collectFixtureEvidence = (
     workflow: {
       ...snapshot.workflow,
       status: 'completed',
-      summary: 'Fixture evidence identifies a transient runtime latch.',
+      summary: '固定样例证据定位到一个临时运行时故障锁。',
       evidenceIds,
     },
     evidence: FIXTURE_EVIDENCE,
@@ -61,7 +61,7 @@ export const approveFixtureRestart = (
   ],
 })
 
-/** Verifies the cleared fixture latch and marks the fixture incident recovered. */
+/** Records fixture recovery verification and marks the incident recovered. */
 export const verifyFixtureRecovery = (
   snapshot: DemoSnapshot,
 ): DemoSnapshot => ({

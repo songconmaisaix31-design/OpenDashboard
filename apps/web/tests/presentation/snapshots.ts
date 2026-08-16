@@ -114,7 +114,7 @@ export function createPresentationReport(snapshot: DemoSnapshot): DemoEvidenceRe
     action: snapshot.action,
     verification: snapshot.verification,
     audit: snapshot.audit,
-    unverifiedClaims: ['Live provider execution is not verified by this fixture demo.'],
+    unverifiedClaims: ['这个固定样例演示尚未验证实时提供器执行。'],
   }
 }
 
@@ -134,7 +134,7 @@ function getRecoveredApproval(): NonNullable<DemoSnapshot['approval']> {
   const approval = CONTRACT_EXAMPLE_SNAPSHOT.approval
 
   if (!approval) {
-    throw new Error('The T0 contract example must include the recovered approval.')
+    throw new Error('T0 契约示例必须包含已恢复状态的审批记录。')
   }
 
   return approval

@@ -27,9 +27,10 @@ approval gate.
 ## Trust boundary
 
 Approval does not authorize a real process restart, shell execution, source
-mutation, or external request. The simulated action clears only the
-fixture-owned transient latch; it must never be presented as repairing a code
-defect.
+mutation, or external request. It records consent and confirms only the
+simulated fixture action; target health remains degraded until the separate
+verification step clears the fixture-owned transient latch. It must never be
+presented as repairing a code defect.
 
 ## Integration evidence
 

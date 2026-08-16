@@ -8,7 +8,7 @@ import type {
 } from './demo.ts'
 
 const observedAt = '2026-08-16T10:20:00.000Z'
-const limitations = ['Contract example only; no live provider connection.'] as const
+const limitations = ['仅用于契约示例；未连接实时提供器。'] as const
 
 const fixtureProvenance = (source: string): FixtureProvenance => ({
   source,
@@ -22,28 +22,28 @@ const evidence: readonly DemoEvidence[] = [
   {
     id: 'evidence-http-001',
     kind: 'http',
-    summary: 'POST /orders returned a redacted HTTP 500 response.',
+    summary: 'POST /orders 返回了一条已脱敏的 HTTP 500 响应。',
     redacted: true,
     provenance: fixtureProvenance('cordis'),
   },
   {
     id: 'evidence-trace-001',
     kind: 'trace',
-    summary: 'The fixture trace links the request to the order-api incident.',
+    summary: '固定样例追踪把请求与 order-api 故障关联起来。',
     redacted: true,
     provenance: fixtureProvenance('fastapi-radar'),
   },
   {
     id: 'evidence-log-001',
     kind: 'log',
-    summary: 'A redacted fixture log records the transient runtime latch.',
+    summary: '一条脱敏样例日志记录了临时运行时故障锁。',
     redacted: true,
     provenance: fixtureProvenance('fastapi-radar'),
   },
   {
     id: 'evidence-resource-001',
     kind: 'resource',
-    summary: 'Fixture resource usage remains within the demo threshold.',
+    summary: '固定样例资源使用量保持在演示阈值内。',
     redacted: true,
     provenance: fixtureProvenance('agent-usage-manager'),
   },
@@ -117,7 +117,7 @@ export const CONTRACT_EXAMPLE_SNAPSHOT: DemoSnapshot = {
     id: 'api-500-triage',
     access: 'read-only',
     status: 'completed',
-    summary: 'Fixture evidence identifies a transient runtime latch.',
+    summary: '固定样例证据定位到一个临时运行时故障锁。',
     evidenceIds: evidence.map(({ id }) => id),
     provenance: fixtureProvenance('agentteams'),
   },

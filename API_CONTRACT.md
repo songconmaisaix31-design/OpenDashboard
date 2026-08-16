@@ -1,7 +1,11 @@
 # OpenDashboard Demo Contract
 
-- Status: v0.1 planning contract
+- Status: v1 implemented contract
 - Transport: in-process for the competition build; no network API is required
+
+The strict TypeScript definitions under `apps/web/src/contracts/**` are the
+canonical machine-readable source. This document records their release-level
+semantics and must not be used to override those definitions.
 
 ## Contract goals
 
@@ -22,13 +26,23 @@ type DemoPhase =
   | 'action_confirmed'
   | 'recovered'
 
-interface Provenance {
+interface ProvenanceBase {
   source: string
-  mode: DemoMode
-  mocked: boolean
   observedAt: string
   limitations: string[]
 }
+
+interface FixtureProvenance extends ProvenanceBase {
+  mode: 'fixture'
+  mocked: true
+}
+
+interface LiveProvenance extends ProvenanceBase {
+  mode: 'live'
+  mocked: false
+}
+
+type Provenance = FixtureProvenance | LiveProvenance
 
 interface DemoTarget {
   id: string
@@ -47,6 +61,7 @@ interface DemoIncident {
   severity: 'high'
   fingerprint: string
   evidenceIds: string[]
+  provenance: Provenance
 }
 
 interface DemoAuditEntry {
@@ -60,6 +75,13 @@ interface DemoAuditEntry {
   occurredAt: string
   actor: 'demo-user' | 'fixture-provider'
   mocked: true
+  provenance: FixtureProvenance
+}
+
+interface DemoProviderHealth {
+  id: string
+  status: 'mocked' | 'degraded' | 'healthy' | 'planned'
+  provenance: Provenance
 }
 
 interface DemoSnapshot {
@@ -68,11 +90,12 @@ interface DemoSnapshot {
   phase: DemoPhase
   target: DemoTarget
   incident: DemoIncident
-  providerHealth: Array<{
-    id: string
-    status: 'mocked' | 'degraded' | 'planned'
-    provenance: Provenance
-  }>
+  workflow: DemoWorkflow
+  providerHealth: DemoProviderHealth[]
+  evidence: DemoEvidence[]
+  approval: DemoApproval | null
+  action: DemoAction | null
+  verification: DemoVerification | null
   audit: DemoAuditEntry[]
 }
 ```
@@ -82,14 +105,21 @@ interface DemoSnapshot {
 ```ts
 interface DemoDataSource {
   loadInitialSnapshot(): Promise<DemoSnapshot>
-  collectEvidence(input: { runId: string; incidentId: string }): Promise<DemoSnapshot>
-  requestRestart(input: { runId: string; targetId: string }): Promise<DemoSnapshot>
-  approveAction(input: { runId: string; approvalId: string }): Promise<DemoSnapshot>
-  verifyRecovery(input: { runId: string; targetId: string }): Promise<DemoSnapshot>
-  resetDemo(input: { runId: string }): Promise<DemoSnapshot>
-  exportEvidence(input: { runId: string }): Promise<DemoEvidenceReport>
+  collectEvidence(input: CollectEvidenceInput): Promise<DemoCommandResult<DemoSnapshot>>
+  requestRestart(input: RequestRestartInput): Promise<DemoCommandResult<DemoSnapshot>>
+  approveAction(input: ApproveActionInput): Promise<DemoCommandResult<DemoSnapshot>>
+  verifyRecovery(input: VerifyRecoveryInput): Promise<DemoCommandResult<DemoSnapshot>>
+  resetDemo(input: ResetDemoInput): Promise<DemoCommandResult<DemoSnapshot>>
+  exportEvidence(input: ExportEvidenceInput): Promise<DemoCommandResult<DemoEvidenceReport>>
 }
 ```
+
+Every command input includes `runId` and `idempotencyKey`. Reference-bearing
+commands additionally include the corresponding `incidentId`, `targetId`, or
+`approvalId`. A successful result returns `{ ok: true, value, replayed }`. A
+rejected result returns the unchanged snapshot and one stable error code:
+`invalid_demo_transition`, `invalid_demo_reference`, or
+`idempotency_conflict`.
 
 The P0 implementation must expose only `FixtureDataSource`. A future live implementation must satisfy the same port and pass separate security and contract tests.
 
@@ -99,14 +129,18 @@ The P0 implementation must expose only `FixtureDataSource`. A future live implem
 |---|---|---|---|---|
 | `collectEvidence` | `incident_open` | `evidence_collected` | No | None |
 | `requestRestart` | `evidence_collected` | `approval_pending` | Creates request | None |
-| `approveAction` | `approval_pending` | `action_confirmed` | Required | Simulated only |
+| `approveAction` | `approval_pending` | `action_confirmed` | Required | None; in-memory fixture only |
 | `verifyRecovery` | `action_confirmed` | `recovered` | No | None |
 | `resetDemo` | Any | `incident_open` | No | None |
-| `exportEvidence` | Any | Unchanged | No | Local artifact only |
+| `exportEvidence` | Any | Unchanged | No | None; returns an in-memory report |
 
 Every command accepts a deterministic idempotency key in the implementation. Repeating the same accepted command returns the existing snapshot. Invalid phase transitions return a stable `invalid_demo_transition` error and do not mutate state.
 
-`requestRestart` and `approveAction` operate only on the fixture-owned transient fault latch. They must never be presented as proof of real process ownership, process control, or source-code repair.
+`requestRestart` creates a fixture approval request and `approveAction`
+confirms only a simulated fixture action. Neither command changes target
+health. `verifyRecovery` performs the fixture-only transition to healthy.
+None of these commands proves real process ownership, process control, or
+source-code repair.
 
 ## Evidence report
 
@@ -126,6 +160,9 @@ interface DemoEvidenceReport {
     redacted: true
     provenance: Provenance
   }>
+  approval: DemoApproval | null
+  action: DemoAction | null
+  verification: DemoVerification | null
   audit: DemoAuditEntry[]
   unverifiedClaims: string[]
 }

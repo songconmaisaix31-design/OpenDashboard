@@ -12,33 +12,33 @@ describe('GuidedDemoView', () => {
   it('keeps fixture provenance and planned live adapters visible at the initial phase', () => {
     const markup = renderPhase('incident_open')
 
-    assert.match(markup, /Fixture Demo/)
-    assert.match(markup, /Mocked evidence/)
-    assert.match(markup, /Live adapters planned/)
-    assert.match(markup, /degraded/)
-    assert.match(markup, /Evidence is intentionally gated/)
-    assert.match(markup, /Run read-only triage/)
+    assert.match(markup, /固定样例演示/)
+    assert.match(markup, /模拟证据/)
+    assert.match(markup, /实时适配器待开发/)
+    assert.match(markup, /已降级/)
+    assert.match(markup, /证据收集受到明确控制/)
+    assert.match(markup, /运行只读排查/)
   })
 
   it('shows the approval reference and bounded action copy before approval', () => {
     const markup = renderPhase('approval_pending')
 
     assert.match(markup, /approval-restart-001/)
-    assert.match(markup, /Approve simulated restart/)
-    assert.match(markup, /does not control a real process/)
-    assert.match(markup, /Pending/)
+    assert.match(markup, /批准模拟重启/)
+    assert.match(markup, /不会控制真实进程/)
+    assert.match(markup, /待审批/)
   })
 
-  it('shows normalized evidence and immutable audit records after collection', () => {
+  it('shows normalized evidence and ordered audit records after collection', () => {
     const markup = renderPhase('action_confirmed')
 
     assert.match(markup, />HTTP</)
-    assert.match(markup, />Trace</)
-    assert.match(markup, />Log</)
-    assert.match(markup, />Resource</)
-    assert.match(markup, /Simulated action confirmed/)
-    assert.match(markup, /4 events/)
-    assert.match(markup, /Verify recovery/)
+    assert.match(markup, />追踪</)
+    assert.match(markup, />日志</)
+    assert.match(markup, />资源</)
+    assert.match(markup, /模拟操作已确认/)
+    assert.match(markup, /4 个事件/)
+    assert.match(markup, /验证恢复结果/)
   })
 
   it('renders the redacted report as an inspectable local artifact', () => {
@@ -46,11 +46,11 @@ describe('GuidedDemoView', () => {
     const report = createPresentationReport(snapshot)
     const markup = renderPhase('recovered', report)
 
-    assert.match(markup, /Healthy \/ Recovered/)
-    assert.match(markup, /Redacted evidence report/)
-    assert.match(markup, /Inspect machine-readable artifact/)
-    assert.match(markup, /Download redacted JSON/)
-    assert.match(markup, /Live provider execution is not verified/)
+    assert.match(markup, /健康 \/ 已恢复/)
+    assert.match(markup, /脱敏证据报告/)
+    assert.match(markup, /查看机器可读产物/)
+    assert.match(markup, /下载脱敏 JSON/)
+    assert.match(markup, /尚未验证实时提供器执行/)
   })
 })
 

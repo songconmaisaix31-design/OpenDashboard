@@ -1,6 +1,6 @@
 # OpenDashboard Competition Demo Technical Specification
 
-Status: proposed, not implemented
+Status: implemented local fixture architecture; Chinese release delta in progress
 
 ## Decision summary
 
@@ -8,23 +8,31 @@ Use a single client application with an in-process deterministic demo state mach
 
 This is the shortest reliable route because the judged outcome is a coherent workflow. External integrations add startup, compatibility, security, and evidence risk without improving the core demonstration.
 
+The implemented stack is React 19, strict TypeScript, Vite, and npm. The
+production composition point is `apps/web/src/main.tsx`. The Chinese release
+changes direct human-facing copy and fixture explanations without adding an
+i18n dependency because only one locale is required.
+
 ## Runtime shape
 
 ```text
-Presentation
-    -> DemoController
-        -> DemoDataSource
-            -> FixtureDataSource (P0)
-            -> LiveDataSource (deferred)
-        -> EvidenceExporter
+main.tsx
+  -> App
+    -> GuidedDemoPage
+      -> DemoDataSource
+        -> createFixtureDataSource (P0)
+          -> pure demo-transitions
 ```
 
-- `Presentation` renders status, evidence, approvals, actions, and audit history.
-- `DemoController` owns the finite state transition rules.
+- `GuidedDemoPage` owns presentation state and maps each visible action to one
+  data-source command.
 - `DemoDataSource` is the only data boundary used by the presentation layer.
-- `FixtureDataSource` is deterministic, local, and the only enabled P0 provider.
-- `LiveDataSource` is a future adapter boundary, not a competition implementation.
-- `EvidenceExporter` creates a redacted, append-only report from the current run.
+- `createFixtureDataSource` returns the deterministic in-memory P0
+  implementation and is composed only in `main.tsx`.
+- `demo-transitions.ts` contains the pure fixture state transitions and the
+  redacted in-memory report builder.
+- A live data source is only a deferred contract boundary; no live adapter is
+  implemented in the competition candidate.
 
 ## State model
 
@@ -40,7 +48,7 @@ incident_open
 
 `reset_demo` returns to `incident_open`. A command cannot skip a phase. Repeated commands return the existing result rather than creating duplicate actions or evidence.
 
-The initial failure is a fixture-owned transient runtime latch, not a deterministic source-code defect. The simulated restart clears that latch. This keeps the state transition internally valid without claiming that a restart repaired code or controlled a real process.
+The initial failure is a fixture-owned transient runtime latch, not a deterministic source-code defect. Approval confirms the simulated action; the later verification transition clears the fixture latch and reports recovery. This matches the observable state machine without claiming that approval repaired code or controlled a real process.
 
 ## Data and persistence
 
@@ -71,26 +79,25 @@ The presentation layer must not infer status from log text and must not import p
 - All evidence is fixture-based and redacted before display or export.
 - A future live adapter requires separate threat review, input validation, loopback restrictions, authentication, timeout, and reconciliation.
 
-## Planned source ownership
-
-The exact framework and package commands remain unconfigured until implementation begins. The intended ownership seams are:
+## Implemented source ownership
 
 ```text
-apps/web/src/domain/**       Demo contract and state types
+apps/web/src/contracts/**    Provider-neutral contract and state types
 apps/web/src/fixtures/**     Deterministic source data
-apps/web/src/demo/**         State machine and commands
+apps/web/src/domain/**       Pure fixture state transitions and report builder
+apps/web/src/demo/**         In-memory data source and command handling
 apps/web/src/components/**   Presentation components
 apps/web/src/pages/**        Guided demo composition
 skills/**                    Skill descriptors
 submission/**                Competition copy and demo script
-reports/review/**            Read-only claim and verification reports
+reports/tasks/**             Historical task verification reports
+reports/release/**           Current release verification reports
 ```
-
-Root package configuration, lockfiles, CI, and the final README remain Integrator-owned.
 
 ## Verification gates
 
-Once source exists, the Integrator must discover the actual package manager from the lockfile and record exact commands. Minimum evidence is:
+The npm lockfile and configured scripts are the command source of truth.
+Minimum release evidence is:
 
 - Dependency installation succeeds from the lockfile.
 - Production build succeeds.
@@ -100,7 +107,9 @@ Once source exists, the Integrator must discover the actual package manager from
 - A static review confirms visible mock provenance at every phase.
 - `git diff --check` succeeds.
 
-No command is considered configured or passed before the corresponding source and tool configuration exist.
+Configured commands are `npm run typecheck`, `npm run test`, `npm run build`,
+and their aggregate `npm run check`. Lint and formatting remain unconfigured
+and must not be reported as passed.
 
 ## Deferred long-term architecture
 

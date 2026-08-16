@@ -1,6 +1,6 @@
 # OpenDashboard Competition Demo PRD
 
-- Status: scope-freeze candidate
+- Status: implemented local fixture candidate; Chinese release integration in progress
 - Date: 2026-08-16
 - Hard delivery target: draft uploaded by 22:15 Asia/Shanghai
 
@@ -9,6 +9,9 @@
 The competition deliverable will prove one understandable and trustworthy incident-response workflow. It will not attempt to build the long-term local observability platform or integrate every named upstream project.
 
 The user value is simple: a developer can see why a local API is failing, inspect the evidence, approve a bounded recovery step, verify the result, and export an honest audit record without switching between multiple tools.
+
+The competition website and demonstration video use Simplified Chinese. Stable
+technical identifiers remain unchanged so the evidence stays auditable.
 
 ## Primary user
 
@@ -23,8 +26,8 @@ The complete demo should take no more than 90 seconds:
 3. Open the incident and inspect normalized HTTP, trace, log, and resource evidence.
 4. Run the read-only `api-500-triage` workflow.
 5. Request a simulated managed-runtime restart and see an approval gate.
-6. Approve the simulated restart, which clears only that fixture latch, and see an immutable audit entry.
-7. Run recovery verification and see the API transition from failing to healthy.
+6. Approve the simulated restart, which confirms only a fixture action, and see the ordered audit events.
+7. Run recovery verification, which clears the fixture-owned latch and transitions the API from failing to healthy.
 8. Export a redacted evidence report that identifies every mocked source.
 
 ## Scope
@@ -40,6 +43,10 @@ The complete demo should take no more than 90 seconds:
 - A repeatable reset that restores the initial demo state.
 - A buildable artifact and one automated golden-path check once implementation exists.
 - A claim audit that distinguishes implemented, mocked, designed, and deferred capabilities.
+- Simplified Chinese human-facing copy across the production entry, with no
+  hidden English fallback in the golden path.
+- One locally exported, editable, approximately 90-second demonstration video
+  based on the verified production entry.
 
 ### Should ship only after the must-have flow is green
 
@@ -60,7 +67,7 @@ The complete demo should take no more than 90 seconds:
 
 Every mocked object must carry machine-readable provenance and a visible UI badge. Mocked behavior must never be described as a live integration.
 
-The demo fault is not a code defect. It is an explicit fixture-owned transient latch designed to clear on simulated restart, so the recovery story never implies that restarting repaired source code.
+The demo fault is not a code defect. It is an explicit fixture-owned transient latch designed to clear only during fixture recovery verification, after approval confirms the simulated action. This prevents the story from implying that approval itself repaired code or controlled a real process.
 
 ### Cut from the competition build
 
@@ -82,6 +89,10 @@ The demo fault is not a code defect. It is an explicit fixture-owned transient l
 - The final evidence artifact records before/after state, provenance, action, approval, and verification.
 - Submission copy states that the restart and recovered state belong to the deterministic fixture, not a real managed process.
 - Available build, type, lint, test, and formatting checks pass; unavailable checks are listed as not configured rather than reported as passed.
+- Desktop and mobile Chinese copy has no overflow, overlap, clipping, or hidden
+  primary action in the golden path.
+- The video visibly discloses fixture/mock provenance and does not imply live
+  provider execution.
 
 ## Success metric
 

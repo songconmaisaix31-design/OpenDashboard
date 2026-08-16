@@ -54,7 +54,7 @@ export function GuidedDemoPage({ dataSource }: GuidedDemoPageProps) {
       .catch(() => {
         if (!disposed) {
           setErrorMessage(
-            'The fixture adapter could not load. No live provider or process action was attempted.',
+            '固定样例适配器加载失败；没有尝试连接实时提供器，也没有执行进程操作。',
           )
           setPendingOperation(null)
         }
@@ -74,7 +74,7 @@ export function GuidedDemoPage({ dataSource }: GuidedDemoPageProps) {
     const approvalId = currentSnapshot.approval?.id
 
     if (command === 'approveAction' && !approvalId) {
-      setErrorMessage('The fixture did not provide an approval reference. No action was applied.')
+      setErrorMessage('固定样例没有提供审批引用；没有应用任何操作。')
       return
     }
 
@@ -129,14 +129,14 @@ export function GuidedDemoPage({ dataSource }: GuidedDemoPageProps) {
       }
 
       setSnapshot(result.value)
-      setNotice(result.replayed ? 'The fixture returned the existing idempotent result.' : null)
+      setNotice(result.replayed ? '固定样例返回了已有的幂等结果。' : null)
 
       if (command === 'resetDemo') {
         setCycle((value) => value + 1)
         setReport(null)
       }
     } catch {
-      setErrorMessage('The fixture adapter did not complete this step. No live action was attempted.')
+      setErrorMessage('固定样例适配器未完成这一步；没有尝试任何实时操作。')
     } finally {
       setPendingOperation(null)
     }
@@ -164,9 +164,9 @@ export function GuidedDemoPage({ dataSource }: GuidedDemoPageProps) {
       }
 
       setReport(result.value)
-      setNotice(result.replayed ? 'The fixture returned the existing redacted report.' : null)
+      setNotice(result.replayed ? '固定样例返回了已有的脱敏报告。' : null)
     } catch {
-      setErrorMessage('The redacted fixture report could not be generated. No external export occurred.')
+      setErrorMessage('无法生成脱敏样例报告；没有发生任何外部导出。')
     } finally {
       setPendingOperation(null)
     }
@@ -208,12 +208,12 @@ export function GuidedDemoPage({ dataSource }: GuidedDemoPageProps) {
     return (
       <main className="loading-state">
         <div className="loading-state__mark">OD</div>
-        <p className="eyebrow">Fixture presentation boundary</p>
-        <h1>{pendingOperation ? 'Loading deterministic demo…' : 'Fixture adapter unavailable'}</h1>
-        <p>{errorMessage ?? 'Reading the normalized snapshot from the in-process DemoDataSource.'}</p>
+        <p className="eyebrow">固定样例展示边界</p>
+        <h1>{pendingOperation ? '正在加载可重复演示…' : '固定样例适配器不可用'}</h1>
+        <p>{errorMessage ?? '正在从进程内 DemoDataSource 读取标准化快照。'}</p>
         {!pendingOperation ? (
           <button className="button button--primary" onClick={() => setLoadAttempt((value) => value + 1)} type="button">
-            Retry fixture load
+            重新加载固定样例
           </button>
         ) : null}
       </main>
