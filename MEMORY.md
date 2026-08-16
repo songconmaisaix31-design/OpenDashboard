@@ -80,3 +80,6 @@
   `944df8bb-42d6-4fcc-af86-f82c3a8fa635` completed locally as
   `artifacts/demo/OpenDashboard-GOAI-ZH-90s.mp4`; no upload or public share was
   performed.
+- The verified application, Chinese media sources, and local MP4 are recorded
+  by candidate commit `ed15b0397cf2891e4ea17d9b7351b1654e5ffbc8` on the
+  isolated `chinese-release-integration` branch.
