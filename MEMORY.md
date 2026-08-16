@@ -40,3 +40,13 @@
 - `planning/codegraph/integration-graph.ts` is a planning-only dependency
   sentinel. It must never be imported or cited as proof that application
   integration works.
+- While T0-T4 are active, future planning is isolated on the
+  `independent-planning` branch. T5-T9 are planning-only modules with separate
+  files and records; none may consume another T5-T9 output.
+- The independent modules cover observability incidents, API diagnostics,
+  runtime/hardware inventory, action policy, and a plugin SDK contract. Their
+  reconciliation and any implementation are deferred until after the active
+  competition work freezes.
+- Their CodeGraph sentinel is isolated under
+  `planning/independent/codegraph/**` so it does not overlap T4's active
+  `planning/codegraph/**` ownership.

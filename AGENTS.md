@@ -35,6 +35,19 @@
 - T0 owns root configuration and lockfiles; T4 owns local integration into `competition-integration`.
 - Do not remove a dirty worktree or use destructive Git commands.
 
+## Independent planning branch
+
+- On `independent-planning`, T5-T9 are planning-only tasks governed by
+  `planning/independent/README.md`; this is the write-path authority for those
+  tasks instead of the active T0-T4 paths in `docs/TASKS.md`.
+- Each T5-T9 task may write only its own planning file and matching
+  `reports/planning/T*.md` record.
+- T5-T9 do not read one another's outputs and cannot change, block, or redefine
+  active T0-T4 work before a separate post-competition reconciliation.
+- The independent CodeGraph sentinel belongs under
+  `planning/independent/codegraph/**`, outside T4's
+  `planning/codegraph/**` boundary.
+
 ## Diagnosis and verification
 
 - Define completion and configured checks before implementation starts.
