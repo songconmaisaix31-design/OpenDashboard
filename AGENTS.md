@@ -37,13 +37,17 @@
 
 ## Independent planning branch
 
-- On `independent-planning`, T5-T9 are planning-only tasks governed by
+- On `independent-planning`, T5-T10 are planning-only tasks governed by
   `planning/independent/README.md`; this is the write-path authority for those
   tasks instead of the active T0-T4 paths in `docs/TASKS.md`.
-- Each T5-T9 task may write only its own planning file and matching
+- Each T5-T10 task may write only its own planning file and matching
   `reports/planning/T*.md` record.
-- T5-T9 do not read one another's outputs and cannot change, block, or redefine
+- T5-T10 do not read one another's outputs and cannot change, block, or redefine
   active T0-T4 work before a separate post-competition reconciliation.
+- T10 may additionally read one immutable visual reference package declared at
+  dispatch and perform bounded read-only readiness checks against already
+  configured design MCP or connector surfaces. It may not authenticate,
+  reconfigure, generate, edit, export, upload, or deploy.
 - The independent CodeGraph sentinel belongs under
   `planning/independent/codegraph/**`, outside T4's
   `planning/codegraph/**` boundary.

@@ -41,8 +41,8 @@
   sentinel. It must never be imported or cited as proof that application
   integration works.
 - While T0-T4 are active, future planning is isolated on the
-  `independent-planning` branch. T5-T9 are planning-only modules with separate
-  files and records; none may consume another T5-T9 output.
+  `independent-planning` branch. T5-T10 are planning-only modules with separate
+  files and records; none may consume another T5-T10 output.
 - The independent modules cover observability incidents, API diagnostics,
   runtime/hardware inventory, action policy, and a plugin SDK contract. Their
   reconciliation and any implementation are deferred until after the active
@@ -50,3 +50,23 @@
 - Their CodeGraph sentinel is isolated under
   `planning/independent/codegraph/**` so it does not overlap T4's active
   `planning/codegraph/**` ownership.
+- T10 covers frontend design recovery as an independent visual-contract plan,
+  not as UI implementation. It may consume one immutable visual reference
+  package supplied at dispatch, never another task's output, and it cannot
+  block T0-T9.
+- Figma's connector passed a read-only identity check with a View seat on
+  2026-08-16. Treat it as read-first until write access is separately verified.
+  The configured `open-design` STDIO command passed a direct MCP initialization
+  check, and a fresh agent completed a read-only tool call successfully. The
+  original in-process transport remained stale, but this is not a server
+  readiness failure. No credential values were inspected.
+- The official MotionSites MCP endpoint was verified from
+  `https://motionsites.ai/mcp` on 2026-08-16. The server was added and enabled in
+  the default Codex home, but OAuth remains pending user sign-in. Adding it to
+  the active Orca runtime home was deferred because the add command did not
+  complete while that home was in active use; do not force-edit that config or
+  copy credential stores.
+- The machine-local `ui-ux-pro-max` skill was reversibly quarantined at
+  `C:\Users\DW\.agents\skills-disabled\OpenDashboard-20260816\ui-ux-pro-max`.
+  Existing sessions may retain cached instructions; new sessions should no
+  longer discover it from the active local skill root.
