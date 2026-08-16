@@ -18,11 +18,9 @@ without changing or blocking T0-T9.
   `active: false` result means no project is currently active, not a connection
   failure.
 - The official MotionSites MCP endpoint was verified from
-  `https://motionsites.ai/mcp`. It is registered and enabled in the default
-  Codex home and in this branch's project-scoped `.codex/config.toml`, but OAuth
-  is pending user sign-in. The Orca runtime user-level entry is also pending
-  because the add command did not complete while that home was in active use;
-  no force-edit is permitted.
+  `https://motionsites.ai/mcp`. It is registered through the user-supplied
+  `npx -y mcp-remote` STDIO adapter in the default Codex home and this branch's
+  project-scoped `.codex/config.toml`; OAuth remains pending user sign-in.
 - The machine-local `ui-ux-pro-max` skill is quarantined. It must not be used as
   a visual source or implementation authority.
 
