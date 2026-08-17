@@ -52,3 +52,8 @@
 
 - Never record secret values or read credential stores.
 - CodeGraph state under `.codegraph/` is generated and ignored; it is not architecture evidence by itself.
+
+## Handoff
+
+- The consolidated Chinese research and architecture handoff is `docs/handoff/RESEARCH_AND_ARCHITECTURE_HANDOFF_ZH.md`.
+- It is the onboarding map for the verified PF0/PF1/PF2/PF7 baseline, but canonical contracts and current source still take precedence.
