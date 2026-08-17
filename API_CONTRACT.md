@@ -1,8 +1,8 @@
 # OpenDashboard Plugin Contract
 
-- Status: v1 specified; implementation pending verification
-- Transport: in-process static composition for PF0/PF1
-- Canonical source after implementation: `packages/contracts/src/**`
+- Status: v1 implemented and verified
+- Transport: in-process static composition for the PF1/PF2/PF7 baseline
+- Canonical source: `packages/contracts/src/**` and exported runtime types in `packages/plugin-runtime/src/**`
 
 ## Goals
 
@@ -39,7 +39,7 @@ interface PluginManifestV1 {
 }
 ```
 
-IDs use lowercase reverse-domain or scoped kebab-case segments and are unique within one runtime. Versions use a numeric `major.minor.patch` shape. PF0 rejects unknown keys only at external parse boundaries; compile-time definitions are still validated at startup.
+IDs use lowercase segments separated only by dots or hyphens and are unique within one runtime. Versions use a numeric `major.minor.patch` shape. Runtime validation rejects unknown keys before activation, including for compile-time definitions.
 
 ## Lifecycle
 
@@ -48,9 +48,11 @@ interface Disposable {
   dispose(): void | Promise<void>
 }
 
+declare const serviceTokenType: unique symbol
+
 interface ServiceToken<T> {
   readonly id: string
-  readonly __type?: (value: T) => T
+  readonly [serviceTokenType]?: (value: T) => T
 }
 
 interface PluginContext {
@@ -64,27 +66,71 @@ interface PluginDefinition {
 }
 ```
 
-`provide` rejects duplicate service IDs. `resolve` rejects missing services. A plugin receives a context only while activating. Every provided service is tied to the plugin's disposer.
+`provide` is accepted only during plugin activation and rejects duplicate service IDs. `resolve` rejects a missing service or a different token object that reuses the same ID. The runtime removes every registration when its owning plugin is disposed.
 
 ## Runtime operations
 
 ```ts
+type PluginRuntimeState =
+  | 'idle'
+  | 'starting'
+  | 'running'
+  | 'stopping'
+  | 'stopped'
+  | 'failed'
+
+type PluginEntryState =
+  | 'registered'
+  | 'activating'
+  | 'active'
+  | 'failed'
+  | 'disposed'
+
+type PluginRuntimeErrorCode =
+  | 'duplicate_plugin'
+  | 'missing_dependency'
+  | 'dependency_cycle'
+  | 'unsupported_tier'
+  | 'unsupported_activation'
+  | 'duplicate_service'
+  | 'missing_service'
+  | 'undeclared_dependency'
+  | 'invalid_lifecycle'
+  | 'reentrant_lifecycle'
+  | 'cleanup_required'
+  | 'runtime_not_running'
+  | 'activation_failed'
+
+interface PluginRuntimeEntry {
+  readonly id: string
+  readonly version: string
+  readonly tier: PluginTier
+  readonly state: PluginEntryState
+  readonly capabilities: readonly PluginCapability[]
+  readonly error?: string
+}
+
 interface PluginRuntime {
   start(): Promise<void>
   stop(): Promise<void>
   resolve<T>(token: ServiceToken<T>): T
   snapshot(): readonly PluginRuntimeEntry[]
+  getState(): PluginRuntimeState
 }
 ```
 
 Rules:
 
 1. Validate all manifests before activating any plugin.
-2. Reject duplicate IDs, missing dependencies, cycles, unsupported API versions, unknown capabilities, and Tier 2 execution.
+2. Reject duplicate IDs, missing dependencies, cycles, unsupported API versions, unknown capabilities, non-startup activation, and Tier 2 execution.
 3. Activate dependencies before consumers.
 4. On failure, roll back active plugins in reverse order.
 5. Stop in reverse activation order and remove all services.
-6. Repeated `start` and `stop` calls are safe and do not duplicate effects.
+6. Repeated and overlapping `start` and `stop` calls are serialized and do not duplicate effects.
+7. Runtime faults use a closed error-code union; cleanup failures may surface as `AggregateError` after all remaining disposers have run.
+8. A plugin may resolve services from itself or from plugin IDs listed in `requires`; array order cannot grant undeclared access.
+9. Plugin callbacks must not call runtime lifecycle methods. A synchronous re-entry is rejected.
+10. A failed disposer keeps cleanup debt retryable, leaves the runtime failed, and blocks restart until a later `stop` succeeds.
 
 ## Fixture service
 

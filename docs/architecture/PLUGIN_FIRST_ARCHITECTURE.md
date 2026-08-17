@@ -1,6 +1,6 @@
 # Plugin-First Architecture Baseline
 
-- Status: PF0 decision baseline
+- Status: PF0 gate plus PF1/PF2/PF7 implemented baseline
 - Date: 2026-08-17
 - Product surface: local-only Simplified Chinese console
 
@@ -32,7 +32,7 @@ Tier 2 broker / WASM / sidecars (deferred)
 
 ### Tier 1
 
-Tier 1 plugins are reviewed source compiled with the application. They receive a narrow context but remain fully trusted because JavaScript imports cannot be constrained by metadata. PF1 ships only the Fixture provider.
+Tier 1 plugins are reviewed source compiled with the application. They receive a narrow context but remain fully trusted because JavaScript imports cannot be constrained by metadata. PF1 ships the static runtime; PF2 supplies only the Fixture provider; PF7 owns composition.
 
 ### Tier 2
 
@@ -47,16 +47,18 @@ Tier 2 is a future execution boundary, not a current runtime mode. A valid desig
 5. A failure rolls back every earlier activation in reverse order.
 6. Shutdown disposes all active plugins in reverse order.
 7. Tier 2 definitions cannot activate in the in-process runtime.
+8. Lifecycle calls are linearized, and cleanup debt blocks restart until disposal succeeds.
+9. Service resolution requires token identity and an explicit plugin dependency.
 
 ## Product data path
 
-PF1 preserves the Fixture path:
+PF2 preserves the Fixture path and PF7 composes it:
 
 ```text
 Fixture records -> deterministic transitions -> DemoDataSource service -> Chinese UI
 ```
 
-PF2 introduces, only after security review:
+PF3 introduces, only after security review:
 
 ```text
 Explicit TargetRegistry

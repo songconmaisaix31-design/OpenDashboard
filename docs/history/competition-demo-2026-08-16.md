@@ -2,7 +2,7 @@
 
 The completed Chinese Fixture competition release is intentionally removed from the active architecture namespace when it does not contribute to current source.
 
-- Immutable tag: [`competition-demo-2026-08-16`](https://github.com/songconmaisaix31-design/OpenDashboard/tree/competition-demo-2026-08-16)
+- Verified release tag: [`competition-demo-2026-08-16`](https://github.com/songconmaisaix31-design/OpenDashboard/tree/competition-demo-2026-08-16)
 - Tag commit: `33165902fc997c6000b4e159d9e5473b4eaf7e15`
 - GitHub Release: [`competition-demo-2026-08-16`](https://github.com/songconmaisaix31-design/OpenDashboard/releases/tag/competition-demo-2026-08-16)
 - Source archive asset: `OpenDashboard-source-3316590.zip`
@@ -18,6 +18,7 @@ Historical paths recoverable from the tag include:
 - `docs/TASKS.md`
 - `docs/TIMETABLE_2026-08-16.md`
 - `docs/demo/**`
+- `docs/codegraph/README.md`
 - `planning/**`
 - `reports/**`
 - `skills/**`

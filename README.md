@@ -8,12 +8,13 @@ OpenDashboard 的长期方向是“插件即能力”：本机目标、观测数
 
 公开仓库目前包含一套可运行的中文 Fixture 演示，完整展示：异常发现、证据采集、人工审批、模拟恢复、恢复验证和脱敏报告。它不会扫描本机、不会控制真实进程，也没有第三方插件加载器。
 
-本分支正在建立第一版插件优先架构基线：共享契约、静态可信插件注册表、可释放生命周期和 Fixture 插件迁移。Tier 2 Sidecar、真实本机探针、SQLite、自动化编辑器和插件市场仍属于后续阶段。
+本分支已经建立第一版插件优先架构基线：共享契约、静态可信插件注册表、可释放生命周期和 Fixture 插件迁移。Tier 2 Sidecar、真实本机探针、SQLite、自动化编辑器和插件市场仍属于后续阶段。
 
 | 能力 | 当前状态 |
 |---|---|
 | 中文故障闭环演示 | 已实现，确定性 Fixture |
-| 插件 Manifest 与静态注册表 | 架构基线开发中 |
+| 插件 Manifest 与静态注册表 | 已实现，静态 Tier 0/1 边界 |
+| Fixture Demo 插件 | 已实现，无真实 I/O |
 | 本机只读数据桥 | 已规划，未实现 |
 | 真实进程/服务操作 | 未实现，需独立安全评审 |
 | 动态第三方插件、市场、WASM | 未实现 |
@@ -51,6 +52,18 @@ npm run check
 
 当前真实脚本只有 `dev`、`build`、`typecheck`、`test` 和 `check`。仓库不使用 pnpm，也没有 `dev:minimal`、`dev:windows-dev` 或 `dev:ai-dev`。
 
+## 当前源码结构
+
+```text
+apps/web/                   中文界面与最终组成
+packages/contracts/        Demo 与 Plugin 的共享契约
+packages/plugin-runtime/   静态注册、依赖排序、回滚与释放
+plugins/fixture-demo/      确定性 Fixture provider
+docs/architecture/         当前架构决策
+docs/research/             开源复用与许可证评估
+docs/history/              历史发布恢复索引
+```
+
 ## 安全边界
 
 - 不读取或记录 `.env`、令牌、私钥或凭据存储。
@@ -61,7 +74,7 @@ npm run check
 
 ## 竞赛演示归档
 
-2026-08-16 中文竞赛版本由不可变 tag [`competition-demo-2026-08-16`](https://github.com/songconmaisaix31-design/OpenDashboard/releases/tag/competition-demo-2026-08-16) 保留。活跃分支会移除大体积视频、生成截图和已完成的 T0-T4 调度材料；这不会改写发布 tag。
+2026-08-16 中文竞赛版本由 GitHub Release [`competition-demo-2026-08-16`](https://github.com/songconmaisaix31-design/OpenDashboard/releases/tag/competition-demo-2026-08-16) 保留。活跃分支会移除大体积视频、生成截图和已完成的 T0-T4 调度材料；这不会改写该 release tag。
 
 ## 路线
 

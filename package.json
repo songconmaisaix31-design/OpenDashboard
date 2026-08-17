@@ -11,7 +11,7 @@
     "dev": "vite apps/web",
     "build": "vite build apps/web",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test \"apps/web/**/*.test.ts*\"",
+    "test": "node --import tsx --test \"apps/web/**/*.test.ts*\" \"packages/**/*.test.ts*\" \"plugins/**/*.test.ts*\"",
     "check": "npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {

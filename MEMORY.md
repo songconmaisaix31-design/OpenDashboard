@@ -11,19 +11,29 @@
 
 - Public `origin/main` is `9a2268901569cd407d5a16fc8f79a936285ec185`; local root `main` remains the older ancestor `6b9fb7e2884f61a078a52cdf7a0440a4d9f7df68` and must not be used as an inferred base.
 - The architecture worktree is based explicitly on `origin/main` and uses branch `songconmaisaix31-design/plugin-first-architecture`.
-- The immutable release tag `competition-demo-2026-08-16` points to `33165902fc997c6000b4e159d9e5473b4eaf7e15`.
+- The verified GitHub release tag `competition-demo-2026-08-16` points to `33165902fc997c6000b4e159d9e5473b4eaf7e15`.
 - The public repository uses npm, not pnpm. Current source is a deterministic Fixture demo; it has no plugin loader, host scan, daemon, database, or real process control.
 - T5-T10 planning branches and `local-console-planning@9853ed0` contain unpublished unique commits. They must be selectively migrated or archived before their worktrees are removed.
 
 ## Architecture decisions
 
-- Plugin-first does not authorize arbitrary code. PF0/PF1 uses only explicit compile-time imports and rejects Tier 2 activation.
+- Plugin-first does not authorize arbitrary code. The PF1/PF2/PF7 baseline uses only explicit compile-time imports and rejects Tier 2 activation.
 - Manifest capabilities are a closed audit vocabulary, not an operating-system permission system.
 - The plugin runtime must support dependency ordering, failure rollback, reverse disposal, typed services, and deterministic snapshots.
 - Preserve the existing Fixture state machine and provenance; move it behind a plugin service without changing behavior.
 - The first real adapter, when authorized, is an explicit opt-in read-only loopback health adapter. Real Windows actions require a separate threat review and process/service ownership contract.
 - Do not embed PM2, Glances, OpenTelemetry Collector, Beszel, or a remote agent in the first architecture milestone.
 - `systeminformation` is a future candidate behind a narrow adapter, not a current dependency.
+
+## Plugin baseline implementation evidence
+
+- PF0 truth, licensing, research, cleanup, and architecture Gate is commit `39051b6` on the isolated architecture branch.
+- Canonical Demo and plugin contracts now live under `packages/contracts`; the static lifecycle is under `packages/plugin-runtime`; the deterministic provider is under `plugins/fixture-demo`.
+- The web entry resolves `DemoDataSource` from `fixtureDemoPlugin`; it no longer constructs the Fixture provider directly.
+- A clean lockfile install followed by `npm run check` passed strict type checking, 32 tests, and the Vite production build.
+- CodeGraph indexed 40 files, 327 nodes, and 1,143 edges with zero pending changes. Symbol query found the runtime definition and its web/test import nodes; affected-test analysis returned three focused tests. Symbol impact itself returned no traversed edge and is not treated as proof.
+- Chrome completed the full Chinese flow at the default desktop viewport and at 375x812. The mobile page had no horizontal overflow and the final healthy/recovered report was visible.
+- Current `npm audit` reports one low-severity advisory in the dev-only `tsx` nested `esbuild`. It is not used as the product dev server; a targeted tool upgrade was not retained because its clean Windows platform install was not reproducible during the registry timeout. No moderate, high, or critical advisory was reported.
 
 ## Research and licensing
 
@@ -35,7 +45,7 @@
 ## Cleanup and recovery
 
 - Competition video, generated screenshots, T0-T4 prompts/reports, submission copy, and demo Skill descriptors are historical release material rather than active architecture.
-- They may leave the active branch only after a recovery ledger points to the immutable tag and GitHub Release. Removing them from the branch does not shrink existing Git history.
+- They may leave the active branch only after a recovery ledger points to the verified release tag and GitHub Release. Removing them from the branch does not shrink existing Git history.
 - Never remove unpublished planning worktrees merely because their visible files look stale.
 
 ## Operational safety

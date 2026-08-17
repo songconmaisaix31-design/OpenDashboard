@@ -1,6 +1,6 @@
 # OpenDashboard Plugin-First Product Requirements
 
-- Status: specified; PF0 architecture baseline in progress
+- Status: PF0 gate plus PF1/PF2/PF7 baseline implemented and verified in the isolated architecture worktree
 - Date: 2026-08-17
 - Product language: Simplified Chinese
 - Baseline: `origin/main@9a2268901569cd407d5a16fc8f79a936285ec185`
@@ -27,7 +27,7 @@ The user can complete this loop with truthful provenance:
 6. Verify observed state after the action.
 7. Export a redacted evidence record.
 
-## Current milestone: PF0/PF1
+## Current milestone: plugin baseline
 
 The first architecture milestone preserves the runnable Fixture demo while replacing app-owned composition with a tested plugin boundary.
 
@@ -52,7 +52,7 @@ The first architecture milestone preserves the runnable Fixture demo while repla
 
 ## Plugin trust tiers
 
-| Tier | Execution | Trust model | PF0/PF1 |
+| Tier | Execution | Trust model | Current baseline |
 |---|---|---|---|
 | 0 | Core process | Core-maintained and required | Contract/runtime only |
 | 1 | Core process | Reviewed, statically imported, fully trusted | Fixture plugin only |
@@ -73,7 +73,7 @@ Capabilities in a Tier 0/1 manifest are closed vocabulary used for validation, c
 
 ## Next milestone gate
 
-PF2 may add one explicit, opt-in, read-only loopback health adapter only after a threat review defines target registration, SSRF prevention, Host/Origin checks, timeouts, redaction, and failure evidence. Real actions require a later and separate authorization gate.
+PF3 may add one explicit, opt-in, read-only loopback health adapter only after a threat review defines target registration, SSRF prevention, Host/Origin checks, timeouts, redaction, and failure evidence. Real actions require a later and separate authorization gate.
 
 ## Success metric
 

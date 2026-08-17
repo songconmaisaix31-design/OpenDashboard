@@ -1,12 +1,12 @@
 # OpenDashboard Plugin-First Technical Specification
 
-- Status: specified; implementation pending verification
+- Status: PF0 gate plus PF1/PF2/PF7 baseline implemented and verified
 - Date: 2026-08-17
 - Runtime: Node.js 22.12+, strict TypeScript, React 19, Vite, npm
 
 ## Decision summary
 
-PF0/PF1 uses a small in-repository TypeScript plugin runtime. Plugins are explicit imports reviewed with the application; there is no loader. This is the shortest reliable path to prove lifecycle and contract boundaries without creating a false sandbox or adding a second runtime.
+PF1 uses a small in-repository TypeScript plugin runtime, PF2 supplies the Fixture provider, and PF7 composes them into the application. Plugins are explicit imports reviewed with the application; there is no loader. This is the shortest reliable path to prove lifecycle and contract boundaries without creating a false sandbox or adding a second runtime.
 
 Cordis, VS Code, HashiCorp go-plugin, Extism, and OpenTelemetry Collector are research inputs, not copied implementations. A dependency is added only when it removes more code and risk than it introduces.
 
@@ -45,7 +45,7 @@ interface PluginDefinition {
 }
 ```
 
-The runtime state is `registered -> activating -> active | failed -> disposed`. `start()` is idempotent. On activation failure, already-active plugins are disposed in reverse activation order. `stop()` always attempts every disposer and reports aggregated failures.
+The runtime state is `registered -> activating -> active | failed -> disposed`. Lifecycle requests share one ordered queue, so alternating `start` and `stop` calls are linearized. On activation failure, already-active plugins are disposed in reverse order. `stop()` attempts every disposer; failed cleanup remains retryable, leaves the runtime failed, and blocks restart until cleanup succeeds.
 
 ## Manifest contract
 
@@ -58,19 +58,19 @@ The initial manifest contains only fields needed for deterministic composition:
 - `capabilities`: values from a closed core vocabulary.
 - `provenance`: `core | official | fixture | third-party`.
 
-PF0 accepts only statically supplied Tier 0/1 definitions. Tier 2 manifests may be parsed for planning but cannot activate. YAML is not an execution format in PF0; adding a YAML parser before a loader exists would create an unnecessary trust boundary.
+PF1 accepts only statically supplied Tier 0/1 definitions with `startup` activation. `on-demand` is reserved by the contract but rejected by the current runtime. Tier 2 manifests may be parsed for planning but cannot activate. YAML is not an execution format; adding a YAML parser before a loader exists would create an unnecessary trust boundary.
 
 ## Service boundary
 
-Services use typed tokens. A plugin can provide a token once and resolve only services already activated. Duplicate providers fail activation. Registration returns a disposable so rollback removes services without global residue.
+Services use invariant typed tokens with runtime object identity. A plugin can provide a token only during activation and resolve only its own services or services from declared dependencies. Duplicate providers fail activation. Registration returns a disposable so rollback removes services without global residue.
 
 Manifest capabilities are checked against a closed vocabulary and surfaced in runtime snapshots. They are not OS permissions. An in-process plugin remains fully trusted and cannot be made safe through metadata alone.
 
 ## Data and evidence
 
-PF0 keeps the Fixture engine in memory and preserves its deterministic IDs, transitions, idempotency, provenance, redaction, and tests. No persistence is introduced.
+PF2 keeps the Fixture engine in memory and preserves its deterministic IDs, transitions, idempotency, provenance, redaction, and tests. No persistence is introduced.
 
-The future local data plane is one non-elevated TypeScript process bound to `127.0.0.1`, with explicit targets, bounded probes, a pure incident reducer, an append-only SQLite event ledger, and same-origin HTTP/SSE. It is not implemented by PF0/PF1.
+The future local data plane is one non-elevated TypeScript process bound to `127.0.0.1`, with explicit targets, bounded probes, a pure incident reducer, an append-only SQLite event ledger, and same-origin HTTP/SSE. It is not implemented by the current baseline.
 
 ## Security invariants
 

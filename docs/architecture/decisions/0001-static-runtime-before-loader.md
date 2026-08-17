@@ -9,7 +9,7 @@ The product vision includes trusted plugins, sidecars, and a community ecosystem
 
 ## Decision
 
-PF0/PF1 implements a compile-time TypeScript registry for reviewed Tier 0/1 definitions. It validates manifest metadata, orders dependencies, owns service lifetimes, rolls back failed activation, and rejects Tier 2 execution. It does not load files, packages, YAML, URLs, or subprocesses.
+PF1 implements a compile-time TypeScript registry for reviewed Tier 0/1 definitions. It validates manifest metadata, orders dependencies, owns service lifetimes, rolls back failed activation, and rejects Tier 2 execution. PF2 adds the Fixture provider and PF7 composes it. No stage loads files, packages, YAML, URLs, or subprocesses.
 
 ## Why it matters
 
