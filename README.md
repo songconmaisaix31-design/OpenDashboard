@@ -84,4 +84,10 @@ docs/history/              历史发布恢复索引
 4. 经过所有权与授权评审后，再实现 allowlisted Windows 服务操作。
 5. 只有出现可信第三方生态需求后，才实现 Tier 2 Sidecar/WASM 和分发机制。
 
-详细架构、开源复用评估与清理方案见 `docs/architecture/` 和 `docs/research/`。
+详细资料：
+
+- [插件优先架构](docs/architecture/PLUGIN_FIRST_ARCHITECTURE.md)
+- [最新实施规划](docs/plans/PLUGIN_FIRST_TASKS.md)
+- [调研与架构设计交接](docs/handoff/RESEARCH_AND_ARCHITECTURE_HANDOFF_ZH.md)
+- [开源复用与许可证评估](docs/research/OPEN_SOURCE_REUSE_MATRIX.md)
+- [仓库清理与恢复方案](docs/architecture/REPOSITORY_CLEANUP_PLAN.md)

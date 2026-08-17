@@ -59,3 +59,8 @@
 
 - The consolidated Chinese research and architecture handoff is `docs/handoff/RESEARCH_AND_ARCHITECTURE_HANDOFF_ZH.md`.
 - It is the onboarding map for the verified PF0/PF1/PF2/PF7 baseline, but canonical contracts and current source still take precedence.
+
+## GitHub publication
+
+- Pull request `https://github.com/songconmaisaix31-design/OpenDashboard/pull/1` tracks publication of the plugin-first baseline to the default branch without history rewriting.
+- Do not claim the baseline is public until the live PR state is merged and `origin/main` contains commit `7a81636` or a descendant.
