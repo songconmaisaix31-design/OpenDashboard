@@ -4,13 +4,15 @@
 
 - Date: 2026-08-17.
 - Use the public plugin-first README as a product vision while correcting its implementation claims.
-- Build the smallest verified architecture seam: shared contracts, static trusted plugin lifecycle, and the existing Fixture provider as the first plugin.
+- Use the smallest verified architecture seam as the public development baseline: shared contracts, static trusted plugin lifecycle, and the existing Fixture provider as the first plugin.
 - Keep the Chinese demo runnable throughout the migration.
+- Treat PF3, the explicit opt-in read-only loopback health adapter, as the next implementation milestone.
 
 ## Repository facts
 
-- Public `origin/main` is `9a2268901569cd407d5a16fc8f79a936285ec185`; local root `main` remains the older ancestor `6b9fb7e2884f61a078a52cdf7a0440a4d9f7df68` and must not be used as an inferred base.
-- The architecture worktree is based explicitly on `origin/main` and uses branch `songconmaisaix31-design/plugin-first-architecture`.
+- The plugin-first publication lineage starts from former public baseline `origin/main@9a2268901569cd407d5a16fc8f79a936285ec185`; publication must preserve that ancestry without force push or history rewriting.
+- Local root `main@6b9fb7e2884f61a078a52cdf7a0440a4d9f7df68` is an older ancestor and must not be used as an inferred current base.
+- The architecture worktree uses branch `songconmaisaix31-design/plugin-first-architecture`; verify the live default branch before each release.
 - The verified GitHub release tag `competition-demo-2026-08-16` points to `33165902fc997c6000b4e159d9e5473b4eaf7e15`.
 - The public repository uses npm, not pnpm. Current source is a deterministic Fixture demo; it has no plugin loader, host scan, daemon, database, or real process control.
 - T5-T10 planning branches and `local-console-planning@9853ed0` contain unpublished unique commits. They must be selectively migrated or archived before their worktrees are removed.

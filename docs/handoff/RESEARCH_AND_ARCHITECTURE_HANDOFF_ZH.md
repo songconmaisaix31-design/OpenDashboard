@@ -6,7 +6,7 @@
 - 基线：`origin/main@9a2268901569cd407d5a16fc8f79a936285ec185`
 - 工作分支：`songconmaisaix31-design/plugin-first-architecture`
 - 架构实现基线：`d92b1d84ce47887c4be2876ab386d89802259c05`
-- 工作树：`C:\Users\DW\orca\workspaces\OpenDashboard\plugin-first-architecture`
+- 工作树：隔离架构 worktree（本机路径不纳入仓库事实）
 
 ## 1. 交接结论
 

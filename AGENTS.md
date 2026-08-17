@@ -2,9 +2,10 @@
 
 ## Project status
 
-- The public baseline is `origin/main@9a2268901569cd407d5a16fc8f79a936285ec185`.
+- Verify the live `origin/main` SHA before every publication; do not treat a cached remote SHA as current state.
 - The repository contains a runnable React 19, strict TypeScript, Vite, and npm Fixture demo.
-- The active objective is the isolated `plugin-first-architecture` worktree: establish truthful product docs, a static plugin runtime, shared contracts, and a Fixture plugin without changing behavior.
+- The verified plugin-first baseline establishes truthful product docs, a static plugin runtime, shared contracts, and a Fixture plugin without changing demo behavior.
+- The next implementation milestone is PF3: an explicit opt-in, read-only, loopback-only local health adapter.
 - Long-term README capabilities are goals unless source and verification prove otherwise.
 
 ## Product boundary
