@@ -63,4 +63,5 @@
 ## GitHub publication
 
 - Pull request `https://github.com/songconmaisaix31-design/OpenDashboard/pull/1` tracks publication of the plugin-first baseline to the default branch without history rewriting.
+- `.github/workflows/ci.yml` runs `npm ci` and `npm run check` with read-only repository permissions for pull requests and pushes to `main`.
 - Do not claim the baseline is public until the live PR state is merged and `origin/main` contains commit `7a81636` or a descendant.

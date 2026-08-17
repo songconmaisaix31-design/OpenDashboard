@@ -43,6 +43,7 @@
 ## Verification
 
 - Run `npm run typecheck`, `npm run test`, `npm run build`, and `npm run check` when relevant.
+- GitHub pull requests and pushes to `main` must pass `.github/workflows/ci.yml`; do not merge a failing check.
 - Run `git diff --check` before handoff.
 - Sync CodeGraph and inspect the composition impact; CodeGraph never replaces runtime checks.
 - For UI-affecting composition changes, run the production entry and verify the complete Chinese Fixture flow at desktop and mobile widths.
