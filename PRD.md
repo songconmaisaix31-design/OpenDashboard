@@ -1,106 +1,80 @@
-# OpenDashboard Competition Demo PRD
+# OpenDashboard Plugin-First Product Requirements
 
-- Status: implemented local fixture candidate; Chinese release integration in progress
-- Date: 2026-08-16
-- Hard delivery target: draft uploaded by 22:15 Asia/Shanghai
+- Status: PF0 gate plus PF1/PF2/PF7 baseline implemented and verified in the isolated architecture worktree
+- Date: 2026-08-17
+- Product language: Simplified Chinese
+- Baseline: `origin/main@9a2268901569cd407d5a16fc8f79a936285ec185`
 
 ## Product decision
 
-The competition deliverable will prove one understandable and trustworthy incident-response workflow. It will not attempt to build the long-term local observability platform or integrate every named upstream project.
+OpenDashboard is a local service diagnosis and controlled-recovery console for a single developer machine. It is not a universal computer administration panel. The product must help a developer understand why a local service is unhealthy, see the evidence, approve a bounded action, verify the outcome, and retain a redacted record without switching tools.
 
-The user value is simple: a developer can see why a local API is failing, inspect the evidence, approve a bounded recovery step, verify the result, and export an honest audit record without switching between multiple tools.
-
-The competition website and demonstration video use Simplified Chinese. Stable
-technical identifiers remain unchanged so the evidence stays auditable.
+Plugin-first means every optional capability enters through a versioned contract and explicit lifecycle. It does not mean arbitrary code is safe to load.
 
 ## Primary user
 
-A solo AI-native developer running several local services who needs a fast, safe explanation of an API failure and a reproducible recovery record.
+A solo developer or AI-native builder running multiple local API, model, and agent services on a Windows workstation.
 
-## Golden path
+## User outcome
 
-The complete demo should take no more than 90 seconds:
+The user can complete this loop with truthful provenance:
 
-1. Open the dashboard in `Fixture Demo` mode.
-2. See `order-api` in a degraded state and an open `api-error-burst` incident caused by a fixture-owned transient runtime latch.
-3. Open the incident and inspect normalized HTTP, trace, log, and resource evidence.
-4. Run the read-only `api-500-triage` workflow.
-5. Request a simulated managed-runtime restart and see an approval gate.
-6. Approve the simulated restart, which confirms only a fixture action, and see the ordered audit events.
-7. Run recovery verification, which clears the fixture-owned latch and transitions the API from failing to healthy.
-8. Export a redacted evidence report that identifies every mocked source.
+1. Register or select a local target.
+2. Observe health and resource evidence.
+3. Correlate evidence into an incident.
+4. Inspect a diagnosis and proposed bounded action.
+5. Approve the action when required.
+6. Verify observed state after the action.
+7. Export a redacted evidence record.
 
-## Scope
+## Current milestone: plugin baseline
 
-### Must ship
+The first architecture milestone preserves the runnable Fixture demo while replacing app-owned composition with a tested plugin boundary.
 
-- One deterministic fixture dataset for the complete golden path.
-- One guided dashboard experience; separate production-style pages are not required.
-- Visible `Fixture`, `Mocked`, `Degraded`, and `Planned` provenance labels.
-- Incident, evidence, approval, action, verification, and audit state transitions.
-- At least three Agent role descriptions and six Skill descriptors for the competition narrative.
-- A downloadable or inspectable redacted evidence artifact.
-- A repeatable reset that restores the initial demo state.
-- A buildable artifact and one automated golden-path check once implementation exists.
-- A claim audit that distinguishes implemented, mocked, designed, and deferred capabilities.
-- Simplified Chinese human-facing copy across the production entry, with no
-  hidden English fallback in the golden path.
-- One locally exported, editable, approximately 90-second demonstration video
-  based on the verified production entry.
+### Must deliver
 
-### Should ship only after the must-have flow is green
+- One canonical TypeScript plugin manifest contract.
+- A compile-time registry for reviewed Tier 0 and Tier 1 plugins.
+- Deterministic activation, dependency ordering, failure rollback, and reverse disposal.
+- An explicit service registry with duplicate-provider rejection.
+- Migration of the Fixture data source behind a plugin-owned service.
+- Existing Chinese golden path remains runnable and visibly Fixture-backed.
+- Root README and technical documents separate implemented, planned, and deferred capability.
+- Generated competition media and obsolete dispatch material leave the active source tree with a documented recovery path.
 
-- Lightweight animation between demo phases.
-- Responsive presentation at 1280 px and 1440 px widths.
-- A single optional read-only loopback health probe behind an explicit opt-in boundary.
-- A short recorded fallback demo.
+### Must not deliver in this milestone
 
-### Explicitly mocked in the competition build
+- Dynamic path loading, package installation, marketplace, hot reload, or remote plugins.
+- Tier 2 execution, process spawning, WebAssembly, gRPC, or plugin RPC.
+- Real host discovery, arbitrary network probes, process control, Shell, or elevation.
+- SQLite, OpenTelemetry Collector, PM2, Glances, or a second runtime.
+- A general workflow editor, multi-user authorization, or remote access.
 
-- Cordis plugin lifecycle and service composition.
-- LocalOps discovery and managed-runtime restart.
-- Agent Usage Manager process/resource observations.
-- FastAPI Radar traces and exceptions.
-- Hardware telemetry.
-- Orca workspace/session data.
-- AgentTeams execution and inter-agent messaging.
+## Plugin trust tiers
 
-Every mocked object must carry machine-readable provenance and a visible UI badge. Mocked behavior must never be described as a live integration.
+| Tier | Execution | Trust model | Current baseline |
+|---|---|---|---|
+| 0 | Core process | Core-maintained and required | Contract/runtime only |
+| 1 | Core process | Reviewed, statically imported, fully trusted | Fixture plugin only |
+| 2 | Separate boundary | Untrusted until independently authorized | Contract notes only |
 
-The demo fault is not a code defect. It is an explicit fixture-owned transient latch designed to clear only during fixture recovery verification, after approval confirms the simulated action. This prevents the story from implying that approval itself repaired code or controlled a real process.
-
-### Cut from the competition build
-
-- Real sidecars, Docker/WSL topology, SQLite, retention, reconciliation, and provider handshakes.
-- A plugin loader, marketplace, signing, sandbox, or arbitrary plugin execution.
-- A general automation engine or visual workflow editor.
-- Real process control, shell execution, request replay, dependency installation, commit, push, or destructive actions.
-- A twelve-page dashboard, live log streaming, trace waterfall, or broad charts.
-- Multi-user authentication, remote access, or production deployment claims.
+Capabilities in a Tier 0/1 manifest are closed vocabulary used for validation, composition, and audit. They do not prevent a trusted in-process module from using Node APIs.
 
 ## Acceptance criteria
 
-- A fresh user can complete the golden path without external credentials or services.
-- The same inputs produce the same state transitions and evidence IDs.
-- No step reads secrets, credential stores, private keys, or `.env` files.
-- No demo action controls a real process or sends a non-loopback request.
-- The UI never presents a fixture observation as live data.
-- Approval is required before the simulated recovery action.
-- The final evidence artifact records before/after state, provenance, action, approval, and verification.
-- Submission copy states that the restart and recovered state belong to the deterministic fixture, not a real managed process.
-- Available build, type, lint, test, and formatting checks pass; unavailable checks are listed as not configured rather than reported as passed.
-- Desktop and mobile Chinese copy has no overflow, overlap, clipping, or hidden
-  primary action in the golden path.
-- The video visibly discloses fixture/mock provenance and does not imply live
-  provider execution.
+- `npm run check` passes from the lockfile.
+- Runtime tests cover duplicate IDs, unknown dependencies, activation order, rollback, reverse disposal, and Tier 2 rejection.
+- The application resolves `DemoDataSource` from the plugin runtime rather than constructing it directly.
+- The golden-path tests still reach `recovered` and export the same redacted Fixture evidence.
+- No added source reads secrets, launches a process, opens a network listener, or sends a request.
+- `git diff --check` passes.
+- CodeGraph indexes the final tree with no pending files and is used to inspect the composition change.
+- Documentation never presents planned local adapters or Sidecars as implemented.
+
+## Next milestone gate
+
+PF3 may add one explicit, opt-in, read-only loopback health adapter only after a threat review defines target registration, SSRF prevention, Host/Origin checks, timeouts, redaction, and failure evidence. Real actions require a later and separate authorization gate.
 
 ## Success metric
 
-The demo succeeds when a reviewer can accurately describe the workflow and its trust boundary after one run. Breadth of integrations is not a success metric for this timebox.
-
-## Remaining product risks
-
-- The original submission pack has filename/content mismatches and cannot be used for automated dispatch.
-- The long-term story names many unverified upstream integrations; claims must remain design-level.
-- A visually polished fixture can be mistaken for a live platform unless provenance is persistent and prominent.
-- Starting real provider work before the deterministic flow is complete would likely prevent delivery.
+A contributor can add a reviewed read-only plugin without editing domain or UI internals, while a reviewer can still identify exactly what code executes and which capabilities remain simulated.

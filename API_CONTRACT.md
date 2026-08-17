@@ -1,171 +1,141 @@
-# OpenDashboard Demo Contract
+# OpenDashboard Plugin Contract
 
-- Status: v1 implemented contract
-- Transport: in-process for the competition build; no network API is required
+- Status: v1 implemented and verified
+- Transport: in-process static composition for the PF1/PF2/PF7 baseline
+- Canonical source: `packages/contracts/src/**` and exported runtime types in `packages/plugin-runtime/src/**`
 
-The strict TypeScript definitions under `apps/web/src/contracts/**` are the
-canonical machine-readable source. This document records their release-level
-semantics and must not be used to override those definitions.
+## Goals
 
-## Contract goals
+- Make plugin identity, compatibility, dependencies, trust tier, and declared capabilities explicit.
+- Keep optional providers behind typed service tokens.
+- Guarantee deterministic activation and cleanup.
+- Prevent a manifest from being mistaken for execution authorization.
 
-- Give fixture and future live providers one normalized boundary.
-- Keep provider-specific data out of the presentation layer.
-- Make mock provenance impossible to omit.
-- Make demo commands deterministic, approval-aware, and idempotent.
-
-## Core types
+## Manifest
 
 ```ts
-type DemoMode = 'fixture' | 'live'
+type PluginTier = 0 | 1 | 2
+type PluginActivation = 'startup' | 'on-demand'
+type PluginProvenance = 'core' | 'official' | 'fixture' | 'third-party'
 
-type DemoPhase =
-  | 'incident_open'
-  | 'evidence_collected'
-  | 'approval_pending'
-  | 'action_confirmed'
-  | 'recovered'
+type PluginCapability =
+  | 'target:read'
+  | 'observation:publish'
+  | 'incident:write'
+  | 'evidence:write'
+  | 'action:fixture'
 
-interface ProvenanceBase {
-  source: string
-  observedAt: string
-  limitations: string[]
-}
-
-interface FixtureProvenance extends ProvenanceBase {
-  mode: 'fixture'
-  mocked: true
-}
-
-interface LiveProvenance extends ProvenanceBase {
-  mode: 'live'
-  mocked: false
-}
-
-type Provenance = FixtureProvenance | LiveProvenance
-
-interface DemoTarget {
-  id: string
-  name: string
-  kind: 'application'
-  health: 'degraded' | 'healthy'
-  versionControl: 'git' | 'none' | 'unknown'
-  provenance: Provenance
-}
-
-interface DemoIncident {
-  id: string
-  targetId: string
-  ruleId: 'api-error-burst'
-  status: 'open' | 'investigating' | 'recovered'
-  severity: 'high'
-  fingerprint: string
-  evidenceIds: string[]
-  provenance: Provenance
-}
-
-interface DemoAuditEntry {
-  id: string
-  event:
-    | 'evidence.collected'
-    | 'approval.requested'
-    | 'approval.granted'
-    | 'action.confirmed'
-    | 'recovery.verified'
-  occurredAt: string
-  actor: 'demo-user' | 'fixture-provider'
-  mocked: true
-  provenance: FixtureProvenance
-}
-
-interface DemoProviderHealth {
-  id: string
-  status: 'mocked' | 'degraded' | 'healthy' | 'planned'
-  provenance: Provenance
-}
-
-interface DemoSnapshot {
-  schemaVersion: 1
-  runId: string
-  phase: DemoPhase
-  target: DemoTarget
-  incident: DemoIncident
-  workflow: DemoWorkflow
-  providerHealth: DemoProviderHealth[]
-  evidence: DemoEvidence[]
-  approval: DemoApproval | null
-  action: DemoAction | null
-  verification: DemoVerification | null
-  audit: DemoAuditEntry[]
+interface PluginManifestV1 {
+  readonly schemaVersion: 1
+  readonly apiVersion: 1
+  readonly id: string
+  readonly version: string
+  readonly displayName: string
+  readonly tier: PluginTier
+  readonly activation: PluginActivation
+  readonly requires: readonly string[]
+  readonly capabilities: readonly PluginCapability[]
+  readonly provenance: PluginProvenance
 }
 ```
 
-## Data source port
+IDs use lowercase segments separated only by dots or hyphens and are unique within one runtime. Versions use a numeric `major.minor.patch` shape. Runtime validation rejects unknown keys before activation, including for compile-time definitions.
+
+## Lifecycle
 
 ```ts
-interface DemoDataSource {
-  loadInitialSnapshot(): Promise<DemoSnapshot>
-  collectEvidence(input: CollectEvidenceInput): Promise<DemoCommandResult<DemoSnapshot>>
-  requestRestart(input: RequestRestartInput): Promise<DemoCommandResult<DemoSnapshot>>
-  approveAction(input: ApproveActionInput): Promise<DemoCommandResult<DemoSnapshot>>
-  verifyRecovery(input: VerifyRecoveryInput): Promise<DemoCommandResult<DemoSnapshot>>
-  resetDemo(input: ResetDemoInput): Promise<DemoCommandResult<DemoSnapshot>>
-  exportEvidence(input: ExportEvidenceInput): Promise<DemoCommandResult<DemoEvidenceReport>>
+interface Disposable {
+  dispose(): void | Promise<void>
+}
+
+declare const serviceTokenType: unique symbol
+
+interface ServiceToken<T> {
+  readonly id: string
+  readonly [serviceTokenType]?: (value: T) => T
+}
+
+interface PluginContext {
+  provide<T>(token: ServiceToken<T>, value: T): Disposable
+  resolve<T>(token: ServiceToken<T>): T
+}
+
+interface PluginDefinition {
+  readonly manifest: PluginManifestV1
+  activate(context: PluginContext): Disposable | Promise<Disposable>
 }
 ```
 
-Every command input includes `runId` and `idempotencyKey`. Reference-bearing
-commands additionally include the corresponding `incidentId`, `targetId`, or
-`approvalId`. A successful result returns `{ ok: true, value, replayed }`. A
-rejected result returns the unchanged snapshot and one stable error code:
-`invalid_demo_transition`, `invalid_demo_reference`, or
-`idempotency_conflict`.
+`provide` is accepted only during plugin activation and rejects duplicate service IDs. `resolve` rejects a missing service or a different token object that reuses the same ID. The runtime removes every registration when its owning plugin is disposed.
 
-The P0 implementation must expose only `FixtureDataSource`. A future live implementation must satisfy the same port and pass separate security and contract tests.
-
-## Command rules
-
-| Command | Required phase | Result phase | Approval | External side effect |
-|---|---|---|---|---|
-| `collectEvidence` | `incident_open` | `evidence_collected` | No | None |
-| `requestRestart` | `evidence_collected` | `approval_pending` | Creates request | None |
-| `approveAction` | `approval_pending` | `action_confirmed` | Required | None; in-memory fixture only |
-| `verifyRecovery` | `action_confirmed` | `recovered` | No | None |
-| `resetDemo` | Any | `incident_open` | No | None |
-| `exportEvidence` | Any | Unchanged | No | None; returns an in-memory report |
-
-Every command accepts a deterministic idempotency key in the implementation. Repeating the same accepted command returns the existing snapshot. Invalid phase transitions return a stable `invalid_demo_transition` error and do not mutate state.
-
-`requestRestart` creates a fixture approval request and `approveAction`
-confirms only a simulated fixture action. Neither command changes target
-health. `verifyRecovery` performs the fixture-only transition to healthy.
-None of these commands proves real process ownership, process control, or
-source-code repair.
-
-## Evidence report
+## Runtime operations
 
 ```ts
-interface DemoEvidenceReport {
-  schemaVersion: 1
-  runId: string
-  mode: 'fixture'
-  mocked: true
-  generatedAt: string
-  before: { targetHealth: 'degraded'; incidentStatus: 'open' }
-  after: { targetHealth: 'healthy'; incidentStatus: 'recovered' } | null
-  evidence: Array<{
-    id: string
-    kind: 'http' | 'trace' | 'log' | 'resource'
-    summary: string
-    redacted: true
-    provenance: Provenance
-  }>
-  approval: DemoApproval | null
-  action: DemoAction | null
-  verification: DemoVerification | null
-  audit: DemoAuditEntry[]
-  unverifiedClaims: string[]
+type PluginRuntimeState =
+  | 'idle'
+  | 'starting'
+  | 'running'
+  | 'stopping'
+  | 'stopped'
+  | 'failed'
+
+type PluginEntryState =
+  | 'registered'
+  | 'activating'
+  | 'active'
+  | 'failed'
+  | 'disposed'
+
+type PluginRuntimeErrorCode =
+  | 'duplicate_plugin'
+  | 'missing_dependency'
+  | 'dependency_cycle'
+  | 'unsupported_tier'
+  | 'unsupported_activation'
+  | 'duplicate_service'
+  | 'missing_service'
+  | 'undeclared_dependency'
+  | 'invalid_lifecycle'
+  | 'reentrant_lifecycle'
+  | 'cleanup_required'
+  | 'runtime_not_running'
+  | 'activation_failed'
+
+interface PluginRuntimeEntry {
+  readonly id: string
+  readonly version: string
+  readonly tier: PluginTier
+  readonly state: PluginEntryState
+  readonly capabilities: readonly PluginCapability[]
+  readonly error?: string
+}
+
+interface PluginRuntime {
+  start(): Promise<void>
+  stop(): Promise<void>
+  resolve<T>(token: ServiceToken<T>): T
+  snapshot(): readonly PluginRuntimeEntry[]
+  getState(): PluginRuntimeState
 }
 ```
 
-The report must never contain credentials, raw authorization headers, request bodies, host usernames, absolute local paths, or claims of live provider execution.
+Rules:
+
+1. Validate all manifests before activating any plugin.
+2. Reject duplicate IDs, missing dependencies, cycles, unsupported API versions, unknown capabilities, non-startup activation, and Tier 2 execution.
+3. Activate dependencies before consumers.
+4. On failure, roll back active plugins in reverse order.
+5. Stop in reverse activation order and remove all services.
+6. Repeated and overlapping `start` and `stop` calls are serialized and do not duplicate effects.
+7. Runtime faults use a closed error-code union; cleanup failures may surface as `AggregateError` after all remaining disposers have run.
+8. A plugin may resolve services from itself or from plugin IDs listed in `requires`; array order cannot grant undeclared access.
+9. Plugin callbacks must not call runtime lifecycle methods. A synchronous re-entry is rejected.
+10. A failed disposer keeps cleanup debt retryable, leaves the runtime failed, and blocks restart until a later `stop` succeeds.
+
+## Fixture service
+
+The first Tier 1 plugin provides the existing `DemoDataSource` under a typed token. Its data remains deterministic and carries Fixture provenance. Activating the plugin has no network, process, persistence, or filesystem effect.
+
+## Deferred Tier 2 wire contract
+
+No Tier 2 transport exists in v1. A future contract must define artifact identity, API negotiation, signed or hash-pinned packages, explicit filesystem/network/resource policy, health, timeout, crash handling, termination, and typed RPC. Process separation alone is not a sandbox.

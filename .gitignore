@@ -2,3 +2,12 @@ node_modules/
 apps/web/dist/
 coverage/
 *.tsbuildinfo
+.codegraph/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+playwright-report/
+test-results/
+.DS_Store
+Thumbs.db

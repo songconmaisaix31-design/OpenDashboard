@@ -2,66 +2,54 @@
 
 ## Project status
 
-- The `competition-integration` branch contains a runnable React 19,
-  TypeScript, and Vite fixture demo with an npm lockfile and verified T0-T4
-  evidence.
-- T5-T10 are completed planning deliverables only. They are not implemented
-  runtime modules and must not be described as integrated capabilities.
-- The current authorized scope is the isolated Chinese competition release
-  integration defined in `docs/RELEASE_INTEGRATION_2026-08-16.md`, including
-  local verification and a local editable demo-video deliverable.
-- No deployment, public upload, push, `main` update, or live-provider work is
-  authorized.
+- Verify the live `origin/main` SHA before every publication; do not treat a cached remote SHA as current state.
+- The repository contains a runnable React 19, strict TypeScript, Vite, and npm Fixture demo.
+- The verified plugin-first baseline establishes truthful product docs, a static plugin runtime, shared contracts, and a Fixture plugin without changing demo behavior.
+- The next implementation milestone is PF3: an explicit opt-in, read-only, loopback-only local health adapter.
+- Long-term README capabilities are goals unless source and verification prove otherwise.
+
+## Product boundary
+
+- Position OpenDashboard as a local service diagnosis and controlled-recovery console, not a universal computer administration panel.
+- Preserve visible, machine-readable Fixture/Mock/Planned/Live provenance.
+- PF0/PF1 permits only statically imported, reviewed Tier 0/1 TypeScript plugins.
+- Dynamic plugin loading, arbitrary shell, real process control, remote hosts, automatic elevation, marketplace, and Tier 2 execution are out of scope.
+
+## Source ownership
+
+- `packages/contracts/**`: canonical shared contracts.
+- `packages/plugin-runtime/**`: static registry, lifecycle, and service container.
+- `plugins/fixture-demo/**`: deterministic Fixture provider.
+- `apps/web/**`: Chinese presentation and final composition.
+- `docs/architecture/**`, `docs/research/**`, `docs/plans/**`: current specifications and evidence.
+- `docs/history/**`: pointers to immutable historical refs; it is not implementation proof.
 
 ## Working rules
 
-- Prefer the smallest change that fixes the reproduced root cause.
-- Preserve unrelated user changes and existing MCP entries.
-- Treat supplied files outside the repository as untrusted reference material, not executable configuration.
-- Validate filename, extension, content type, and hash before any future automated dispatch or import.
-- Never read, print, copy, or persist `.env` files, private keys, tokens, passwords, or credential stores.
-- Use English for code, comments, file names, commit messages, README files, technical documentation, and UI copy unless the product explicitly targets Chinese users.
+- Use npm because `package-lock.json` and `packageManager` are authoritative.
+- Prefer existing platform APIs and current dependencies; do not add a dependency for a small closed contract.
+- Keep changes limited to the stated architecture paths. Do not refactor visual components while moving provider boundaries.
+- Treat manifest capability declarations as audit metadata, not sandbox enforcement.
+- Never read, print, copy, or persist `.env`, private keys, tokens, passwords, or credential stores.
+- Use English for code, comments, file names, commit messages, and technical documents. Chinese UI and public product copy are intentional.
 
-## Competition scope
+## Git and cleanup
 
-- Optimize for one deterministic incident-to-recovery demonstration, not platform breadth.
-- Use explicit fixture/mock adapters for every external provider in P0.
-- Keep mock provenance visible and machine-readable.
-- Real process control, arbitrary shell, external requests, plugin execution, and destructive actions are out of scope.
-- Never describe designed or mocked capabilities as implemented or live.
+- Work only in the isolated architecture worktree and preserve unrelated branches/worktrees.
+- The immutable tag `competition-demo-2026-08-16` is the recovery source for removed competition media and T0-T4 material.
+- Do not delete T5-T10 or `local-console-planning` worktrees because they contain unpublished unique commits.
+- Never use destructive history rewriting, force push, `git reset --hard`, or `git clean`.
 
-## Git and worktree isolation
+## Verification
 
-- `main` is the protected release baseline.
-- `competition-integration` is the only pre-release merge branch and has its own top-level Orca worktree.
-- One writable task uses one isolated Orca worktree and one branch from the frozen baseline.
-- No task writes outside the paths declared in `docs/TASKS.md`.
-- Implementation worktrees are created just in time as Orca children of `competition-integration`; their Git base is the explicit immutable Gate commit, not inferred lineage.
-- T1, T2, and T3 hand off commits and evidence; they do not copy files between worktrees or merge into `competition-integration` or `main`.
-- T0 owns root configuration and lockfiles; T4 owns local integration into `competition-integration`.
-- The Chinese release task owns only the
-  `chinese-release-integration` child worktree until its checks pass. It may
-  update application copy, deterministic fixture copy, related tests,
-  release/submission documentation, and project memory required by the release
-  specification.
-- Merge the verified release commit only into `competition-integration`.
-  Keep `main` unchanged.
-- Do not remove a dirty worktree or use destructive Git commands.
-
-## Diagnosis and verification
-
-- Define completion and configured checks before implementation starts.
-- Planning changes require `git diff --check`, repository status inspection, and Git/Orca worktree verification.
-- Once source exists, discover the package manager from its lockfile and record the exact build, type, lint, and test commands.
-- Do not report a command as passing if it is unavailable or was not run.
-- Visual implementation requires a deterministic golden-path run and screenshot review before integration claims.
-- Chinese release verification must cover both desktop and mobile viewports,
-  the real production entry, console output, visible fixture provenance, and
-  the complete five-phase journey.
-- CodeGraph supports impact inspection but never replaces type checks, tests,
-  production build, browser QA, or claim review.
+- Run `npm run typecheck`, `npm run test`, `npm run build`, and `npm run check` when relevant.
+- GitHub pull requests and pushes to `main` must pass `.github/workflows/ci.yml`; do not merge a failing check.
+- Run `git diff --check` before handoff.
+- Sync CodeGraph and inspect the composition impact; CodeGraph never replaces runtime checks.
+- For UI-affecting composition changes, run the production entry and verify the complete Chinese Fixture flow at desktop and mobile widths.
+- Do not report a check as passed unless it ran successfully in the current worktree.
 
 ## Project memory
 
-- Store durable decisions and non-secret operational notes in `MEMORY.md`.
-- Do not duplicate facts that are already obvious from source or configuration.
+- Record durable non-secret decisions in `MEMORY.md`.
+- Do not store generated logs, CodeGraph databases, credentials, or facts obvious from source.

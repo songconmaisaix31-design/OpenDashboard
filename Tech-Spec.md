@@ -1,116 +1,101 @@
-# OpenDashboard Competition Demo Technical Specification
+# OpenDashboard Plugin-First Technical Specification
 
-Status: implemented local fixture architecture; Chinese release delta in progress
+- Status: PF0 gate plus PF1/PF2/PF7 baseline implemented and verified
+- Date: 2026-08-17
+- Runtime: Node.js 22.12+, strict TypeScript, React 19, Vite, npm
 
 ## Decision summary
 
-Use a single client application with an in-process deterministic demo state machine. Do not add a server, database, Cordis runtime, sidecar, container, or live provider to the P0 competition path.
+PF1 uses a small in-repository TypeScript plugin runtime, PF2 supplies the Fixture provider, and PF7 composes them into the application. Plugins are explicit imports reviewed with the application; there is no loader. This is the shortest reliable path to prove lifecycle and contract boundaries without creating a false sandbox or adding a second runtime.
 
-This is the shortest reliable route because the judged outcome is a coherent workflow. External integrations add startup, compatibility, security, and evidence risk without improving the core demonstration.
+Cordis, VS Code, HashiCorp go-plugin, Extism, and OpenTelemetry Collector are research inputs, not copied implementations. A dependency is added only when it removes more code and risk than it introduces.
 
-The implemented stack is React 19, strict TypeScript, Vite, and npm. The
-production composition point is `apps/web/src/main.tsx`. The Chinese release
-changes direct human-facing copy and fixture explanations without adding an
-i18n dependency because only one locale is required.
+## Target source shape
 
-## Runtime shape
+```text
+apps/web/                         Chinese UI and composition
+packages/contracts/              Shared demo and plugin contracts
+packages/plugin-runtime/         Static registry and lifecycle
+plugins/fixture-demo/            Deterministic Fixture provider
+docs/architecture/               Decisions, boundaries, and roadmap
+docs/research/                   Primary-source reuse matrix
+docs/history/                    Recovery pointers for completed releases
+```
+
+The existing Fixture engine moves without behavior changes. Presentation components remain in `apps/web` and consume only `DemoDataSource`.
+
+## Runtime model
 
 ```text
 main.tsx
+  -> createPluginRuntime([fixtureDemoPlugin])
+    -> validate manifest and dependency graph
+    -> activate reviewed plugins in dependency order
+    -> register typed services
+  -> resolve DemoDataSource
   -> App
-    -> GuidedDemoPage
-      -> DemoDataSource
-        -> createFixtureDataSource (P0)
-          -> pure demo-transitions
 ```
 
-- `GuidedDemoPage` owns presentation state and maps each visible action to one
-  data-source command.
-- `DemoDataSource` is the only data boundary used by the presentation layer.
-- `createFixtureDataSource` returns the deterministic in-memory P0
-  implementation and is composed only in `main.tsx`.
-- `demo-transitions.ts` contains the pure fixture state transitions and the
-  redacted in-memory report builder.
-- A live data source is only a deferred contract boundary; no live adapter is
-  implemented in the competition candidate.
+Each plugin exports one immutable definition:
 
-## State model
-
-The demo has one linear happy path with explicit invalid-transition errors:
-
-```text
-incident_open
-  -> evidence_collected
-  -> approval_pending
-  -> action_confirmed
-  -> recovered
+```ts
+interface PluginDefinition {
+  readonly manifest: PluginManifestV1
+  activate(context: PluginContext): Disposable | Promise<Disposable>
+}
 ```
 
-`reset_demo` returns to `incident_open`. A command cannot skip a phase. Repeated commands return the existing result rather than creating duplicate actions or evidence.
+The runtime state is `registered -> activating -> active | failed -> disposed`. Lifecycle requests share one ordered queue, so alternating `start` and `stop` calls are linearized. On activation failure, already-active plugins are disposed in reverse order. `stop()` attempts every disposer; failed cleanup remains retryable, leaves the runtime failed, and blocks restart until cleanup succeeds.
 
-The initial failure is a fixture-owned transient runtime latch, not a deterministic source-code defect. Approval confirms the simulated action; the later verification transition clears the fixture latch and reports recovery. This matches the observable state machine without claiming that approval repaired code or controlled a real process.
+## Manifest contract
 
-## Data and persistence
+The initial manifest contains only fields needed for deterministic composition:
 
-- Bundle versioned fixture data with the application.
-- Keep run state in memory for P0.
-- Export evidence as a generated JSON artifact or deterministic on-screen document.
-- Do not persist tokens, paths, request bodies, raw headers, or machine-specific identifiers.
-- Use opaque demo IDs and fixed UTC timestamps where deterministic screenshots are required.
+- `schemaVersion`, `apiVersion`, `id`, `version`, `displayName`.
+- `tier`: `0 | 1 | 2`.
+- `activation`: `startup | on-demand`.
+- `requires`: plugin IDs.
+- `capabilities`: values from a closed core vocabulary.
+- `provenance`: `core | official | fixture | third-party`.
 
-## Mock boundary
+PF1 accepts only statically supplied Tier 0/1 definitions with `startup` activation. `on-demand` is reserved by the contract but rejected by the current runtime. Tier 2 manifests may be parsed for planning but cannot activate. YAML is not an execution format; adding a YAML parser before a loader exists would create an unnecessary trust boundary.
 
-The fixture provider must return the same normalized contract intended for future live adapters. Each record includes:
+## Service boundary
 
-- `source`: provider name.
-- `mode`: `fixture` or `live`.
-- `mocked`: boolean.
-- `observedAt`: timestamp.
-- `limitations`: human-readable missing capabilities.
+Services use invariant typed tokens with runtime object identity. A plugin can provide a token only during activation and resolve only its own services or services from declared dependencies. Duplicate providers fail activation. Registration returns a disposable so rollback removes services without global residue.
 
-The presentation layer must not infer status from log text and must not import provider-specific fields.
+Manifest capabilities are checked against a closed vocabulary and surfaced in runtime snapshots. They are not OS permissions. An in-process plugin remains fully trusted and cannot be made safe through metadata alone.
 
-## Security boundary
+## Data and evidence
 
-- No arbitrary shell, process control, file mutation outside the evidence export, or external request.
-- No supplied YAML/JSON file is loaded as executable configuration.
-- No secrets or credential stores are read.
-- The simulated restart remains approval-gated even though it has no real side effect.
-- All evidence is fixture-based and redacted before display or export.
-- A future live adapter requires separate threat review, input validation, loopback restrictions, authentication, timeout, and reconciliation.
+PF2 keeps the Fixture engine in memory and preserves its deterministic IDs, transitions, idempotency, provenance, redaction, and tests. No persistence is introduced.
 
-## Implemented source ownership
+The future local data plane is one non-elevated TypeScript process bound to `127.0.0.1`, with explicit targets, bounded probes, a pure incident reducer, an append-only SQLite event ledger, and same-origin HTTP/SSE. It is not implemented by the current baseline.
 
-```text
-apps/web/src/contracts/**    Provider-neutral contract and state types
-apps/web/src/fixtures/**     Deterministic source data
-apps/web/src/domain/**       Pure fixture state transitions and report builder
-apps/web/src/demo/**         In-memory data source and command handling
-apps/web/src/components/**   Presentation components
-apps/web/src/pages/**        Guided demo composition
-skills/**                    Skill descriptors
-submission/**                Competition copy and demo script
-reports/tasks/**             Historical task verification reports
-reports/release/**           Current release verification reports
+## Security invariants
+
+- No dynamic import from user-controlled paths.
+- No package install, shell, process spawn, eval, remote request, wildcard bind, or automatic elevation.
+- No secrets, absolute user paths, raw authorization headers, or request bodies in evidence.
+- No action is authorized by PID or process name alone.
+- Tier 2 is disabled until a separate broker/sandbox protocol and threat model are approved.
+- Loopback is not treated as authentication; a future daemon validates Host and Origin and uses CSRF protection for mutation.
+
+## Open-source reuse rule
+
+Reuse interface shapes and lifecycle ideas; do not copy vendor source unless a file-level license review and attribution decision is recorded. PM2 code is AGPL-3.0, Glances is LGPL-3.0, and HashiCorp go-plugin is MPL-2.0, so none is copied into the TypeScript core.
+
+## Verification
+
+```bash
+npm ci
+npm run typecheck
+npm run test
+npm run build
+npm run check
+git diff --check
+codegraph sync .
+codegraph status . --json
 ```
 
-## Verification gates
-
-The npm lockfile and configured scripts are the command source of truth.
-Minimum release evidence is:
-
-- Dependency installation succeeds from the lockfile.
-- Production build succeeds.
-- Type checking succeeds.
-- One unit test covers invalid and idempotent state transitions.
-- One golden-path test reaches `recovered` and verifies the audit/evidence output.
-- A static review confirms visible mock provenance at every phase.
-- `git diff --check` succeeds.
-
-Configured commands are `npm run typecheck`, `npm run test`, `npm run build`,
-and their aggregate `npm run check`. Lint and formatting remain unconfigured
-and must not be reported as passed.
-
-## Deferred long-term architecture
-
-Cordis composition, provider sidecars, SQLite, reconciliation, retention, real automation, and AgentTeams remain valid long-term topics. They should be introduced one verified adapter at a time behind `DemoDataSource`, beginning with a read-only loopback health provider. They are not dependencies of the competition demo.
+The browser golden path remains a required integration check after moving the Fixture provider. CodeGraph supports impact inspection but does not replace tests, build, or visual QA.
