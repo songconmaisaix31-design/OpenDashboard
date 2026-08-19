@@ -338,7 +338,7 @@ export const H2_GOLDEN_C04_EVENT = {
         endTime: '2026-01-05T10:39:00Z',
       },
       variable: 'pcc_power_limit_violation_energy_kwh',
-      actualValue: 86.5,
+      actualValue: 29.333333333333332,
       referenceValue: 0,
       unit: 'kWh',
       comparator: '>',
@@ -350,7 +350,7 @@ export const H2_GOLDEN_C04_EVENT = {
   ],
   impact: {
     metric: 'pcc_power_limit_violation_energy_kwh',
-    value: 86.5,
+    value: 29.333333333333332,
     unit: 'kWh',
     formulaVersion: 'impact-c04-v1',
     assumptions: [

@@ -103,6 +103,20 @@
 - Dataset display metadata now uses concise Chinese labels while contract keys
   remain English.
 
+## CCR-H4-001 Correction (2026-08-19)
+
+- Reason: the canonical C04 derived evidence and impact value was `86.5`, which
+  did not follow the authoritative PRD C04 minute-sample formula.
+- Evidence: the unchanged LF `tiny-valid-timeseries.csv` has eight inclusive
+  samples from `2026-01-05T10:32:00Z` through `2026-01-05T10:39:00Z`; every
+  sample has `pcc_power_kw=720` and `pcc_export_limit_kw=500`. Therefore
+  `sum(max(720 - 500, 0) / 60) = 29.333333333333332 kWh`.
+- Correction: `C04-EV-003.actualValue` and `impact.value` now equal
+  `29.333333333333332` in both the JSON and TypeScript canonical fixtures. The
+  regression test independently parses the CSV across the declared inclusive
+  interval and verifies both representations; no schema or API identity, CSV
+  content, or dataset fingerprint changed.
+
 ### Commands and Results
 
 - `npm run typecheck` - passed.
