@@ -18,7 +18,7 @@
 | Local deterministic path | Current H6 evidence | Local smoke produced C03 HTML output and a 16-column, two-row validated CSV. |
 | Reproducibility | Current H6 evidence | Launcher smoke covered six failure/success conditions; test results are recorded in the H6 handoff. |
 | Visual proof | Manual only | No committed screenshots and no automated screenshot regression. |
-| Fixture report cards | Pending final candidate recheck | HTML labels can currently yield JSON for non-submission Fixture reports. |
+| Fixture report cards | Current plugin evidence | `92f7b78` makes single-event, period, and quality cards deterministic safe HTML; JSON/CSV kinds retain their formats. |
 | Evaluation metrics | Not delivered | No official-data validation report, score, rank, or approval. |
 | Deployment and remote CI | Not delivered | No deployment proof or remote GitHub Actions run; the workflow file alone is insufficient. |
 | Legal inventory | Current source evidence | Notices cover package dependencies; later assets/datasets need a separate review. |

@@ -3,8 +3,8 @@
 No screenshot is committed in this package. H6 recorded a manual Chrome review
 of the Fixture overview, C03, and C04 at desktop and 390x844 with no
 document-width overflow; this is not an image asset or automated screenshot
-regression proof. Capture only from the final candidate after the Fixture
-report-format fix is rechecked.
+regression proof. The Fixture report-format correction is now present in source
+`92f7b78`; capture only from the final coordinator candidate.
 
 | ID | Frame | Required visible proof | Current status | Capture rule |
 | --- | --- | --- | --- | --- |

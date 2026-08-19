@@ -47,10 +47,12 @@ be called official data, a plant result, a validation metric, or an organizer
 score. `LIVE_ANALYSIS` describes the explicit Local adapter mode, but no official
 dataset or official-data run is included or claimed.
 
-The current Fixture provider has a worker-owned report-format mismatch: cards
-labeled HTML can return JSON for single-event, period, and quality reports.
-H6 reproduced it and did not mask it. The Local C03 HTML report passed; the
-Fixture HTML-card claim remains pending a final candidate recheck.
+Plugin source commit `92f7b78` resolves the Fixture report-format mismatch,
+which coordinator integration `abe454b` contains. Single-event diagnosis,
+period summary, and quality reports now return deterministic safe HTML with
+matching filenames and media types. Analysis and validation artifacts remain
+JSON, and submission output remains CSV. The format correction does not change
+Fixture provenance or create official-data, score, or deployment evidence.
 
 ## Current boundaries
 

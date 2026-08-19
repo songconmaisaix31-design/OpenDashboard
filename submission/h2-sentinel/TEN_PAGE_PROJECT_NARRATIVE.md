@@ -32,7 +32,7 @@ The contract vocabulary covers C01-C07 across electrolyzer setpoints, available 
 
 ## Page 8 — C03 evidence-first case
 
-C03 is the BESS charge/discharge direction anomaly. H6 Local smoke produced a deterministic no-LLM C03 HTML report and a two-row `submission.csv` that passed its exact 16-column validator. That is local deterministic output, not an official-data result; the Fixture report-card HTML mismatch is pending final candidate revalidation.
+C03 is the BESS charge/discharge direction anomaly. H6 Local smoke produced a deterministic no-LLM C03 HTML report and a two-row `submission.csv` that passed its exact 16-column validator. Plugin source `92f7b78` also makes the Fixture single-event diagnosis deterministic safe HTML. These are local/Fixture outputs, not official-data results.
 
 ## Page 9 — C04 boundary-tracking case
 

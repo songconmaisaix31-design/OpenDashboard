@@ -25,9 +25,9 @@
 
 H6 records 65 generic tests, 33 focused H2 tests, 7 launcher/composition tests, and 24 Python tests. The Python suite emitted one upstream Starlette `httpx` deprecation warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
 
-## Known hold
+## Resolved report-format correction
 
-H6 reproduced a worker-owned mismatch: non-submission Fixture reports can return JSON while the H3 card labels them HTML. This package treats that as pending final-candidate revalidation. The verified Local C03 HTML report and two-row, exact-16-column `submission.csv` remain separate Local deterministic evidence.
+Plugin source `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa`, integrated by the coordinator as `abe454b`, resolves the H6-discovered Fixture mismatch. Single-event diagnosis, period summary, and quality reports now produce deterministic safe HTML with matching media types and filenames. JSON and CSV report kinds retain their corresponding formats. The Local C03 HTML report and two-row, exact-16-column `submission.csv` remain separate Local deterministic evidence; neither output is official-data, score, or deployment proof.
 
 ## Verification commands
 
@@ -36,7 +36,7 @@ pwsh -NoProfile -File submission/h2-sentinel/scripts/validate-submission.ps1
 git diff --check 6d04ee38f39d81801c87190f31eff0a1915862c6..HEAD
 ```
 
-The validator covers ten required documents, ten narrative pages, local links, and placeholder language. It does not validate runtime behavior, an owner fix, official data, validation metrics, deployment, remote CI, screenshots, or network isolation.
+The validator covers ten required documents, ten narrative pages, local links, and placeholder language. It does not validate runtime behavior, official data, validation metrics, deployment, remote CI, screenshots, or network isolation.
 
 ## Project memory
 

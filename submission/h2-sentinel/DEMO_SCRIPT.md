@@ -22,9 +22,11 @@ result, or an organizer score.
 | 3:15–3:50 | Switch to the verified Local run only when its launcher is ready. | “In explicit Local mode, the loopback sidecar produced a deterministic C03 HTML report and a two-row submission CSV validated against the exact 16-column contract. This is local deterministic evidence, not an official-data result.” |
 | 3:50–4:10 | Return to provenance and safety summary. | “H2 Sentinel makes a suspected anomaly reviewable: structured evidence first, human decision last.” |
 
-Do not demonstrate a Fixture card as a verified HTML report. H6 found that
-HTML-labeled Fixture cards can return JSON; await final-candidate revalidation
-of the owner fix. The Local C03 HTML report remains the verified report example.
+Fixture single-event diagnosis, period summary, and quality cards now produce
+deterministic safe HTML with matching filenames and media types. Demonstrate
+only those three as Fixture HTML reports; analysis and validation artifacts are
+JSON, and submission output is CSV. Fixture output remains synthetic evidence,
+not an official-data result or score.
 
 ## 30-second fallback
 
@@ -40,5 +42,5 @@ official data, metrics, deployment, and remote CI evidence remain unclaimed.”
 
 - If H2 does not start, show the generic `/` Fixture Demo and state that it is a separate preserved entry; do not substitute it for H2 evidence.
 - If Local mode fails, return to the explicit Fixture route and state that only the recorded Local smoke supports the report/CSV claim.
-- If a Fixture report card returns JSON, do not narrate it as HTML; use the Local C03 HTML evidence or the 30-second fallback.
+- If the selected report kind is JSON or CSV, narrate its actual format; only the three documented Fixture report kinds are HTML.
 - Do not display secrets, absolute local paths, private datasets, unredacted logs, or generated artifacts outside the approved evidence scope.
