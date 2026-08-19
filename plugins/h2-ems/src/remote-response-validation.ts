@@ -71,6 +71,9 @@ const ASSISTANT_MODES = ['DETERMINISTIC_TEMPLATE', 'LLM_RENDERED'] as const
 const ASSISTANT_SOURCE_TYPES = [
   'event', 'evidence', 'constraint', 'variable', 'knowledge_base', 'report',
 ] as const
+const EVENT_SCOPED_ASSISTANT_SOURCES = new Set<
+  H2AssistantCitation['sourceType']
+>(['event', 'evidence', 'constraint'])
 
 export function isDatasetMode(value: unknown): value is H2DatasetMode {
   return value === 'FIXTURE' || value === 'LIVE_ANALYSIS'
@@ -168,7 +171,7 @@ export function isSeriesResponse(value: unknown): value is H2SeriesResponse {
 }
 
 export function isAssistantAnswer(value: unknown): value is H2AssistantAnswer {
-  return (
+  if (!(
     isClosedRecord(
       value,
       [
@@ -190,10 +193,10 @@ export function isAssistantAnswer(value: unknown): value is H2AssistantAnswer {
     value.sections.every(isAssistantSection) &&
     Array.isArray(value.citations) &&
     value.citations.every(isAssistantCitation) &&
-    hasConsistentCitations(value.sections, value.citations) &&
     value.refusedControlClaim === true &&
     isProvenance(value.provenance)
-  )
+  )) return false
+  return hasConsistentCitations(value as unknown as H2AssistantAnswer)
 }
 
 function isDataset(value: unknown): value is H2DatasetManifest {
@@ -310,15 +313,41 @@ function isAssistantCitation(value: unknown): value is H2AssistantCitation {
 }
 
 function hasConsistentCitations(
-  sections: readonly H2AssistantAnswerSection[],
-  citations: readonly H2AssistantCitation[],
+  answer: H2AssistantAnswer,
 ): boolean {
-  const citationIds = new Set(citations.map(({ citationId }) => citationId))
+  const sectionIds = answer.sections.map(({ sectionId }) => sectionId)
+  const citationIds = answer.citations.map(({ citationId }) => citationId)
+  const knownCitationIds = new Set(citationIds)
+  const referencedCitationIds = new Set(
+    answer.sections.flatMap(({ citationIds: references }) => references),
+  )
   return (
-    citationIds.size === citations.length &&
-    sections.every((section) =>
-      section.citationIds.every((citationId) => citationIds.has(citationId)),
+    new Set(sectionIds).size === sectionIds.length &&
+    knownCitationIds.size === answer.citations.length &&
+    answer.sections.every(({ citationIds: references }) =>
+      references.length > 0 &&
+      new Set(references).size === references.length &&
+      references.every((citationId) => knownCitationIds.has(citationId)),
+    ) &&
+    answer.citations.every((citation) =>
+      referencedCitationIds.has(citation.citationId) &&
+      citationMatchesEventScope(citation, answer.eventId),
     )
+  )
+}
+
+function citationMatchesEventScope(
+  citation: H2AssistantCitation,
+  answerEventId: string | undefined,
+): boolean {
+  if (
+    citation.eventId !== undefined &&
+    citation.eventId !== answerEventId
+  ) return false
+  return (
+    answerEventId === undefined ||
+    !EVENT_SCOPED_ASSISTANT_SOURCES.has(citation.sourceType) ||
+    citation.eventId === answerEventId
   )
 }
 

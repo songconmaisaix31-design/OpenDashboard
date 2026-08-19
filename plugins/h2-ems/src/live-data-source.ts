@@ -183,14 +183,18 @@ async function requestEnvelope<T>(
     }
     const init: RequestInit =
       payload === undefined
-        ? { method: 'GET', signal: controller.signal }
+        ? { method: 'GET', redirect: 'error', signal: controller.signal }
         : {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify(payload),
+            redirect: 'error',
             signal: controller.signal,
           }
     const response = await fetchFn(new URL(route, baseUrl), init)
+    if (!hasExpectedResponseOrigin(response, baseUrl)) {
+      throw new H2EmsAdapterError('remote_response_invalid', false)
+    }
     if (!response.ok) throw new H2EmsAdapterError('remote_request_failed', response.status >= 500)
     let body: unknown
     try {
@@ -211,6 +215,16 @@ async function requestEnvelope<T>(
   } finally {
     clearTimeout(timer)
     if (upstreamSignal && upstreamAbort) upstreamSignal.removeEventListener('abort', upstreamAbort)
+  }
+}
+
+function hasExpectedResponseOrigin(response: Response, baseUrl: URL): boolean {
+  if (response.redirected) return false
+  if (!response.url) return true
+  try {
+    return new URL(response.url).origin === baseUrl.origin
+  } catch {
+    return false
   }
 }
 
