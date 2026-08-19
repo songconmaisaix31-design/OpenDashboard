@@ -1,8 +1,8 @@
 # H2 Sentinel Independent QA
 
 This directory is the independent H2 Sentinel black-box QA lane. Its tests
-consume the frozen contract package and public runtime boundaries; they do not
-modify analytics, plugin, Web, integration, or submission code.
+consume frozen contract assets and public runtime boundaries; they do not modify
+analytics, plugin, Web, integration, or submission code.
 
 ## H0 contract gate
 
@@ -14,27 +14,37 @@ node --test "tests/h2-sentinel/contract/*.test.mjs"
 git diff --check
 ```
 
-The first two commands are dependency-free and validate the frozen JSON/CSV
-contracts plus deliberate assembly `SKIP` rows. The repository's TypeScript
-contract-owner suite can be run separately after the integration environment
-installs its existing lockfile dependencies; this QA lane does not mutate root
-dependencies to make that optional command available.
+The first command starts the assembled launcher after C01-C04 pass. It is the
+authoritative A01-A08 execution command and emits a redacted JSON evidence
+record. `npm run h2:qa` invokes the same command through the approved root
+script. The repository's TypeScript contract-owner suite is additional evidence,
+not a substitute for public-runtime checks.
 
-## Assembly-required commands
+## Public-runtime evidence
 
-The following commands are executable now but intentionally return `SKIP` until
-H1/H2/H3/H6 assemble the matching public endpoint. They require no root script
-or dependency change.
+The assembled runner uses only the published H6 launcher and HTTP API. It
+allocates loopback ports, parses `READY`, and shuts down via its IPC contract.
+It validates Fixture-no-Python, Local health and bind policy, import/analyze/
+events, deterministic assistant fallback, HTML/hash/filename/CSV artifacts,
+redacted errors, occupied-port and redirect timeout failures, PID exit, and
+port rebind. It writes no generated artifact.
 
 ```bash
-node tests/h2-sentinel/api/run-api-safety.mjs
-node tests/h2-sentinel/golden-path/run-offline-golden-path.mjs
+node tests/h2-sentinel/assembled/run-assembled-qa.mjs
 ```
 
-Set `H2_ANALYTICS_URL` only to a loopback URL when running the API health and
-redaction probe. Set `H2_WEB_URL` only to a locally assembled Web entry when
-running the offline entry smoke probe. These scripts fail on an explicitly
-non-loopback configuration rather than connecting to a remote host.
+The older `api/` and `golden-path/` probes remain useful targeted diagnostics,
+but they are not release evidence because they depend on manually supplied URLs.
+
+## Visual boundary
+
+No browser-automation dependency is introduced in this QA lane. The automated
+gate verifies only HTTP reachability and source-level entry/navigation facts.
+Manual review remains required for Fixture desktop and 390 px widths: six-page
+navigation, C03/C04 rendering, Fixture/Live provenance, Chinese startup alert,
+overflow, overlap, clipping, and primary-action visibility. Record that result
+separately from automated PASS/FAIL; do not describe it as screenshot regression
+automation.
 
 See `ACCEPTANCE_MATRIX.md` for the complete H0/assembly separation and
 `DEFECT_LOG.md` for the mandatory defect record format.

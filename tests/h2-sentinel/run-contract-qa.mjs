@@ -172,16 +172,9 @@ run('C04 report, submission, and redaction contracts retain safe export boundari
   }
 })
 
-skip('A01 analytics API import, quality, and error envelopes', 'requires assembled analytics API implementation')
-skip('A02 trusted H2 plugin adapter lifecycle and data-source port', 'requires assembled plugin adapter implementation')
-skip('A03 offline C03/C04 end-to-end golden journey', 'requires assembled plugin, analytics, and Web composition')
-skip('A04 live loopback-only bind and remote-address rejection', 'requires assembled local analytics sidecar')
-skip('A05 HTML, JSON, CSV, and validation report artifact exports', 'requires assembled report exporter implementation')
-skip('A06 visible Fixture/Live provenance through desktop and mobile UI', 'requires assembled Web UI')
-skip('A07 runtime failure redaction and user-visible recovery path', 'requires assembled API and Web error handling')
-skip('A08 desktop and mobile primary-flow smoke', 'requires assembled Web UI and production entry')
-
 console.log(`SUMMARY PASS=${passed.length} SKIP=${skipped.length} FAIL=${failed.length}`)
 if (failed.length > 0) {
   process.exitCode = 1
+} else {
+  await import('./assembled/run-assembled-qa.mjs')
 }
