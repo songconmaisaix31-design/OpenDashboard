@@ -8,11 +8,15 @@
   },
   "packageManager": "npm@11.13.0",
   "scripts": {
-    "dev": "vite apps/web",
-    "build": "vite build apps/web",
+    "dev": "vite apps/web --config vite.config.ts",
+    "build": "vite build apps/web --config vite.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"apps/web/**/*.test.ts*\" \"packages/**/*.test.ts*\" \"plugins/**/*.test.ts*\"",
-    "check": "npm run typecheck && npm run test && npm run build"
+    "check": "npm run typecheck && npm run test && npm run build",
+    "h2:build": "vite build apps/web --config vite.config.ts",
+    "h2:test": "node --import tsx --test \"apps/web/src/features/h2-sentinel/test/*.test.ts*\" \"packages/h2-contracts/test/*.test.ts\" \"plugins/h2-ems/test/*.test.ts\"",
+    "h2:qa": "node --test \"tests/h2-sentinel/contract/*.test.mjs\" && node tests/h2-sentinel/run-contract-qa.mjs",
+    "h2:check": "npm run typecheck && npm run h2:test && npm run h2:qa && npm run h2:build"
   },
   "dependencies": {
     "echarts": "6.1.0",
