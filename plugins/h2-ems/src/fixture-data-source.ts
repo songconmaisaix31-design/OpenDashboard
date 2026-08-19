@@ -27,6 +27,7 @@ import {
 } from '../../../packages/h2-contracts/src/index.ts'
 
 import { H2EmsAdapterError } from './errors.ts'
+import { sha256 } from './sha256.ts'
 
 const fixtureEvents = [H2_GOLDEN_C03_EVENT, H2_GOLDEN_C04_EVENT] as const
 
@@ -210,7 +211,6 @@ export function createFixtureH2EmsDataSource(): H2SentinelDataSource {
     },
   }
 }
-
 function assertFixtureDataset(datasetId: string): void {
   if (datasetId !== H2_FIXTURE_DATASET.datasetId) {
     throw new H2EmsAdapterError('invalid_fixture_request', false)
@@ -466,15 +466,4 @@ function escapeHtml(value: string): string {
         return character
     }
   })
-}
-
-async function sha256(content: string): Promise<`sha256:${string}`> {
-  const digest = await globalThis.crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(content),
-  )
-  const hex = Array.from(new Uint8Array(digest), (value) =>
-    value.toString(16).padStart(2, '0'),
-  ).join('')
-  return `sha256:${hex}`
 }
