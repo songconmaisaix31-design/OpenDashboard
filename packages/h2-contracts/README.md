@@ -37,6 +37,19 @@ dependencies.
   official competition dataset or score artifact.
 - The submission header is exactly `H2_SUBMISSION_COLUMNS` in source order.
 
+## Data Source Modes
+
+- Fixture mode returns deterministic, explicitly `FIXTURE`-provenanced data and
+  remains usable without CSV import or network access.
+- Live analysis imports CSV through `importCsv({ filename, text })`; the port
+  accepts neither filesystem paths nor browser `File` or `Blob` objects.
+- Import returns the dataset manifest and visible quality result together.
+  Consumers can query that quality report by dataset ID before calling
+  `runAnalysis(datasetId)`.
+- Report exports return a serializable artifact containing descriptor, media
+  type, and string content. Period summaries may provide a canonical time
+  range; exports never expose a local path or URL.
+
 ## Focused Verification
 
 Run from the repository root after installing root dependencies:

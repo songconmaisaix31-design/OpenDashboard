@@ -61,6 +61,8 @@ export type {
   H2DatasetMode,
 } from './dataset.ts'
 export type {
+  H2CsvImportRequest,
+  H2CsvImportResult,
   H2EventFilter,
   H2ReportRequest,
   H2SentinelDataSource,
@@ -96,6 +98,8 @@ export type {
   H2ReportDescriptor,
   H2ReportFormat,
   H2ReportKind,
+  H2ReportArtifact,
+  H2ReportMediaType,
   H2ReportStatus,
 } from './report.ts'
 export type {
