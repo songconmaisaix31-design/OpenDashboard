@@ -79,12 +79,18 @@ in the worker completion report after push succeeds.
   overview, event, series, assistant, report, and submission calls. Assistant
   responses also preserve the no-LLM request policy and the refused-control
   boundary, preventing a structurally valid replay from changing UI claims.
+- H0 types do not explicitly require series point keys to equal `variables`,
+  points to stay inside the requested interval, or points to be ordered. The
+  Live boundary enforces those three invariants so a valid-shaped replay cannot
+  mislabel or reorder chart data. H0 also does not state assistant citation
+  uniqueness/referential integrity; the boundary requires unique citation IDs
+  and resolves every section citation before rendering evidence.
 - Report validation correlates kind, format, media type, filename extension,
   status, run/event request identity, and recomputes `contentHash` with the
   shared browser-safe SHA-256 helper before the artifact reaches the UI.
 - Validators are separated into endpoint, anomaly, report, and primitive
   modules. No validation dependency or Node runtime import was added.
-- Final branch verification passed `npm run h2:test` (40 tests), `npm run
-  check` (72 tests plus the 684-module production build), and `npm run
+- Final branch verification passed `npm run h2:test` (42 tests), `npm run
+  check` (74 tests plus the 684-module production build), and `npm run
   h2:smoke` (six launcher and real analytics compatibility scenarios). The
   build retains the existing chunk-size warning; it has no validation failure.
