@@ -20,6 +20,7 @@ REPORT_KINDS = {
     "period_summary",
     "analysis_result_json",
     "submission_csv",
+    "validation_metrics",
     "quality_report",
 }
 
@@ -61,14 +62,23 @@ class ReportRenderer:
                 "json",
                 f"{run['runId']}-analysis.json",
             )
-        elif kind == "quality_report":
+        elif kind == "validation_metrics":
             content = json.dumps(
-                run["quality"], ensure_ascii=False, indent=2, sort_keys=True
+                {
+                    "schemaVersion": 1,
+                    "reportKind": kind,
+                    "runId": run["runId"],
+                    "quality": run["quality"],
+                    "provenance": run["provenance"],
+                },
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
             ) + "\n"
             media_type, report_format, filename = (
                 "application/json",
                 "json",
-                f"{run['runId']}-quality.json",
+                f"{run['runId']}-validation-metrics.json",
             )
         else:
             content = self._environment.get_template("event_report.html").render(
@@ -83,7 +93,11 @@ class ReportRenderer:
             filename = (
                 f"{event['eventId']}-diagnosis.html"
                 if event is not None
-                else f"{run['runId']}-period-summary.html"
+                else (
+                    f"{run['runId']}-quality-report.html"
+                    if kind == "quality_report"
+                    else f"{run['runId']}-period-summary.html"
+                )
             )
         generated_at = run.get("completedAt", run["startedAt"])
         report_id_suffix = event["eventId"] if event is not None else run["runId"]
