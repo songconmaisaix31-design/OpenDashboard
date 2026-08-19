@@ -25,6 +25,10 @@ dependencies.
 ## Invariants
 
 - Event `startTime`, `endTime`, and `firstDetectionTime` are independent fields.
+- Anomaly code, subtype, and primary impact metric are a single correlated
+  contract in both TypeScript and JSON Schema.
+- Safety checks may be `unknown` when evidence is unavailable; that state is
+  distinct from a passed check.
 - `confidence` is normalized to `0..1`.
 - Every operational recommendation is advisory and carries
   `requiresHumanConfirmation: true`.

@@ -7,7 +7,9 @@ export type {
 export type {
   H2AnomalyCode,
   H2AnomalyEvent,
+  H2AnomalyEventForCode,
   H2AnomalySubtype,
+  H2AnomalySubtypeForCode,
   H2ControlObject,
   H2ControlObjectRef,
   H2EquipmentKind,
@@ -18,6 +20,7 @@ export type {
   H2EvidenceValue,
   H2ImpactMetric,
   H2ImpactResult,
+  H2PrimaryImpactMetricForCode,
   H2Recommendation,
   H2RecommendationActionKind,
   H2ReviewState,
@@ -31,6 +34,7 @@ export {
   H2_PRIMARY_IMPACT_METRIC_BY_CODE,
   H2_SEVERITIES,
   isH2AnomalySubtypeForCode,
+  isH2PrimaryImpactMetricForCode,
 } from './anomaly.ts'
 export type {
   H2ApiEnvelope,
@@ -94,7 +98,11 @@ export type {
   H2ReportKind,
   H2ReportStatus,
 } from './report.ts'
-export type { H2SubmissionColumn, H2SubmissionRow } from './submission.ts'
+export type {
+  H2SubmissionColumn,
+  H2SubmissionRow,
+  H2SubmissionRowForCode,
+} from './submission.ts'
 export {
   H2_SUBMISSION_COLUMNS,
   serializeH2SubmissionRows,

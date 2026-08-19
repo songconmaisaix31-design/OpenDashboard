@@ -22,6 +22,7 @@ type JsonValue =
   | { readonly [key: string]: JsonValue }
 
 interface JsonSchema {
+  readonly allOf?: readonly JsonSchema[]
   readonly oneOf?: readonly JsonSchema[]
   readonly type?: string | readonly string[]
   readonly const?: JsonValue
@@ -54,6 +55,11 @@ const validate = (
   activeSchema: JsonSchema,
   path = '$',
 ): string[] => {
+  const errors: string[] = []
+  activeSchema.allOf?.forEach((candidate) => {
+    errors.push(...validate(value, candidate, path))
+  })
+
   const oneOf = activeSchema.oneOf
   if (oneOf) {
     const matches = oneOf.filter((candidate) =>
@@ -64,7 +70,6 @@ const validate = (
       : [`${path} must match exactly one oneOf branch, got ${matches.length}`]
   }
 
-  const errors: string[] = []
   const allowedTypes = normalizeTypes(activeSchema.type)
   if (
     allowedTypes.length > 0 &&
@@ -240,6 +245,52 @@ describe('H2 JSON Schemas', () => {
       toH2SubmissionRow(H2_GOLDEN_C03_EVENT),
       schema('submission-row.schema.json'),
     )
+  })
+
+  it('rejects cross-code subtype and impact metric combinations', () => {
+    const invalidEvent = {
+      ...H2_GOLDEN_C03_EVENT,
+      subtype: 'EXPORT_POWER_LIMIT_NOT_TRACKED',
+    }
+    const invalidImpact = {
+      ...H2_GOLDEN_C03_EVENT,
+      impact: {
+        ...H2_GOLDEN_C03_EVENT.impact,
+        metric: 'pcc_power_limit_violation_energy_kwh',
+      },
+    }
+    const invalidSubmissionRow = {
+      ...toH2SubmissionRow(H2_GOLDEN_C03_EVENT),
+      anomaly_subtype: 'EXPORT_POWER_LIMIT_NOT_TRACKED',
+      primary_impact_metric: 'pcc_power_limit_violation_energy_kwh',
+    }
+
+    assert.notDeepEqual(
+      validate(invalidEvent, schema('anomaly-event.schema.json')),
+      [],
+    )
+    assert.notDeepEqual(
+      validate(invalidImpact, schema('anomaly-event.schema.json')),
+      [],
+    )
+    assert.notDeepEqual(
+      validate(invalidSubmissionRow, schema('submission-row.schema.json')),
+      [],
+    )
+  })
+
+  it('accepts the explicit unknown safety status', () => {
+    const eventWithUnknownSafety = {
+      ...H2_GOLDEN_C03_EVENT,
+      safetyChecks: [
+        {
+          ...H2_GOLDEN_C03_EVENT.safetyChecks[0],
+          status: 'unknown',
+        },
+      ],
+    }
+
+    assertValid(eventWithUnknownSafety, schema('anomaly-event.schema.json'))
   })
 
   it('validates success, warning, and redacted-error API envelopes', () => {
