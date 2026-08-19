@@ -43,3 +43,17 @@ these constants; no arbitrary route is accepted by this adapter.
 
 The final documentation commit and both commits' pushed remote head are recorded
 in the worker completion report after push succeeds.
+
+## Follow-up browser and series correction
+
+- Replaced the Fixture artifact hash implementation with platform-native
+  `globalThis.crypto.subtle.digest`; no plugin source imports a Node runtime
+  module.
+- Bundled the 22 sanitized canonical minute points in the Fixture adapter. Series
+  requests validate variables, unique selection, event identity, and time bounds
+  before returning only the requested fields.
+- Regression coverage verifies C03 direction/PCC values, C04's eight inclusive
+  violation points, and `8 * (720 - 500) / 60 = 29.333333333333332 kWh`.
+- A Vite library build of `plugins/h2-ems/src/index.ts` confirms that the public
+  browser bundle has no `node:crypto` or `createHash` import and retains
+  `crypto.subtle.digest`.

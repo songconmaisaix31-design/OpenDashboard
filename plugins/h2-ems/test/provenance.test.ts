@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { describe, it } from 'node:test'
 
 import { createFixtureH2EmsDataSource } from '../src/index.ts'
@@ -15,7 +16,10 @@ describe('H2 EMS provenance and reports', () => {
 
     assert.equal(report.mediaType, 'application/json')
     assert.equal(report.descriptor.provenance.mode, 'FIXTURE')
-    assert.match(report.descriptor.contentHash, /^sha256:[a-f0-9]{64}$/)
+    assert.equal(
+      report.descriptor.contentHash,
+      `sha256:${createHash('sha256').update(report.content).digest('hex')}`,
+    )
     assert.equal(submission.mediaType, 'text/csv')
     assert.match(submission.content, /^pred_event_id,/)
     assert(!/[A-Za-z]:\\|\\\\/.test(report.content))
