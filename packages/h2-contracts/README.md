@@ -33,6 +33,8 @@ dependencies.
 - Every operational recommendation is advisory and carries
   `requiresHumanConfirmation: true`.
 - Fixture provenance is explicit and must not be represented as live analysis.
+- Fixture CSV files are checked out with LF endings so byte-level dataset
+  fingerprints remain stable when Git uses `core.autocrlf=true` on Windows.
 - JSON fixtures under `fixtures/` are synthetic and sanitized. They are not an
   official competition dataset or score artifact.
 - The submission header is exactly `H2_SUBMISSION_COLUMNS` in source order.
