@@ -43,13 +43,37 @@ export function createEventChartOption(
   event: H2AnomalyEvent,
 ): EChartsCoreOption {
   const definitions =
-    event.code === 'C04' ? powerSeriesByCode.C04 : powerSeriesByCode.C03
+    event.code === 'C03'
+      ? powerSeriesByCode.C03
+      : event.code === 'C04'
+        ? powerSeriesByCode.C04
+        : createEvidenceSeries(event)
 
   return createLineOption(response, definitions, 'kW', {
     startTime: event.startTime,
     endTime: event.endTime,
     label: `${event.code} 事件区间`,
   })
+}
+
+function createEvidenceSeries(event: H2AnomalyEvent): readonly SeriesDefinition[] {
+  const variables = event.evidence
+    .filter(
+      (item): item is typeof item & { readonly variable: string } =>
+        typeof item.variable === 'string',
+    )
+    .filter(
+      (item, index, items) =>
+        items.findIndex(({ variable }) => variable === item.variable) === index,
+    )
+    .slice(0, COLORS.length)
+
+  return variables.map(({ kind, variable }, index) => ({
+    variable,
+    label: variable,
+    color: COLORS[index] ?? COLORS[0],
+    dashed: kind === 'constraint',
+  }))
 }
 
 export function createPccChartOption(response: H2SeriesResponse): EChartsCoreOption {

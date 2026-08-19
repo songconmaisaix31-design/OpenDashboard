@@ -44,21 +44,21 @@ export function AssistantPage({ answer, error, event, onAsk, pending }: Assistan
       <div className="h2-assistant-layout">
         <section aria-label="官方问题" className="h2-panel h2-question-list">
           <div className="h2-panel__heading"><div><p className="h2-eyebrow">Official questions</p><h2>十个运行问题</h2></div><StatusBadge tone="positive">离线可用</StatusBadge></div>
-          <div role="list">
+          <ol>
             {H2_ASSISTANT_QUESTIONS.map(({ questionId }, index) => (
-              <button
-                aria-pressed={selectedQuestion === questionId}
-                className={selectedQuestion === questionId ? 'is-active' : ''}
-                key={questionId}
-                onClick={() => setSelectedQuestion(questionId)}
-                role="listitem"
-                type="button"
-              >
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <strong>{questionLabels[questionId]}</strong>
-              </button>
+              <li key={questionId}>
+                <button
+                  aria-pressed={selectedQuestion === questionId}
+                  className={selectedQuestion === questionId ? 'is-active' : ''}
+                  onClick={() => setSelectedQuestion(questionId)}
+                  type="button"
+                >
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <strong>{questionLabels[questionId]}</strong>
+                </button>
+              </li>
             ))}
-          </div>
+          </ol>
         </section>
 
         <section aria-labelledby="h2-answer-title" className="h2-panel h2-answer-panel">
@@ -97,4 +97,3 @@ function AssistantAnswer({ answer }: { readonly answer: H2AssistantAnswer }) {
     </article>
   )
 }
-

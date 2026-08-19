@@ -20,37 +20,47 @@ describe('H2 CSV workspace loading', () => {
   it('moves a clean LIVE_ANALYSIS source from empty through import to ready', async () => {
     let imported = false
     const fixture = createH2WebFixtureDataSource()
+    const liveProvenance = {
+      ...H2_WEB_FIXTURE_RUN.provenance,
+      mode: 'LIVE_ANALYSIS',
+      source: 'local-import-test',
+    } as const
+    const liveDataset = {
+      ...H2_WEB_FIXTURE_RUN.dataset,
+      mode: 'LIVE_ANALYSIS',
+      provenance: liveProvenance,
+    } as const
+    const liveRun = {
+      ...H2_WEB_FIXTURE_RUN,
+      dataset: liveDataset,
+      quality: {
+        ...H2_WEB_FIXTURE_RUN.quality,
+        provenance: liveProvenance,
+      },
+      provenance: liveProvenance,
+    }
     const dataSource: H2SentinelDataSource = {
       ...fixture,
       async getMode() {
         return 'LIVE_ANALYSIS'
       },
       async listDatasets() {
-        return imported ? [H2_WEB_FIXTURE_RUN.dataset] : []
+        return imported ? [liveDataset] : []
       },
       async importCsv(request: H2CsvImportRequest) {
         assert.equal(request.filename, 'first-live-run.csv')
         assert.match(request.text, /^timestamp,pcc_power_kw/m)
         imported = true
         return {
-          dataset: {
-            ...H2_WEB_FIXTURE_RUN.dataset,
-            mode: 'LIVE_ANALYSIS',
-            provenance: {
-              ...H2_WEB_FIXTURE_RUN.dataset.provenance,
-              mode: 'LIVE_ANALYSIS',
-              source: 'local-import-test',
-            },
-          },
+          dataset: liveDataset,
           quality: {
-            ...H2_WEB_FIXTURE_RUN.quality,
-            provenance: {
-              ...H2_WEB_FIXTURE_RUN.quality.provenance,
-              mode: 'LIVE_ANALYSIS',
-              source: 'local-import-test',
-            },
+            ...liveRun.quality,
           },
         }
+      },
+      async runAnalysis(datasetId: string) {
+        assert.equal(datasetId, liveDataset.datasetId)
+        return liveRun
       },
     }
 
@@ -64,6 +74,7 @@ describe('H2 CSV workspace loading', () => {
     })
 
     assert.equal(result.workspace.mode, 'LIVE_ANALYSIS')
+    assert.equal(result.workspace.run.provenance.mode, 'LIVE_ANALYSIS')
     assert.equal(result.workspace.run.status, 'completed')
     assert.equal(result.workspace.events.length, 2)
     assert.equal(result.workspace.datasets.length, 1)
@@ -81,4 +92,3 @@ describe('H2 CSV workspace loading', () => {
     )
   })
 })
-

@@ -844,6 +844,7 @@
 .h2-import-panel h2 { margin-top: 0.22rem; font-size: 0.92rem; }
 .h2-file-picker { position: relative; display: grid; place-items: center; min-height: 2.7rem; padding: 0.7rem 1rem; color: #04110f; border-radius: 0.62rem; background: var(--h2-mint); cursor: pointer; font-size: 0.7rem; font-weight: 780; }
 .h2-file-picker input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.h2-file-picker:has(input:focus-visible) { outline: 3px solid rgb(98 206 231 / 48%); outline-offset: 3px; }
 .h2-file-picker--large { min-width: 12rem; }
 .h2-file-policy { color: var(--h2-muted); font-size: 0.61rem; }
 .h2-empty-dataset-state__actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.2rem; }
@@ -867,7 +868,8 @@
 .h2-run-log time { color: var(--h2-muted); font-family: "SFMono-Regular", Consolas, monospace; }
 
 .h2-assistant-layout { display: grid; grid-template-columns: minmax(18rem, 0.72fr) minmax(0, 1.55fr); gap: 0.8rem; }
-.h2-question-list > div[role="list"] { display: grid; gap: 0.34rem; }
+.h2-question-list ol { display: grid; gap: 0.34rem; margin: 0; padding: 0; list-style: none; }
+.h2-question-list li { margin: 0; padding: 0; }
 .h2-question-list button { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 0.65rem; align-items: center; width: 100%; min-height: 3rem; padding: 0.55rem; color: var(--h2-muted-strong); text-align: left; border: 1px solid transparent; border-radius: 0.55rem; background: transparent; cursor: pointer; }
 .h2-question-list button:hover { background: rgb(142 169 192 / 5%); }
 .h2-question-list button.is-active { color: var(--h2-text); border-color: rgb(73 214 189 / 20%); background: rgb(73 214 189 / 7%); }
