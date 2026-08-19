@@ -16,6 +16,9 @@ import {
   type H2CsvImportResult,
   type H2EventFilter,
   type H2ReportArtifact,
+  type H2ReportFormat,
+  type H2ReportKind,
+  type H2ReportMediaType,
   type H2ReportRequest,
   type H2SentinelDataSource,
   type H2SeriesRequest,
@@ -26,6 +29,59 @@ import {
 import { H2EmsAdapterError } from './errors.ts'
 
 const fixtureEvents = [H2_GOLDEN_C03_EVENT, H2_GOLDEN_C04_EVENT] as const
+
+type FixtureReportProfile = Readonly<{
+  format: H2ReportFormat
+  mediaType: H2ReportMediaType
+  filename: string
+  title: string
+}>
+
+const fixtureReportProfiles = {
+  single_event_diagnosis: {
+    format: 'html',
+    mediaType: 'text/html',
+    filename: 'single_event_diagnosis-run-fixture-h2-sentinel-golden.html',
+    title: 'Single event diagnosis',
+  },
+  period_summary: {
+    format: 'html',
+    mediaType: 'text/html',
+    filename: 'period_summary-run-fixture-h2-sentinel-golden.html',
+    title: 'Period summary',
+  },
+  analysis_result_json: {
+    format: 'json',
+    mediaType: 'application/json',
+    filename: 'analysis_result_json-run-fixture-h2-sentinel-golden.json',
+    title: 'Analysis result',
+  },
+  submission_csv: {
+    format: 'csv',
+    mediaType: 'text/csv',
+    filename: 'submission_csv-run-fixture-h2-sentinel-golden.csv',
+    title: 'Submission CSV',
+  },
+  validation_metrics: {
+    format: 'json',
+    mediaType: 'application/json',
+    filename: 'validation_metrics-run-fixture-h2-sentinel-golden.json',
+    title: 'Validation metrics',
+  },
+  quality_report: {
+    format: 'html',
+    mediaType: 'text/html',
+    filename: 'quality_report-run-fixture-h2-sentinel-golden.html',
+    title: 'Data quality report',
+  },
+} as const satisfies Readonly<Record<H2ReportKind, FixtureReportProfile>>
+
+const fixtureSubmissionExportProfile = {
+  format: 'csv',
+  mediaType: 'text/csv',
+  filename: 'h2-fixture-submission.csv',
+  title: 'Submission CSV',
+} as const satisfies FixtureReportProfile
 
 /** Bundled sanitized rows keep Fixture charts usable without filesystem access. */
 const fixtureSeries = [
@@ -150,7 +206,7 @@ export function createFixtureH2EmsDataSource(): H2SentinelDataSource {
       const content = serializeH2SubmissionRows(
         fixtureEvents.map((event) => toH2SubmissionRow(event)),
       )
-      return createArtifact('submission_csv', 'csv', 'h2-fixture-submission.csv', content)
+      return createArtifact('submission_csv', fixtureSubmissionExportProfile, content)
     },
   }
 }
@@ -260,47 +316,156 @@ async function createFixtureReport(
     : undefined
   if (request.eventId && !event) throw new H2EmsAdapterError('invalid_fixture_request', false)
 
-  const content = JSON.stringify(
-    {
-      descriptor: H2_FIXTURE_REPORT_DESCRIPTOR,
-      requestedKind: request.kind,
-      event: event ?? null,
-      provenance: H2_FIXTURE_PROVENANCE,
-    },
-    null,
-    2,
+  const profile = fixtureReportProfiles[request.kind]
+  const content = createFixtureReportContent(
+    request.kind,
+    profile,
+    event,
   )
   return createArtifact(
     request.kind,
-    'json',
-    `${request.kind}-${request.runId}.json`,
+    profile,
     content,
-    request.eventId,
+    event?.eventId,
   )
 }
 
+function createFixtureReportContent(
+  kind: H2ReportKind,
+  profile: FixtureReportProfile,
+  event: H2AnomalyEvent | undefined,
+): string {
+  switch (profile.format) {
+    case 'html':
+      return createFixtureHtmlReport(kind, profile.title, event)
+    case 'json':
+      return createFixtureJsonReport(kind, event)
+    case 'csv':
+      return serializeH2SubmissionRows(
+        fixtureEvents.map((fixtureEvent) => toH2SubmissionRow(fixtureEvent)),
+      )
+  }
+}
+
+function createFixtureHtmlReport(
+  kind: H2ReportKind,
+  title: string,
+  event: H2AnomalyEvent | undefined,
+): string {
+  const eventIdentity = event?.eventId ?? 'Not applicable'
+  const humanConfirmation = event?.requiresHumanConfirmation ?? true
+  const limitations = H2_FIXTURE_PROVENANCE.limitations
+    .map((limitation) => `        <li>${escapeHtml(limitation)}</li>`)
+    .join('\n')
+
+  return [
+    '<!doctype html>',
+    '<html lang="en">',
+    '  <head>',
+    '    <meta charset="utf-8">',
+    `    <title>${escapeHtml(title)} | H2 Sentinel</title>`,
+    '  </head>',
+    '  <body>',
+    '    <main>',
+    `      <h1>${escapeHtml(title)}</h1>`,
+    '      <p>This Fixture report is sanitized demonstration evidence, not an official competition result.</p>',
+    '      <dl>',
+    `        <dt>Report kind</dt><dd>${escapeHtml(kind)}</dd>`,
+    `        <dt>Run ID</dt><dd>${escapeHtml(H2_FIXTURE_ANALYSIS_RUN.runId)}</dd>`,
+    `        <dt>Event ID</dt><dd>${escapeHtml(eventIdentity)}</dd>`,
+    `        <dt>Provenance mode</dt><dd>${escapeHtml(H2_FIXTURE_PROVENANCE.mode)}</dd>`,
+    `        <dt>Provenance source</dt><dd>${escapeHtml(H2_FIXTURE_PROVENANCE.source)}</dd>`,
+    `        <dt>Dataset fingerprint</dt><dd>${escapeHtml(H2_FIXTURE_PROVENANCE.datasetFingerprint ?? 'Not available')}</dd>`,
+    '      </dl>',
+    `      <p>${escapeHtml(H2_FIXTURE_REPORT_DESCRIPTOR.safetyDisclaimer)}</p>`,
+    `      <p>Human confirmation required: ${escapeHtml(String(humanConfirmation))}.</p>`,
+    '      <h2>Fixture limitations</h2>',
+    '      <ul>',
+    limitations,
+    '      </ul>',
+    '    </main>',
+    '  </body>',
+    '</html>',
+    '',
+  ].join('\n')
+}
+
+function createFixtureJsonReport(
+  kind: H2ReportKind,
+  event: H2AnomalyEvent | undefined,
+): string {
+  const payload =
+    kind === 'validation_metrics'
+      ? {
+          schemaVersion: 1,
+          reportKind: kind,
+          runId: H2_FIXTURE_ANALYSIS_RUN.runId,
+          quality: H2_FIXTURE_QUALITY_REPORT,
+          provenance: H2_FIXTURE_PROVENANCE,
+        }
+      : {
+          schemaVersion: 1,
+          reportKind: kind,
+          run: H2_FIXTURE_ANALYSIS_RUN,
+          event: event ?? null,
+          provenance: H2_FIXTURE_PROVENANCE,
+        }
+
+  return `${JSON.stringify(payload, null, 2)}\n`
+}
+
 async function createArtifact(
-  kind: H2ReportArtifact['descriptor']['kind'],
-  format: H2ReportArtifact['descriptor']['format'],
-  filename: string,
+  kind: H2ReportKind,
+  profile: FixtureReportProfile,
   content: string,
   eventId?: string,
 ): Promise<H2ReportArtifact> {
+  assertSafeFixtureFilename(profile.filename, profile.format)
+  const { eventId: _fixtureEventId, ...fixtureDescriptor } = H2_FIXTURE_REPORT_DESCRIPTOR
   const descriptor = {
-    ...H2_FIXTURE_REPORT_DESCRIPTOR,
+    ...fixtureDescriptor,
     reportId: `fixture-${kind}-${eventId ?? H2_FIXTURE_ANALYSIS_RUN.runId}`,
     kind,
-    format,
-    filename,
+    format: profile.format,
+    filename: profile.filename,
     contentHash: await sha256(content),
     ...(eventId ? { eventId } : {}),
     provenance: H2_FIXTURE_PROVENANCE,
   } as const
   return {
     descriptor,
-    mediaType: format === 'csv' ? 'text/csv' : format === 'html' ? 'text/html' : 'application/json',
+    mediaType: profile.mediaType,
     content,
   }
+}
+
+function assertSafeFixtureFilename(
+  filename: string,
+  format: H2ReportFormat,
+): void {
+  const extension = format === 'html' ? '.html' : format === 'json' ? '.json' : '.csv'
+  if (!/^[a-z0-9][a-z0-9._-]*$/.test(filename) || !filename.endsWith(extension)) {
+    throw new Error('Invalid Fixture report filename configuration.')
+  }
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => {
+    switch (character) {
+      case '&':
+        return '&amp;'
+      case '<':
+        return '&lt;'
+      case '>':
+        return '&gt;'
+      case '"':
+        return '&quot;'
+      case "'":
+        return '&#39;'
+      default:
+        return character
+    }
+  })
 }
 
 async function sha256(content: string): Promise<`sha256:${string}`> {

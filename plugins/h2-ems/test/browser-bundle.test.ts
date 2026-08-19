@@ -25,7 +25,7 @@ describe('H2 EMS browser bundle', () => {
         },
       })
       const bundle = await readFile(join(outputDirectory, 'h2-ems.js'), 'utf8')
-      assert.doesNotMatch(bundle, /node:crypto|createHash/)
+      assert.doesNotMatch(bundle, /node:[a-z-]+|createHash/)
       assert.match(bundle, /subtle\.digest/)
     } finally {
       await rm(outputDirectory, { force: true, recursive: true })
