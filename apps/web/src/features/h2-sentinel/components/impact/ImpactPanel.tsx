@@ -37,4 +37,3 @@ export function ImpactPanel({ event }: ImpactPanelProps) {
     </section>
   )
 }
-

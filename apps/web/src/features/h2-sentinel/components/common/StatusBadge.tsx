@@ -23,4 +23,3 @@ export function StatusBadge({ children, icon, tone = 'neutral' }: StatusBadgePro
     </span>
   )
 }
-

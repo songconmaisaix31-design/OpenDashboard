@@ -12,4 +12,3 @@ createRoot(rootElement).render(
     <H2SentinelApp dataSource={createH2WebFixtureDataSource()} />
   </StrictMode>,
 )
-

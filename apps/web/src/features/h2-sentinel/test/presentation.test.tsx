@@ -119,10 +119,13 @@ describe('H2 Sentinel presentation', () => {
     assert.equal(formatH2Duration('2026-01-05T10:32:00Z', '2026-01-05T10:39:00Z'), '8 分钟')
   })
 
-  it('round-trips direct diagnosis hashes and rejects unknown routes', () => {
+  it('round-trips diagnosis hashes and falls back for unknown or malformed hashes', () => {
     const target = { route: 'diagnosis', eventId: 'C04-20260105-001' } as const
     assert.deepEqual(parseH2SentinelHash(toH2SentinelHash(target)), target)
     assert.deepEqual(parseH2SentinelHash('#h2/not-real'), { route: 'overview' })
+    assert.deepEqual(parseH2SentinelHash('#h2/diagnosis/%E0%A4%A'), {
+      route: 'overview',
+    })
   })
 })
 
@@ -144,4 +147,3 @@ function renderView(
     />,
   )
 }
-

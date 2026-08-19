@@ -95,4 +95,3 @@ export function H2Shell({ activeRoute, children, mode, onNavigate, run }: H2Shel
     </div>
   )
 }
-

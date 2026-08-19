@@ -68,4 +68,3 @@ export function EvidencePanel({ evidence }: EvidencePanelProps) {
     </section>
   )
 }
-
