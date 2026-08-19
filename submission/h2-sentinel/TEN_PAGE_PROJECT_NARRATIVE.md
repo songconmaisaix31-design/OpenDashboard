@@ -40,7 +40,7 @@ C04 is PCC import/export boundary tracking. The sanitized Fixture includes eight
 
 ## Page 10 — Reproducibility and honest evaluation
 
-The historical H6 gate recorded 65 generic tests, 33 focused H2 tests, 7 launcher/composition tests, and 24 Python tests; the Python run had one upstream Starlette `httpx` deprecation warning. The post-assembly final rerun recorded 66 repository tests and 34 focused H2 tests. Six launcher smoke scenarios exercised Fixture, failure, Local cleanup, and preview-proxy paths. The final bundle is about 887 kB minified (293 kB gzip) and still emits Vite's standard greater-than-500-kB warning. Official data, validation metrics, organizer score, deployment, remote GitHub Actions run, network isolation proof, and committed screenshots remain undelivered.
+The assembled snapshot recorded 74 repository tests, 42 focused H2 tests, 32 Python pytest cases, seven launcher tests, five assembled QA groups, and eight H2 smoke scenarios. Its production build processed 684 modules and emitted 897.64 kB minified JavaScript (296.57 kB gzip) plus 47.44 kB CSS, while still emitting Vite's standard greater-than-500-kB warning. Official data, validation metrics, organizer score, deployment, remote GitHub Actions run, network isolation proof, and committed screenshots remain undelivered.
 
 ## Source basis
 

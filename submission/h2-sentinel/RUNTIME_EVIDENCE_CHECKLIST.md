@@ -21,16 +21,15 @@
 | R09 | Official CSV import and quality record | Not delivered | Official data is absent. |
 | R10 | Versioned validation report and metrics | Not delivered | No matching policy/metrics artifact exists. |
 | R11 | Desktop and narrow-width visual evidence | Manual pass; assets not delivered | Human Chrome review at desktop and 390x844 found no document-width overflow; no automated screenshot suite or committed images exists. |
-| R12 | TypeScript, Web, launcher, Python, and diff checks | Historical H6 and final post-assembly pass | H6 recorded 65 generic, 33 focused H2, 7 launcher/composition, and 24 Python tests; the final rerun recorded 66 repository and 34 focused H2 tests. Python emitted one upstream Starlette `httpx` warning in the H6 record. |
+| R12 | TypeScript, Web, launcher, Python, and diff checks | Current assembled pass | The assembled snapshot recorded 74 repository tests, 42 focused H2 tests, 32 Python pytest cases, seven launcher tests, five assembled QA groups, and eight smoke scenarios. |
 | R13 | Third-party notice and asset review | Notice passed; assets not delivered | `THIRD_PARTY_NOTICES.md` inventories shipped dependencies; screenshots/datasets/reports are absent and need review before distribution. |
 | R14 | Release/archive manifest and hashes | Not delivered | There is no release or deployment archive proof. |
 
 ## Smoke coverage
 
-`npm run h2:smoke` recorded six launcher scenarios: Fixture without analytics,
-occupied Web port, redirecting unhealthy sidecar, occupied analytics port,
-Local golden/export/cleanup, and production-preview proxy. This is executable
-candidate evidence; it is neither a production deployment nor a remote CI run.
+`npm run h2:smoke` recorded eight H2 smoke scenarios. This is executable
+assembled-snapshot evidence; it is neither a production deployment nor a remote
+CI run.
 
 ## Report-format correction
 

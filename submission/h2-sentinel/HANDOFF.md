@@ -23,7 +23,7 @@
 - [H2 Web handoff](../../apps/web/src/features/h2-sentinel/HANDOFF.md)
 - [H2 QA matrix](../../tests/h2-sentinel/ACCEPTANCE_MATRIX.md)
 
-The historical H6 gate records 65 generic tests, 33 focused H2 tests, 7 launcher/composition tests, and 24 Python tests. The Python suite emitted one upstream Starlette `httpx` deprecation warning. After plugin/UI fixes were assembled, the final coordinator root reran `npm run check` with 66 repository tests and 34 focused H2 tests; its Vite build processed 679 modules and produced a 886.72 kB minified / 293.36 kB gzip bundle with the expected greater-than-500-kB warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
+The assembled verification recorded 74 repository tests, 42 focused H2 tests, 32 Python pytest cases, seven launcher tests, five assembled QA groups, and eight H2 smoke scenarios. Its production build processed 684 modules and emitted 897.64 kB minified JavaScript (296.57 kB gzip) plus 47.44 kB CSS, with the expected greater-than-500-kB warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
 
 ## Resolved report-format correction
 
