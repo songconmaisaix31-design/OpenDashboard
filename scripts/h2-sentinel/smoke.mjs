@@ -527,6 +527,8 @@ async function runAnalyticsExitBeforeReadySmoke() {
     String(analyticsPort),
   ], true, adversarialLauncherPath)
   const observedPids = new Set([session.child.pid])
+  let auditCompleted = false
+  let primaryError = null
   try {
     let armedForTermination = false
     let pendingHealthRecord = null
@@ -556,6 +558,13 @@ async function runAnalyticsExitBeforeReadySmoke() {
       pendingHealthRecord = message
       terminateAfterHealth()
     })
+    if (process.platform === 'win32') {
+      const wrapperProcess = await waitForDescendant(
+        session.child.pid,
+        /^powershell(?:\.exe)?$/i,
+      )
+      observedPids.add(wrapperProcess.pid)
+    }
     const uvProcess = await waitForDescendant(session.child.pid, /^uv(?:\.exe)?$/i)
     observedPids.add(uvProcess.pid)
     const pythonProcess = await waitForDescendant(session.child.pid, /^python(?:\.exe)?$/i)
@@ -571,12 +580,28 @@ async function runAnalyticsExitBeforeReadySmoke() {
     const result = await waitForExit(session.child, 15_000)
     assert.notEqual(result.code, 0)
     assert.doesNotMatch(session.stdout.join(' '), /"event":"READY"/)
+    for (const pid of observedPids) await assertPidStopped(pid)
+    await assertPortReleased(webPort)
+    await assertPortReleased(analyticsPort)
+    auditCompleted = true
+  } catch (error) {
+    primaryError = error
+    throw error
   } finally {
-    for (const pid of [...observedPids].reverse()) await terminatePidTree(pid)
+    if (!auditCompleted) {
+      const cleanupErrors = []
+      for (const pid of [...observedPids].reverse()) {
+        try {
+          await terminatePidTree(pid)
+        } catch (error) {
+          cleanupErrors.push(error)
+        }
+      }
+      if (primaryError === null && cleanupErrors.length > 0) {
+        throw new AggregateError(cleanupErrors, 'Adversarial fallback cleanup failed.')
+      }
+    }
   }
-  for (const pid of observedPids) await assertPidStopped(pid)
-  await assertPortReleased(webPort)
-  await assertPortReleased(analyticsPort)
   console.log('PASS launcher rejects analytics wrapper exit after health and before Web readiness without leaking owned processes')
 }
 

@@ -142,7 +142,6 @@ test('establishes persistent lifecycle observation and closed Windows Job owners
   assert.match(adversarialLauncher, /if \(process\.connected\) process\.disconnect\(\)/)
   assert.match(source, /waitDuringStartup\([\s\S]*waitForWeb\([\s\S]*ownedProcesses/)
   assert.ok(source.indexOf('const lifecycle = waitForShutdownOrChildExit') < source.indexOf('console.log(options.readyJson'))
-
   assert.match(wrapper, /ValidateSet\('Analytics', 'Web'\)/)
   assert.doesNotMatch(wrapper, /\[string\]\s*\$Command/)
   assert.match(wrapper, /JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE/)
@@ -150,6 +149,26 @@ test('establishes persistent lifecycle observation and closed Windows Job owners
   const runBody = wrapper.slice(wrapper.indexOf('public static int Run'))
   assert.ok(runBody.indexOf('SetInformationJobObject(') < runBody.indexOf('CreateProcess('))
   assert.ok(runBody.indexOf('AssignProcessToJobObject(') < runBody.indexOf('ResumeThread('))
+})
+
+test('audits adversarial natural cleanup before failure-only fallback cleanup', async () => {
+  const smokeSource = await import('node:fs/promises').then(({ readFile }) =>
+    readFile(new URL('./smoke.mjs', import.meta.url), 'utf8'),
+  )
+  const adversarialSmoke = smokeSource.slice(
+    smokeSource.indexOf('async function runAnalyticsExitBeforeReadySmoke()'),
+    smokeSource.indexOf('async function runSubmissionValidator'),
+  )
+  const naturalPidAudit = adversarialSmoke.indexOf(
+    'for (const pid of observedPids) await assertPidStopped(pid)',
+  )
+  const fallbackCleanup = adversarialSmoke.indexOf('finally {')
+
+  assert.ok(naturalPidAudit >= 0)
+  assert.ok(fallbackCleanup > naturalPidAudit)
+  assert.match(adversarialSmoke, /let auditCompleted = false/)
+  assert.match(adversarialSmoke, /if \(!auditCompleted\)/)
+  assert.match(adversarialSmoke, /if \(primaryError === null/)
 })
 
 test('requires the exact canonical analytics health contract', () => {

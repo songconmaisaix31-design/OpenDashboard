@@ -106,7 +106,7 @@ select different loopback ports.
 | `npm run build` | Passed; 684 modules. JavaScript was 899.97 kB minified / 297.13 kB gzip and CSS was 47.44 kB. Vite reported the known large-chunk warning. |
 | `npm run check` | Passed; typecheck, 89 repository tests, and the 684-module production build. |
 | `npm run h2:build` | Passed; production H2 composition included in the Web bundle. |
-| `npm run h2:check` | Passed; typecheck, 57 focused H2 tests, five assembled QA groups, 8 launcher/composition tests, and the 684-module build. |
+| `npm run h2:check` | Passed; typecheck, 57 focused H2 tests, five assembled QA groups, 9 launcher/composition tests, and the 684-module build. |
 | `npm run h2:smoke` | Passed; all 9 scenarios: Fixture no-analytics/cleanup, occupied Web, redirect rejection, malformed health lookalikes, canonical external sidecar ownership, occupied analytics, owned Analytics exit after health/before `READY`, Local golden/export/cleanup, and production-preview proxy. |
 | `uv lock --check` | Passed; 36 locked packages resolved. |
 | `uv sync --locked --extra dev` | Passed; 30 packages checked. |
@@ -132,7 +132,7 @@ select different loopback ports.
   `FAIL`. Visual verification remains manual; this handoff does not claim an
   automated screenshot regression suite or a formal screenshot artifact.
 - The final candidate passes 89 repository tests, 57 focused H2 tests, 32 Python
-  tests, and 8 launcher/composition tests. Its 684-module production bundle is
+  tests, and 9 launcher/composition tests. Its 684-module production bundle is
   899.97 kB minified / 297.13 kB gzip for JavaScript and 47.44 kB for CSS. Vite
   retains its standard greater-than-500-kB warning; no speculative split or new
   dependency was added during composition.
