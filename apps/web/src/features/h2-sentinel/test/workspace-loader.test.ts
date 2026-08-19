@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { describe, it } from 'node:test'
 
 import type {
@@ -8,6 +9,7 @@ import type {
 import {
   H2_CSV_MAX_BYTES,
   H2CsvInputError,
+  hydrateH2Workspace,
   importH2CsvWorkspace,
   validateH2CsvFile,
 } from '../model/workspace-loader.ts'
@@ -17,6 +19,70 @@ import {
 } from './fixture-data-source.ts'
 
 describe('H2 CSV workspace loading', () => {
+  it('keeps an existing ready workspace aligned with its Fixture run', async () => {
+    const fixture = createH2WebFixtureDataSource()
+    const dataSource: H2SentinelDataSource = {
+      ...fixture,
+      async getMode() {
+        return 'LIVE_ANALYSIS'
+      },
+    }
+    assert.equal(await dataSource.getMode(), 'LIVE_ANALYSIS')
+    const workspace = await hydrateH2Workspace(
+      dataSource,
+      [H2_WEB_FIXTURE_RUN.dataset],
+      H2_WEB_FIXTURE_RUN.dataset,
+    )
+
+    assert.equal(workspace.mode, 'FIXTURE')
+    assert.equal(workspace.run.dataset.mode, 'FIXTURE')
+    assert.equal(workspace.run.dataset.provenance.mode, 'FIXTURE')
+    assert.equal(workspace.run.provenance.mode, 'FIXTURE')
+  })
+
+  it('keeps the canonical CSV Fixture-provenanced on a local transport', async () => {
+    let imported = false
+    let transportModeReads = 0
+    const fixture = createH2WebFixtureDataSource()
+    const csv = await readFile(
+      new URL('../../../../../../packages/h2-contracts/fixtures/tiny-valid-timeseries.csv', import.meta.url),
+      'utf8',
+    )
+    const dataSource: H2SentinelDataSource = {
+      ...fixture,
+      async getMode() {
+        transportModeReads += 1
+        return 'LIVE_ANALYSIS'
+      },
+      async listDatasets() {
+        return imported ? [H2_WEB_FIXTURE_RUN.dataset] : []
+      },
+      async importCsv(request: H2CsvImportRequest) {
+        assert.equal(request.filename, 'tiny-valid-timeseries.csv')
+        assert.equal(request.text, csv)
+        imported = true
+        return {
+          dataset: H2_WEB_FIXTURE_RUN.dataset,
+          quality: H2_WEB_FIXTURE_RUN.quality,
+        }
+      },
+    }
+
+    const result = await importH2CsvWorkspace(dataSource, {
+      name: 'tiny-valid-timeseries.csv',
+      size: Buffer.byteLength(csv),
+      async text() {
+        return csv
+      },
+    })
+
+    assert.equal(result.workspace.mode, 'FIXTURE')
+    assert.equal(result.workspace.run.dataset.mode, 'FIXTURE')
+    assert.equal(result.workspace.run.dataset.provenance.mode, 'FIXTURE')
+    assert.equal(result.workspace.run.provenance.mode, 'FIXTURE')
+    assert.equal(transportModeReads, 0)
+  })
+
   it('moves a clean LIVE_ANALYSIS source from empty through import to ready', async () => {
     let imported = false
     const fixture = createH2WebFixtureDataSource()
@@ -74,6 +140,8 @@ describe('H2 CSV workspace loading', () => {
     })
 
     assert.equal(result.workspace.mode, 'LIVE_ANALYSIS')
+    assert.equal(result.workspace.run.dataset.mode, 'LIVE_ANALYSIS')
+    assert.equal(result.workspace.run.dataset.provenance.mode, 'LIVE_ANALYSIS')
     assert.equal(result.workspace.run.provenance.mode, 'LIVE_ANALYSIS')
     assert.equal(result.workspace.run.status, 'completed')
     assert.equal(result.workspace.events.length, 2)

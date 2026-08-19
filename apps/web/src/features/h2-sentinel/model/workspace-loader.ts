@@ -1,6 +1,5 @@
 import type {
   H2DatasetManifest,
-  H2DatasetMode,
   H2SentinelDataSource,
 } from '../../../../../../packages/h2-contracts/src/index.ts'
 import type { H2Workspace } from './view-state.ts'
@@ -27,13 +26,12 @@ export class H2CsvInputError extends Error {
 
 export async function hydrateH2Workspace(
   dataSource: H2SentinelDataSource,
-  mode: H2DatasetMode,
   datasets: readonly H2DatasetManifest[],
   dataset: H2DatasetManifest,
 ): Promise<H2Workspace> {
   const run = await dataSource.runAnalysis(dataset.datasetId)
   const events = await dataSource.listEvents(run.runId)
-  const variables = dataset.fields
+  const variables = run.dataset.fields
     .filter(({ role }) => role === 'measurement' || role === 'constraint')
     .map(({ name }) => name)
 
@@ -41,13 +39,20 @@ export async function hydrateH2Workspace(
     const series = await dataSource.getSeries({
       runId: run.runId,
       variables,
-      startTime: dataset.timeRange.startTime,
-      endTime: dataset.timeRange.endTime,
+      startTime: run.dataset.timeRange.startTime,
+      endTime: run.dataset.timeRange.endTime,
     })
-    return { mode, datasets, run, events, series, seriesError: null }
+    return {
+      mode: run.dataset.mode,
+      datasets,
+      run,
+      events,
+      series,
+      seriesError: null,
+    }
   } catch {
     return {
-      mode,
+      mode: run.dataset.mode,
       datasets,
       run,
       events,
@@ -65,10 +70,7 @@ export async function importH2CsvWorkspace(
   validateH2CsvFile(file)
   const text = await file.text()
   const result = await dataSource.importCsv({ filename: file.name, text })
-  const [mode, listedDatasets] = await Promise.all([
-    dataSource.getMode(),
-    dataSource.listDatasets(),
-  ])
+  const listedDatasets = await dataSource.listDatasets()
   const datasets = listedDatasets.some(
     ({ datasetId }) => datasetId === result.dataset.datasetId,
   )
@@ -76,7 +78,6 @@ export async function importH2CsvWorkspace(
     : [...listedDatasets, result.dataset]
   const workspace = await hydrateH2Workspace(
     dataSource,
-    mode,
     datasets,
     result.dataset,
   )
