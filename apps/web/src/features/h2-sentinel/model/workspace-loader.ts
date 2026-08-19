@@ -30,7 +30,7 @@ export async function hydrateH2Workspace(
   dataset: H2DatasetManifest,
 ): Promise<H2Workspace> {
   const run = await dataSource.runAnalysis(dataset.datasetId)
-  const events = await dataSource.listEvents(run.runId)
+  const events = run.events
   const variables = run.dataset.fields
     .filter(({ role }) => role === 'measurement' || role === 'constraint')
     .map(({ name }) => name)

@@ -19,6 +19,27 @@ import {
 } from './fixture-data-source.ts'
 
 describe('H2 CSV workspace loading', () => {
+  it('hydrates from the request-bound run events without listing another snapshot', async () => {
+    let listEventsCalls = 0
+    const fixture = createH2WebFixtureDataSource()
+    const dataSource: H2SentinelDataSource = {
+      ...fixture,
+      async listEvents() {
+        listEventsCalls += 1
+        throw new Error('A second event snapshot must not replace run.events.')
+      },
+    }
+
+    const workspace = await hydrateH2Workspace(
+      dataSource,
+      [H2_WEB_FIXTURE_RUN.dataset],
+      H2_WEB_FIXTURE_RUN.dataset,
+    )
+
+    assert.equal(listEventsCalls, 0)
+    assert.strictEqual(workspace.events, H2_WEB_FIXTURE_RUN.events)
+  })
+
   it('keeps an existing ready workspace aligned with its Fixture run', async () => {
     const fixture = createH2WebFixtureDataSource()
     const dataSource: H2SentinelDataSource = {
