@@ -2,7 +2,7 @@
 
 ## Recording boundary
 
-Use runtime snapshot `5cc7618` and begin with
+Use the current coordinator-verified assembled snapshot and begin with
 `npm run h2:fixture`. The generic Fixture Demo remains at `/`; record H2 only
 from `/h2-sentinel/?mode=fixture`. Keep `FIXTURE` visible. The demonstration is
 sanitized synthetic data, not official data, live plant evidence, a validation

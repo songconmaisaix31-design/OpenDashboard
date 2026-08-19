@@ -1,8 +1,8 @@
 # H2 Sentinel Claims Ledger
 
 Use this ledger for public copy, demo narration, and judge answers. Current
-evidence is limited to runtime snapshot `5cc7618` and the coordinator checks
-recorded on 2026-08-19.
+evidence is limited to the current coordinator-verified assembled snapshot and
+the H6 checks recorded on 2026-08-19.
 
 | ID | Permitted wording | Classification | Current evidence | Release rule |
 | --- | --- | --- | --- | --- |
@@ -11,7 +11,7 @@ recorded on 2026-08-19.
 | C03 | “The generic Fixture Demo remains at `/`; H2 opens only with explicit `fixture` or `local` mode.” | Current H6 evidence | `apps/web/src/main.tsx`, H6 handoff | Do not say the generic entry was replaced. |
 | C04 | “Local H2 browser requests use a same-origin proxy to a validated loopback analytics target.” | Current H6 evidence | H6 source and smoke | Do not expand this into a network-isolation or deployment claim. |
 | C05 | “The Local golden path produced deterministic no-LLM C03 HTML output and a two-row, 16-column validated submission CSV.” | Local deterministic evidence | H6 smoke and Python validation | Scope the statement to the Local golden path. |
-| C06 | “The assembled verification recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, eight launcher tests, five assembled QA groups, and nine H2 smoke scenarios.” | Current assembled evidence | Assembled QA evidence and analytics handoff | Scope this to the recorded assembled snapshot; do not infer a remote CI run. |
+| C06 | “The assembled verification recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine H2 smoke scenarios.” | Current assembled evidence | Assembled QA evidence and analytics handoff | Scope this to the recorded assembled snapshot; do not infer a remote CI run. |
 | C07 | “A human Chrome review checked desktop and 390x844 Fixture screens without document-width overflow.” | Manual Chrome evidence | H6 handoff | Do not call this automated screenshot regression or claim image assets exist. |
 | C08 | “The assembled build processed 684 modules and emitted 899.97 kB minified JavaScript (297.13 kB gzip) plus 47.44 kB CSS; Vite still emitted its standard greater-than-500-kB warning.” | Current assembled evidence | Recorded production build | Do not imply the bundle-warning issue is resolved. |
 | C09 | “Recommendations are advisory and require human confirmation.” | Implemented behavior and contract fact | H2 UI/contract/H6 review | Never describe direct equipment control. |

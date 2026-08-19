@@ -3,14 +3,14 @@
 ## Candidate record
 
 - Original H6 integration gate: `8bcc8d59e352def535c26504683975959ff7f18d`.
-- Current coordinator-verified runtime snapshot: `5cc7618`.
+- Current coordinator-verified assembled snapshot; final candidate SHA is pending coordinator handoff.
 - Evidence date: 2026-08-19, as recorded in the H6 handoff.
 - Scope: current-worktree evidence only; it does not prove `main`, deployment,
   remote GitHub Actions execution, network isolation, official data, or scores.
 
 | ID | Required evidence | Status at candidate | What it proves and does not prove |
 | --- | --- | --- | --- |
-| R01 | Candidate SHA and source inventory | Passed | Identifies H6 composition at runtime snapshot `5cc7618`; it is not a `main` publication. |
+| R01 | Candidate SHA and source inventory | Pending coordinator handoff | The final candidate SHA must identify the current H6 composition; it is not a `main` publication. |
 | R02 | Windows and shell launcher commands | Passed | `npm run h2:fixture`, `npm run h2:local`, and wrappers are recorded in the H6 handoff. |
 | R03 | Fixture-only start without Python or LLM key | Passed | The smoke covered Fixture without analytics; no-LLM golden determinism is separately exercised in Local mode. |
 | R04 | Fixture C03 journey | Passed | Mounted Fixture C03 UI was manually reviewed; `92f7b78` additionally makes its single-event report deterministic safe HTML. |
@@ -21,7 +21,7 @@
 | R09 | Official CSV import and quality record | Not delivered | Official data is absent. |
 | R10 | Versioned validation report and metrics | Not delivered | No matching policy/metrics artifact exists. |
 | R11 | Desktop and narrow-width visual evidence | Manual pass; assets not delivered | Human Chrome review at desktop and 390x844 found no document-width overflow; no automated screenshot suite or committed images exists. |
-| R12 | TypeScript, Web, launcher, Python, and diff checks | Current assembled pass | The assembled snapshot recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, eight launcher tests, five assembled QA groups, and nine smoke scenarios. |
+| R12 | TypeScript, Web, launcher, Python, and diff checks | Current assembled pass | The assembled snapshot recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine smoke scenarios. |
 | R13 | Third-party notice and asset review | Notice passed; assets not delivered | `THIRD_PARTY_NOTICES.md` inventories shipped dependencies; screenshots/datasets/reports are absent and need review before distribution. |
 | R14 | Release/archive manifest and hashes | Not delivered | There is no release or deployment archive proof. |
 

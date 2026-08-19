@@ -1,6 +1,6 @@
 # H2 Sentinel Ten-Page Project Narrative
 
-This narrative describes runtime snapshot `5cc7618` and recorded H6 evidence. It does not claim publication to `main`, deployment, official data, validation metrics, organizer results, remote CI execution, network-isolation proof, or committed screenshot assets.
+This narrative describes the current coordinator-verified assembled snapshot and recorded H6 evidence. It does not claim publication to `main`, deployment, official data, validation metrics, organizer results, remote CI execution, network-isolation proof, or committed screenshot assets.
 
 ## Page 1 — Title and outcome
 
@@ -40,7 +40,7 @@ C04 is PCC import/export boundary tracking. The sanitized Fixture includes eight
 
 ## Page 10 — Reproducibility and honest evaluation
 
-The assembled snapshot recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, eight launcher tests, five assembled QA groups, and nine H2 smoke scenarios. Its production build processed 684 modules and emitted 899.97 kB minified JavaScript (297.13 kB gzip) plus 47.44 kB CSS, while still emitting Vite's standard greater-than-500-kB warning. The recorded local path rejects a 307 health redirect, covers Windows-owned child cleanup, and exposes report content hashes for review; none of these facts proves general network isolation. Official data, validation metrics, organizer score, deployment, remote GitHub Actions run, network isolation proof, and committed screenshots remain undelivered.
+The assembled snapshot recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine H2 smoke scenarios. Its production build processed 684 modules and emitted 899.97 kB minified JavaScript (297.13 kB gzip) plus 47.44 kB CSS, while still emitting Vite's standard greater-than-500-kB warning. The recorded local path rejects a 307 health redirect, covers Windows-owned child cleanup, and exposes report content hashes for review; none of these facts proves general network isolation. Official data, validation metrics, organizer score, deployment, remote GitHub Actions run, network isolation proof, and committed screenshots remain undelivered.
 
 ## Source basis
 

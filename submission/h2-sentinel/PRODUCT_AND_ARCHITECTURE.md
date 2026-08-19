@@ -19,7 +19,7 @@ generic / -> existing Fixture Demo
                                        -> 127.0.0.1 deterministic analytics sidecar
 ```
 
-Runtime snapshot `5cc7618` preserves the generic default
+The current assembled snapshot preserves the generic default
 and accepts only the two explicit H2 modes. The Fixture path starts no Python
 service. The Local path uses a fixed namespace and a validated loopback target;
 it is not a general sidecar runtime, remote-host interface, dynamic plugin

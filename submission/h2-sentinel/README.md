@@ -2,11 +2,11 @@
 
 ## Status
 
-This package records the assembled H6 runtime snapshot `5cc7618`. H6 began from
-original integration gate `8bcc8d59e352def535c26504683975959ff7f18d`; the
-coordinator recorded the stated snapshot after the accepted H6 work. It is not
-a claim that `main` changed, that the application was deployed, or that a
-GitHub Actions workflow has run remotely.
+This package records the current coordinator-verified H6 assembled snapshot.
+H6 began from original integration gate `8bcc8d59e352def535c26504683975959ff7f18d`;
+the final candidate SHA is pending coordinator handoff. It is not a claim
+that `main` changed, that the application was deployed, or that a GitHub Actions
+workflow has run remotely.
 
 H2 Sentinel / 氢哨 is a local-first, evidence-first H2 EMS diagnosis and
 decision-support application. It presents advisory recommendations that require
@@ -16,7 +16,7 @@ human confirmation; it does not issue equipment commands or replace the EMS.
 
 | Label | Meaning |
 | --- | --- |
-| Current H6 evidence | A reproducible command or manual check recorded for runtime snapshot `5cc7618` on 2026-08-19. |
+| Current H6 evidence | A reproducible command or manual check recorded for the current assembled snapshot on 2026-08-19. |
 | Fixture evidence | Sanitized synthetic C03/C04 data, visibly `FIXTURE`; never official data, a score, or live plant evidence. |
 | Local deterministic evidence | The explicit loopback analytics path with deterministic fallback; it is not an official-data validation result. |
 | Manual Chrome evidence | A human desktop/390x844 observation, not screenshot automation and not a submitted image asset. |
@@ -41,7 +41,7 @@ prove network isolation beyond the exercised loopback policy.
 ## Current H6 evidence and limitation
 
 The assembled verification recorded 89 repository tests, 57 focused H2 tests,
-32 Python pytest cases, eight launcher tests, five assembled QA groups, and
+32 Python pytest cases, nine launcher tests, five assembled QA groups, and
 nine H2 smoke scenarios. This is current-worktree evidence for the assembled
 snapshot, not a remote CI result.
 
