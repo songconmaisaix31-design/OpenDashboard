@@ -2,12 +2,11 @@
 
 ## Status
 
-This package records the assembled H6 candidate at coordinator gate
-`6d04ee38f39d81801c87190f31eff0a1915862c6`. H6 began from original integration
-gate `8bcc8d59e352def535c26504683975959ff7f18d`; the coordinator cherry-picked
-the accepted H6 work into the stated candidate. It is not a claim that `main`
-changed, that the application was deployed, or that a GitHub Actions workflow
-has run remotely.
+This package records the assembled H6 runtime snapshot `5cc7618`. H6 began from
+original integration gate `8bcc8d59e352def535c26504683975959ff7f18d`; the
+coordinator recorded the stated snapshot after the accepted H6 work. It is not
+a claim that `main` changed, that the application was deployed, or that a
+GitHub Actions workflow has run remotely.
 
 H2 Sentinel / 氢哨 is a local-first, evidence-first H2 EMS diagnosis and
 decision-support application. It presents advisory recommendations that require
@@ -17,7 +16,7 @@ human confirmation; it does not issue equipment commands or replace the EMS.
 
 | Label | Meaning |
 | --- | --- |
-| Current H6 evidence | A reproducible command or manual check recorded for gate `6d04ee3` on 2026-08-19. |
+| Current H6 evidence | A reproducible command or manual check recorded for runtime snapshot `5cc7618` on 2026-08-19. |
 | Fixture evidence | Sanitized synthetic C03/C04 data, visibly `FIXTURE`; never official data, a score, or live plant evidence. |
 | Local deterministic evidence | The explicit loopback analytics path with deterministic fallback; it is not an official-data validation result. |
 | Manual Chrome evidence | A human desktop/390x844 observation, not screenshot automation and not a submitted image asset. |
@@ -41,17 +40,21 @@ prove network isolation beyond the exercised loopback policy.
 
 ## Current H6 evidence and limitation
 
-The assembled verification recorded 74 repository tests, 42 focused H2 tests,
-32 Python pytest cases, seven launcher tests, five assembled QA groups, and
-eight H2 smoke scenarios. This is current-worktree evidence for the assembled
+The assembled verification recorded 89 repository tests, 57 focused H2 tests,
+32 Python pytest cases, eight launcher tests, five assembled QA groups, and
+nine H2 smoke scenarios. This is current-worktree evidence for the assembled
 snapshot, not a remote CI result.
 
 The Local golden path produced a deterministic no-LLM C03 HTML report and a
 two-row `submission.csv` validated against its exact 16 columns. Manual Chrome
 review checked the Fixture overview, C03, and C04 at desktop and 390x844 without
 document-width overflow. The assembled production build processed 684 modules
-and emitted 897.64 kB minified JavaScript (296.57 kB gzip) plus 47.44 kB CSS;
+and emitted 899.97 kB minified JavaScript (297.13 kB gzip) plus 47.44 kB CSS;
 Vite still emits its standard greater-than-500-kB warning.
+
+The recorded local hardening checks reject a 307 health redirect, cover
+Windows-owned child cleanup, and make report content hashes visible for review.
+These are not network-isolation or deployment claims.
 
 Fixture report-format parity is resolved by plugin source commit
 `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa`, integrated by the coordinator as

@@ -2,7 +2,7 @@
 
 ## Current candidate truth
 
-Candidate `6d04ee38f39d81801c87190f31eff0a1915862c6` includes
+Runtime snapshot `5cc7618` includes
 [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) and an updated root
 [NOTICE](../../NOTICE). The inventory names the locked Web runtime (Apache
 ECharts 6.1.0, React 19.2.4, React DOM 19.2.4 and listed transitives), local

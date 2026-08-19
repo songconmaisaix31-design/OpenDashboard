@@ -2,9 +2,9 @@
 
 ## Identity and scope
 
-- Submission working branch: `songconmaisaix31-design/h2-submission-final`.
+- Submission working branch: `competition/h2-sentinel`.
 - Original H6 integration gate: `8bcc8d59e352def535c26504683975959ff7f18d`.
-- Coordinator cherry-picked candidate: `6d04ee38f39d81801c87190f31eff0a1915862c6`.
+- Current coordinator-verified runtime snapshot: `5cc7618`.
 - Owned write path: `submission/h2-sentinel/**`.
 - Scope: current H6 evidence packaging only. No product code, contracts, root manifests, CI, launcher, tests, `MEMORY.md`, or `main` branch was modified.
 
@@ -23,7 +23,7 @@
 - [H2 Web handoff](../../apps/web/src/features/h2-sentinel/HANDOFF.md)
 - [H2 QA matrix](../../tests/h2-sentinel/ACCEPTANCE_MATRIX.md)
 
-The assembled verification recorded 74 repository tests, 42 focused H2 tests, 32 Python pytest cases, seven launcher tests, five assembled QA groups, and eight H2 smoke scenarios. Its production build processed 684 modules and emitted 897.64 kB minified JavaScript (296.57 kB gzip) plus 47.44 kB CSS, with the expected greater-than-500-kB warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
+The assembled verification recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, eight launcher tests, five assembled QA groups, and nine H2 smoke scenarios. Its production build processed 684 modules and emitted 899.97 kB minified JavaScript (297.13 kB gzip) plus 47.44 kB CSS, with the expected greater-than-500-kB warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
 
 ## Resolved report-format correction
 
@@ -33,7 +33,7 @@ Plugin source `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa`, integrated by the coor
 
 ```powershell
 pwsh -NoProfile -File submission/h2-sentinel/scripts/validate-submission.ps1
-git diff --check 6d04ee38f39d81801c87190f31eff0a1915862c6..HEAD
+git diff --check -- submission/h2-sentinel
 ```
 
 The validator covers ten required documents, ten narrative pages, local links, and placeholder language. It does not validate runtime behavior, official data, validation metrics, deployment, remote CI, screenshots, or network isolation.

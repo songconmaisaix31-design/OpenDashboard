@@ -19,7 +19,7 @@ generic / -> existing Fixture Demo
                                        -> 127.0.0.1 deterministic analytics sidecar
 ```
 
-Gate `6d04ee38f39d81801c87190f31eff0a1915862c6` preserves the generic default
+Runtime snapshot `5cc7618` preserves the generic default
 and accepts only the two explicit H2 modes. The Fixture path starts no Python
 service. The Local path uses a fixed namespace and a validated loopback target;
 it is not a general sidecar runtime, remote-host interface, dynamic plugin
@@ -34,6 +34,11 @@ Local golden run produced deterministic no-LLM C03 HTML output and a two-row
 analytics service uses loopback Host/Origin checks and no permissive CORS policy;
 these source and smoke facts are not a claim of a deployed or independently
 penetration-tested service.
+
+The recorded hardening checks reject a 307 health redirect without forwarding it,
+cover Windows-owned child cleanup, and make report content hashes visible for
+review. They are bounded local-path evidence, not proof of general network
+isolation.
 
 Manual Chrome review at desktop and 390x844 verified the mounted Fixture
 overview, C03, C04, provenance, human-confirmation boundary, corrected C04
