@@ -1,4 +1,9 @@
-import type { H2AnomalyEvent, H2SubmissionRow } from '../src/index.ts'
+import {
+  serializeH2SubmissionRows,
+  toH2SubmissionRow,
+  type H2AnomalyEvent,
+  type H2SubmissionRow,
+} from '../src/index.ts'
 
 type H2C03Event = Extract<H2AnomalyEvent, { readonly code: 'C03' }>
 type H2C03SubmissionRow = Extract<
@@ -16,3 +21,10 @@ const invalidImpactMetric: H2C03SubmissionRow['primary_impact_metric'] =
 
 void invalidEventSubtype
 void invalidImpactMetric
+
+function serializeWideEvent(event: H2AnomalyEvent): string {
+  const row: H2SubmissionRow = toH2SubmissionRow(event)
+  return serializeH2SubmissionRows([row])
+}
+
+void serializeWideEvent

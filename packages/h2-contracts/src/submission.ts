@@ -1,8 +1,10 @@
 import type {
   H2AnomalyCode,
+  H2AnomalyEvent,
   H2AnomalyEventForCode,
   H2AnomalySubtypeForCode,
   H2PrimaryImpactMetricForCode,
+  H2Severity,
 } from './anomaly.ts'
 
 export const H2_SUBMISSION_COLUMNS = [
@@ -32,7 +34,7 @@ export interface H2SubmissionRowForCode<TCode extends H2AnomalyCode> {
   readonly end_time: string
   readonly anomaly_code: TCode
   readonly anomaly_subtype: H2AnomalySubtypeForCode<TCode>
-  readonly severity: string
+  readonly severity: H2Severity
   readonly primary_control_object: string
   readonly affected_equipment: string
   readonly confidence: number
@@ -49,11 +51,16 @@ export type H2SubmissionRow = {
   readonly [TCode in H2AnomalyCode]: H2SubmissionRowForCode<TCode>
 }[H2AnomalyCode]
 
+type H2SubmissionRowForEvent<TEvent extends H2AnomalyEvent> =
+  TEvent extends H2AnomalyEventForCode<infer TCode extends H2AnomalyCode>
+    ? H2SubmissionRowForCode<TCode>
+    : never
+
 type H2SubmissionCell = string | number | boolean
 
-export function toH2SubmissionRow<TCode extends H2AnomalyCode>(
-  event: H2AnomalyEventForCode<TCode>,
-): H2SubmissionRowForCode<TCode> {
+export function toH2SubmissionRow<TEvent extends H2AnomalyEvent>(
+  event: TEvent,
+): H2SubmissionRowForEvent<TEvent> {
   return {
     pred_event_id: event.eventId,
     start_time: event.startTime,
@@ -87,7 +94,7 @@ export function toH2SubmissionRow<TCode extends H2AnomalyCode>(
     estimated_impact_value: event.impact.value,
     first_detection_time: event.firstDetectionTime,
     requires_human_confirmation: event.requiresHumanConfirmation,
-  }
+  } as H2SubmissionRowForEvent<TEvent>
 }
 
 export function toH2SubmissionCells(
