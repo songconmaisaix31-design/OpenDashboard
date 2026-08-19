@@ -19,12 +19,22 @@ available only from the two explicit, equivalent `/h2-sentinel` and
   always `http://127.0.0.1:<port>`.
 - The launcher owns foreground child processes, waits for the canonical health
   success envelope, emits one machine-readable ready record, and cleans its
-  complete child process trees on failure or shutdown.
+  complete child process trees on failure or shutdown. Health readiness requires
+  the exact closed H0 success envelope plus the closed H1 health fields and
+  provenance: canonical namespace, literal `127.0.0.1`, stable versions, and
+  matching rule/configuration versions. Minimal lookalikes, wrong namespaces,
+  `localhost`, extra top-level fields, and redirects fail closed.
 - Fixture launch does not require `uv`, Python, an analytics listener, or an LLM
   credential. Local launch uses the committed `uv.lock` environment.
 - No launcher option accepts a command, executable path, filesystem path,
   hostname, or arbitrary URL. The optional external sidecar URL accepts only
   `http://127.0.0.1:<port>/` and is never treated as an owned process.
+- Local analytics maps all six report kinds to their closed formats:
+  single-event, period, and quality reports are HTML; analysis and validation
+  reports are JSON; submission export is CSV.
+- The Live plugin exposes exactly 12 fixed namespace routes. Every response is
+  deeply validated against its closed contract and request identity before it
+  reaches the UI; malformed or inconsistent remote data fails closed.
 
 ## Risks and controls
 
@@ -39,7 +49,16 @@ available only from the two explicit, equivalent `/h2-sentinel` and
 
 ## Verification
 
-Run root npm checks, H2 checks, locked `uv` checks, 24 Python tests, golden and
-submission validation, launcher fixture/local/failure/shutdown smokes, visual
-checks at desktop and narrow widths, `git diff --check`, and the H6 write-set
-audit before handoff.
+Run root npm checks (74 repository tests), H2 checks (42 focused tests, five
+assembled QA groups, seven launcher/composition tests, and the 684-module
+production build), locked `uv` checks and 32 Python tests, golden and submission
+validation, all eight launcher fixture/local/failure/shutdown smoke scenarios,
+visual checks at desktop and narrow widths, `git diff --check`, and the H6
+write-set audit before handoff.
+
+The verified bundle remains 897.64 kB minified / 296.57 kB gzip for JavaScript
+and 47.44 kB for CSS, so Vite's greater-than-500-kB warning remains an accepted
+limitation rather than a passing performance claim. H2 is read-only, uses no LLM
+for the verified deterministic path, and executes no control action. Verification
+does not establish official data, validation metrics, organizer score,
+deployment, remote CI, formal screenshots, or general network isolation.

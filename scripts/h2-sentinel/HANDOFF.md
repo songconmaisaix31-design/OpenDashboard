@@ -3,7 +3,7 @@
 ## Identity and boundary
 
 - Gate: `H6` integration and packaging.
-- Branch: `songconmaisaix31-design/h2-integration`
+- Branch: `competition/h2-sentinel`
 - Frozen base: `b706678123461f407ca89d905cac920b007a17ba`
 - Integration scope: root composition, launcher, Vite boundary, root scripts,
   H2 CI, ignores, notices, and focused H6 verification only.
@@ -56,8 +56,12 @@ this file does not claim its own not-yet-created Git object ID.
   executable path, filesystem path, hostname, or general URL option.
 - Local mode uses
   `uv run --locked --extra dev python -m h2_analytics --port <port>` from the
-  accepted analytics project. It waits for HTTP 200, no redirect, a success
-  envelope, and `data.status === "healthy"` before starting Web.
+  accepted analytics project. It waits for HTTP 200 without redirect and
+  accepts only the exact closed H0 success envelope plus the closed H1 health
+  fields and provenance: the canonical namespace, literal `127.0.0.1`, stable
+  version fields, and matching rule/configuration versions. Minimal envelopes,
+  wrong namespaces, `localhost`, extra top-level fields, and redirects never
+  produce `READY`.
 - A ready record contains `event`, `mode`, `webUrl`, `analyticsUrl`, `webPid`,
   and `analyticsPid`. Every emitted URL uses literal `127.0.0.1`.
 - Owned child trees are cleaned on startup failure, IPC-controlled smoke
@@ -91,15 +95,15 @@ select different loopback ports.
 | --- | --- |
 | `npm ci` | Passed; 31 locked packages installed. |
 | `npm run typecheck` | Passed with strict TypeScript. |
-| `npm run test` | Passed; 65 tests. |
-| `npm run build` | Passed; 679 modules. Vite reported the known large-chunk warning. |
-| `npm run check` | Passed; typecheck, 65 tests, and production build. |
+| `npm run test` | Passed; 74 repository tests. |
+| `npm run build` | Passed; 684 modules. JavaScript was 897.64 kB minified / 296.57 kB gzip and CSS was 47.44 kB. Vite reported the known large-chunk warning. |
+| `npm run check` | Passed; typecheck, 74 tests, and the 684-module production build. |
 | `npm run h2:build` | Passed; production H2 composition included in the Web bundle. |
-| `npm run h2:check` | Passed; typecheck, 33 focused H2 tests, QA contract checks, 7 launcher/composition tests, and build. |
-| `npm run h2:smoke` | Passed; Fixture no-analytics, occupied Web, redirecting unhealthy sidecar, occupied analytics, Local golden/export/cleanup, and production-preview proxy cases. |
+| `npm run h2:check` | Passed; typecheck, 42 focused H2 tests, five assembled QA groups, 7 launcher/composition tests, and the 684-module build. |
+| `npm run h2:smoke` | Passed; all 8 scenarios: Fixture no-analytics/cleanup, occupied Web, redirect rejection, malformed health lookalikes, canonical external sidecar ownership, occupied analytics, Local golden/export/cleanup, and production-preview proxy. |
 | `uv lock --check` | Passed; 36 locked packages resolved. |
 | `uv sync --locked --extra dev` | Passed; 30 packages checked. |
-| `uv run --locked --extra dev python -m pytest` | Passed; 24 tests, with one upstream Starlette `httpx` deprecation warning. |
+| `uv run --locked --extra dev python -m pytest` | Passed; 32 tests, with one upstream Starlette `httpx` deprecation warning. |
 | `python -m h2_analytics.tools.smoke_golden` through locked `uv run` | Passed; C03/C04, corrected C04 impact, two submission rows. |
 | `python -m h2_analytics.tools.validate_submission artifacts/submission.csv` through locked `uv run` | Passed; exact 16 columns and two rows. |
 | H6 Local same-origin golden smoke | Passed; deterministic no-LLM answer, C03 HTML report, `submission.csv`, Python submission validator, READY PID exit, and both ports rebound. |
@@ -109,22 +113,30 @@ select different loopback ports.
 
 ## Post-assembly status and remaining limitations
 
-- Plugin fix source `92f7b78` resolves the previously routed Fixture report
-  mismatch: single-event, period, and quality Fixture reports now produce safe,
-  deterministic HTML. Submission export remains CSV.
-- H4 assembled acceptance commit `d6b4538` reports four assembly checks as
-  `PASS`, with zero `FAIL` and zero `SKIP`. Visual verification remains manual;
-  this handoff does not claim an automated screenshot regression suite.
-- The post-assembly final candidate passes 66 generic tests and 34 focused H2
-  tests. Its production bundle is about 887 kB minified (about 293 kB gzip),
-  and Vite reports its standard greater-than-500-kB warning. No speculative
-  split or new dependency was added during composition.
+- Local analytics now maps all six report kinds to their closed formats:
+  single-event diagnosis, period summary, and quality are HTML; analysis result
+  and validation metrics are JSON; submission is CSV. Fixture single-event,
+  period, and quality reports likewise produce deterministic safe HTML.
+- The Live plugin exposes exactly 12 fixed `/api/v1/h2-sentinel` routes. Deep
+  fail-closed validation checks the complete nested envelopes, provenance,
+  request identity, cross-object correlations, series integrity, report format
+  and hash, and assistant citation integrity before data reaches the UI.
+- The assembled QA runner reports five automated groups as `PASS`, with zero
+  `FAIL`. Visual verification remains manual; this handoff does not claim an
+  automated screenshot regression suite or a formal screenshot artifact.
+- The final candidate passes 74 repository tests, 42 focused H2 tests, 32 Python
+  tests, and 7 launcher/composition tests. Its 684-module production bundle is
+  897.64 kB minified / 296.57 kB gzip for JavaScript and 47.44 kB for CSS. Vite
+  retains its standard greater-than-500-kB warning; no speculative split or new
+  dependency was added during composition.
+- The verified H2 path is read-only. The deterministic assistant uses no LLM,
+  and neither Fixture nor Local mode executes a control action.
 - No official dataset, official validation metric, organizer score, deployment,
   or production remote-host behavior was tested or claimed.
-- The H2 workflow is committed but a remote GitHub Actions run is not local
-  runtime evidence.
-- Manual Chrome review is visual evidence from this worktree; no screenshots
-  were committed.
+- The H2 workflow is committed, but no remote GitHub Actions result is claimed
+  as current runtime evidence and no general network-isolation proof exists.
+- Manual Chrome review is visual evidence from this worktree; no formal
+  screenshots were committed.
 
 ## Write-set and memory
 
