@@ -21,7 +21,7 @@
 | R09 | Official CSV import and quality record | Not delivered | Official data is absent. |
 | R10 | Versioned validation report and metrics | Not delivered | No matching policy/metrics artifact exists. |
 | R11 | Desktop and narrow-width visual evidence | Manual pass; assets not delivered | Human Chrome review at desktop and 390x844 found no document-width overflow; no automated screenshot suite or committed images exists. |
-| R12 | TypeScript, Web, launcher, Python, and diff checks | Passed in H6 record | 65 generic, 33 focused H2, 7 launcher/composition, and 24 Python tests passed; Python emitted one upstream Starlette `httpx` warning. |
+| R12 | TypeScript, Web, launcher, Python, and diff checks | Historical H6 and final post-assembly pass | H6 recorded 65 generic, 33 focused H2, 7 launcher/composition, and 24 Python tests; the final rerun recorded 66 repository and 34 focused H2 tests. Python emitted one upstream Starlette `httpx` warning in the H6 record. |
 | R13 | Third-party notice and asset review | Notice passed; assets not delivered | `THIRD_PARTY_NOTICES.md` inventories shipped dependencies; screenshots/datasets/reports are absent and need review before distribution. |
 | R14 | Release/archive manifest and hashes | Not delivered | There is no release or deployment archive proof. |
 
