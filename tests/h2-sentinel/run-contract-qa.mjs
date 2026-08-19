@@ -138,7 +138,7 @@ run('C02a golden C03/C04 fixtures conform to the published anomaly JSON Schema',
   assert.deepEqual(validateSchema(c04, schema), [])
 })
 
-run('C03 golden C04 impact is reproducible from the sanitized minute fixture', () => {
+run('C04 golden impact is reproducible from the sanitized minute fixture', () => {
   assertEventContract(c04, {
     code: 'C04',
     subtype: 'EXPORT_POWER_LIMIT_NOT_TRACKED',

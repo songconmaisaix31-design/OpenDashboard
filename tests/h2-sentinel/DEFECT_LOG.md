@@ -13,7 +13,7 @@
 | Relevant commit SHA | Frozen H0 gate `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4` |
 | Owned implementation track | H0 Contracts |
 | Golden-path blocker | yes |
-| Evidence artifact | `packages/h2-contracts/fixtures/tiny-valid-timeseries.csv`, `packages/h2-contracts/fixtures/golden-c04.json`, and the failing `C03` harness row |
+| Evidence artifact | `packages/h2-contracts/fixtures/tiny-valid-timeseries.csv`, `packages/h2-contracts/fixtures/golden-c04.json`, and the failing `C04` harness row |
 | Status | resolved by integration contract gate `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`; this QA branch remains on archived H0 and has not merged or cherry-picked the correction. |
 
 The analytics API, H2 plugin adapter, local sidecar, report exporter, and H2
