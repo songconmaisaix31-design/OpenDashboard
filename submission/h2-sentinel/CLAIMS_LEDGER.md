@@ -1,31 +1,32 @@
 # H2 Sentinel Claims Ledger
 
-Use this ledger for public copy, demo narration, and judge answers. “Evidence path” names an existing source or a future required path; a future path is not a claim that an artifact exists.
+Use this ledger for public copy, demo narration, and judge answers. Current
+evidence is limited to coordinator gate `6d04ee38f39d81801c87190f31eff0a1915862c6`
+and the H6 checks recorded on 2026-08-19.
 
-| ID | Permitted wording | Classification | Current evidence | Evidence path | Release rule |
-| --- | --- | --- | --- | --- | --- |
-| C01 | “Frozen H2 contracts define C01-C07, provenance, and exact submission-column order.” | Implemented contract fact | Source/schema package | `packages/h2-contracts/src/**`, `schema/**` | Permitted with “define”; do not say exporter ran. |
-| C02 | “Sanitized synthetic C03/C04 fixtures are available for contract-level demonstration.” | Fixture evidence | Fixture files and handoff | `packages/h2-contracts/fixtures/golden-c03.json`, `golden-c04.json` | Must say sanitized synthetic / Fixture. |
-| C03 | “Fixture provenance is distinct from live analysis.” | Implemented contract fact | Contract invariant | `packages/h2-contracts/README.md` | Permitted; no UI implication. |
-| C04 | “Recommendations are advisory and require human confirmation.” | Implemented contract fact | Contract invariant | `packages/h2-contracts/README.md` | Permitted; never describe direct control. |
-| C05 | “H2 Sentinel is a local-first diagnosis and decision-support product.” | Product requirement | PRD positioning | `docs/competition/h2-sentinel/PRD.md` | Say “designed/intended” until assembled. |
-| C06 | “The product provides six H2 pages, a browser workflow, and exports.” | Assembly pending | PRD requirement only | H6 runtime evidence | Prohibited until runtime/screens/exports verify it. |
-| C07 | “The local loopback analytics sidecar runs securely.” | Assembly pending | Architecture requirement only | H6 launcher/binding/smoke evidence | Prohibited until actual binding and failures are verified. |
-| C08 | “Official CSV data was imported and analyzed.” | Official-data unavailable | No authorized data/run artifact | H6 run manifest and quality report | Prohibited. |
-| C09 | “Validation precision, recall, F1, delay, or per-class results are X.” | Metric unavailable | No validation report | Versioned validation report | Prohibited; validation is not an organizer score. |
-| C10 | “H2 Sentinel achieved an official score, rank, or approval.” | Metric/approval unavailable | No organizer artifact | Organizer-issued record | Prohibited. |
-| C11 | “The app is deployed or online.” | Deployment unavailable | No deployment artifact | Release/deployment record | Prohibited. |
-| C12 | “Optional LLM rendering is part of the product.” | Roadmap / optional mode | PRD only | `docs/competition/h2-sentinel/PRD.md` | Say optional only; P0 needs no key. |
-| C13 | “Evidently or PyRCA is used.” | Roadmap / unadopted dependency | Decision gates only | `docs/competition/h2-sentinel/PRD.md` | Prohibited unless adopted, licensed, locked, verified. |
+| ID | Permitted wording | Classification | Current evidence | Release rule |
+| --- | --- | --- | --- | --- |
+| C01 | “H2 contracts define C01-C07, provenance, and the exact submission-column order.” | Implemented contract fact | `packages/h2-contracts/**` | Say “define”; do not infer an export run. |
+| C02 | “Sanitized synthetic C03/C04 Fixture data is available.” | Fixture evidence | Contract fixtures and assembled Fixture mode | Always say Fixture/synthetic; never official data or a score. |
+| C03 | “The generic Fixture Demo remains at `/`; H2 opens only with explicit `fixture` or `local` mode.” | Current H6 evidence | `apps/web/src/main.tsx`, H6 handoff | Do not say the generic entry was replaced. |
+| C04 | “Local H2 browser requests use a same-origin proxy to a validated loopback analytics target.” | Current H6 evidence | H6 source and smoke | Do not expand this into a network-isolation or deployment claim. |
+| C05 | “The Local golden path produced deterministic no-LLM C03 HTML output and a two-row, 16-column validated submission CSV.” | Local deterministic evidence | H6 smoke and Python validation | Scope the statement to the Local golden path. |
+| C06 | “The candidate passed 65 generic tests, 33 focused H2 tests, 7 launcher/composition tests, and 24 Python tests.” | Current H6 evidence | H6 handoff | Retain the upstream Starlette warning qualification for Python tests. |
+| C07 | “A human Chrome review checked desktop and 390x844 Fixture screens without document-width overflow.” | Manual Chrome evidence | H6 handoff | Do not call this automated screenshot regression or claim image assets exist. |
+| C08 | “The production H2 bundle is about 884 kB minified and Vite emitted its standard greater-than-500-kB warning.” | Current H6 evidence | H6 build result | Do not imply the bundle-warning issue is resolved. |
+| C09 | “Recommendations are advisory and require human confirmation.” | Implemented behavior and contract fact | H2 UI/contract/H6 review | Never describe direct equipment control. |
+| C10 | “The Fixture card exports verified HTML reports.” | Pending final candidate recheck | H6 reproduced JSON returned by HTML-labeled Fixture cards | Prohibited until the owner fix is assembled and revalidated. |
+| C11 | “Official CSV data was imported and analyzed.” | Unverified | No authorized official dataset/run | Prohibited. |
+| C12 | “Validation precision, recall, F1, delay, per-class results, score, rank, or approval are X.” | Unverified | No versioned validation or organizer artifact | Prohibited; a validation report would not equal an organizer score. |
+| C13 | “The app is deployed, online, or present on `main`.” | Unverified | No deployment or main publication evidence | Prohibited. |
+| C14 | “GitHub Actions verified this candidate remotely.” | Unverified | Workflow file is committed only | Prohibited until a specific remote run is available. |
+| C15 | “Optional LLM rendering is required for the golden path.” | False | Local smoke is deterministic and no-LLM | Prohibited. |
 
 ## Forbidden transformations
 
-- Fixture data must not become real plant data, official data, or validation result.
-- Contract defines/supports must not become application runs/exports.
-- Do not remove “planned” or “intended” from H6-pending UI, sidecar, report, CSV, and launcher statements.
-- A validation metric must not become an organizer score.
-- A recommendation must retain the human-confirmation qualification.
-
-## Update protocol
-
-When H6 produces evidence, add its commit SHA, command, date, mode, provenance, and redacted location to only the matching row. Do not upgrade adjacent claims by association.
+- Fixture data must not become live plant data, official data, a score, or a validation result.
+- Local deterministic smoke must not become an official-data or deployment claim.
+- Manual Chrome review must not become screenshot automation or a submitted screenshot.
+- A committed workflow must not become a remote CI result.
+- The unresolved Fixture JSON-versus-HTML mismatch must not become a resolved report claim.
+- Every recommendation retains the human-confirmation qualification.

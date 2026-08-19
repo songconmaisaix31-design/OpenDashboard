@@ -1,35 +1,32 @@
 # H2 Sentinel Judge Checklist
 
-This checklist separates evidence a judge can inspect now from evidence that must be shown after assembly. A PRD design or a contract definition does not complete a pending runtime item.
-
 ## Review framing
 
 - Product: local-first, evidence-first H2 EMS anomaly diagnosis and decision support.
 - Safety: no equipment control; recommendations remain advisory and require human confirmation.
-- Demonstration mode: sanitized synthetic Fixture, visibly labeled `FIXTURE`.
-- Core cases: C03 BESS direction anomaly and C04 PCC boundary tracking.
+- Primary cases: sanitized synthetic Fixture C03 BESS direction anomaly and C04 PCC boundary tracking.
+- Candidate: `6d04ee38f39d81801c87190f31eff0a1915862c6`, not a `main` publication or deployment.
 
-## Evaluation checklist
+## What can be inspected now
 
-| Item | What the judge should see | Evidence status now |
+| Item | Evidence status | Judge boundary |
 | --- | --- | --- |
-| Problem and user value | Operator workflow from anomaly to human review | Narrative available; runtime pending |
-| Safety boundary | No control claim; human-confirmation label | Contract/narrative available; UI pending |
-| Evidence-first diagnosis | Timing, variables, reference/constraint, conclusion | Contract available; UI pending |
-| Provenance | Clear Fixture versus live-analysis distinction | Contract available; UI pending |
-| C03 walkthrough | Event, evidence, impact, safety, recommendation | Synthetic fixture available; rendered walkthrough pending |
-| C04 walkthrough | Event and PCC boundary evidence | Synthetic fixture available; rendered walkthrough pending |
-| Data quality | Manifest, checks, warning/blocker display | Contract available; runtime pending |
-| Assistant | Ten structured questions and cited deterministic answer | Contract available; runtime pending |
-| Structured output | Exact CSV-column header and serializer evidence | Contract available; generated export pending |
-| Report | Readable diagnosis report with provenance/disclaimer | Pending |
-| Reproducibility | Launcher, checks, no-key Fixture path | Pending H6 evidence |
-| Evaluation | Versioned validation report separate from organizer score | Unavailable |
-| Legal and assets | Notices plus traceable capture sources | Pending |
+| Generic product entry | Current H6 evidence | `/` preserves the generic Fixture Demo. |
+| H2 entry | Current H6 evidence | Only `/h2-sentinel/?mode=fixture` and `/h2-sentinel/?mode=local` mount H2. |
+| Safety/provenance | Current H6 evidence | Human confirmation and `FIXTURE` visibility were manually reviewed. |
+| C03/C04 workflow | Current H6 evidence | Fixture overview/C03/C04 were manually checked at desktop and 390x844. |
+| Local deterministic path | Current H6 evidence | Local smoke produced C03 HTML output and a 16-column, two-row validated CSV. |
+| Reproducibility | Current H6 evidence | Launcher smoke covered six failure/success conditions; test results are recorded in the H6 handoff. |
+| Visual proof | Manual only | No committed screenshots and no automated screenshot regression. |
+| Fixture report cards | Pending final candidate recheck | HTML labels can currently yield JSON for non-submission Fixture reports. |
+| Evaluation metrics | Not delivered | No official-data validation report, score, rank, or approval. |
+| Deployment and remote CI | Not delivered | No deployment proof or remote GitHub Actions run; the workflow file alone is insufficient. |
+| Legal inventory | Current source evidence | Notices cover package dependencies; later assets/datasets need a separate review. |
 
 ## Plain answers
 
-1. **Is this controlling equipment?** No. It is decision support; recommendations require human confirmation.
-2. **Are these official-data results?** No. The available C03/C04 materials are sanitized synthetic Fixture inputs.
-3. **Where are the metrics?** They are unavailable until a versioned validation artifact exists; validation is not an organizer score.
-4. **How is it auditable?** The target connects timing, evidence, impact assumptions, safety checks, provenance, and exact export fields; H6 must prove the assembled path.
+1. **Is this controlling equipment?** No. It is decision support and requires human confirmation.
+2. **Are C03/C04 official-data results?** No. They are sanitized synthetic Fixture inputs.
+3. **What ran locally?** H6 recorded Fixture and Local launcher smoke, deterministic Local C03 HTML output, and a validated two-row/16-column CSV.
+4. **Where are metrics and score?** They are not delivered. A future validation result must remain separate from an organizer score.
+5. **Are screenshots and CI results included?** No. Chrome review was manual with no committed capture; the GitHub workflow is committed but no remote run is claimed.

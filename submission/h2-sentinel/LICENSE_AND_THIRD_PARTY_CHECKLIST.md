@@ -1,34 +1,40 @@
 # License and Third-Party Checklist
 
-## Current truth
+## Current candidate truth
 
-The root [NOTICE](../../NOTICE) says OpenDashboard uses third-party dependencies under their respective licenses and that no reviewed upstream source file was copied into the 2026-08-17 plugin-runtime baseline. No H2-specific `THIRD_PARTY_NOTICES.md` exists at this frozen gate, and this package adds no dependency or copied source.
+Candidate `6d04ee38f39d81801c87190f31eff0a1915862c6` includes
+[THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) and an updated root
+[NOTICE](../../NOTICE). The inventory names the locked Web runtime (Apache
+ECharts 6.1.0, React 19.2.4, React DOM 19.2.4 and listed transitives), local
+analytics runtime (FastAPI 0.141.1, Jinja 3.1.6, Pydantic 2.13.4, Uvicorn
+0.52.3), and development/test dependencies. It records that H2-owned paths
+consume packages and copy no upstream source file or asset.
 
-The H2 PRD lists intended P0 boundaries — Apache ECharts, FastAPI, Pydantic, LightGBM, pandas, scikit-learn, and Jinja — but this is not proof that they are present in an assembled H2 runtime. Evidently and PyRCA are optional; Merlion and broad orchestration/dashboard platforms are rejected. This document is an attribution input, not a complete notice.
+This establishes an inventory for this source candidate, not a license grant
+for future official datasets, models, screenshots, generated reports, or any
+external submission archive.
 
-## H6 completion checklist
+## Review checklist
 
-| Check | Required evidence | Status at frozen gate |
+| Check | Candidate status | Boundary |
 | --- | --- | --- |
-| Inventory actual shipped dependencies | Candidate lockfiles/manifests | Pending; H2 runtime not assembled |
-| Inventory copied code/assets/snippets | Path, source URL, license, attribution decision | Pending |
-| Confirm license compatibility | License/version and distribution obligations | Pending |
-| Create/update H2 notice | Reviewed `THIRD_PARTY_NOTICES.md` or approved notice mechanism | Pending; file absent |
-| Preserve root NOTICE accuracy | Review against actual candidate dependencies | Pending |
-| Exclude rejected code | Diff and inventory review | Pending |
-| Authorize dataset inclusion | Organizer terms/license and inclusion decision | Pending; official data absent |
-| Verify report/screenshot assets | Asset origin, permission, attribution | Pending; no assets captured |
+| Inventory shipped package dependencies | Recorded | Source: root lockfile and `services/h2-analytics/uv.lock`. |
+| Identify copied source/assets | Recorded as none in H2-owned paths | Re-review every later imported asset or snippet. |
+| Preserve required notices | Recorded | Retain `NOTICE` and `THIRD_PARTY_NOTICES.md` in distributions. |
+| Default deterministic analytics dependency set | Recorded | Optional `lightgbm` is not installed or required by the default launcher/smoke path. |
+| pandas and scikit-learn | Not shipped | They are not declared H2 dependencies. |
+| Official data, models, screenshots, generated reports | Not delivered | Require separate origin, license, authorization, and redaction review. |
+| Final distribution compatibility | Not certified | Review the actual archive and organizer terms before release. |
 
-## Required attribution record
+## Submission safeguards
 
-```text
-name | version/commit | purpose | source URL | license | copied? | notice location | reviewer/date
-```
+- Do not include private data, credentials, or unlicensed assets.
+- Do not treat the absence of copied H2 source as proof that a future asset is reusable.
+- Keep Fixture data labeled synthetic and do not append an official dataset without its authorization record.
+- A screenshot may be included only after its capture context and asset origin are recorded; none is currently committed.
 
-Do not say an intended library is used until the record and assembled candidate confirm it. Do not include private data, credentials, or unlicensed assets in a submission archive.
+## Sources
 
-## Source basis
-
-- [H2 PRD](../../docs/competition/h2-sentinel/PRD.md)
-- [Root NOTICE](../../NOTICE)
-- [H2 contracts](../../packages/h2-contracts/README.md)
+- [Third-party notices](../../THIRD_PARTY_NOTICES.md)
+- [Root notice](../../NOTICE)
+- [H6 integration handoff](../../scripts/h2-sentinel/HANDOFF.md)
