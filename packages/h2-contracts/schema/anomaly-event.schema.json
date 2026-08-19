@@ -27,6 +27,103 @@
     "provenance",
     "requiresHumanConfirmation"
   ],
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "code": { "const": "C01" },
+            "subtype": { "const": "SETPOINT_OSCILLATION" },
+            "impact": {
+              "type": "object",
+              "required": ["metric"],
+              "properties": {
+                "metric": { "const": "bess_extra_regulation_energy_kwh" }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": { "const": "C02" },
+            "subtype": { "const": "CAPACITY_NOT_SYNCHRONIZED" },
+            "impact": {
+              "type": "object",
+              "required": ["metric"],
+              "properties": {
+                "metric": { "const": "unserved_elz_energy_kwh" }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": { "const": "C03" },
+            "subtype": { "const": "BESS_DIRECTION_REVERSED" },
+            "impact": {
+              "type": "object",
+              "required": ["metric"],
+              "properties": {
+                "metric": { "const": "abnormal_grid_exchange_energy_kwh" }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": { "const": "C04" },
+            "subtype": { "enum": ["EXPORT_POWER_LIMIT_NOT_TRACKED", "IMPORT_POWER_LIMIT_NOT_TRACKED"] },
+            "impact": {
+              "type": "object",
+              "required": ["metric"],
+              "properties": {
+                "metric": { "const": "pcc_power_limit_violation_energy_kwh" }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": { "const": "C05" },
+            "subtype": { "enum": ["EXPORT_ENERGY_QUOTA_RISK", "IMPORT_ENERGY_QUOTA_RISK"] },
+            "impact": {
+              "type": "object",
+              "required": ["metric"],
+              "properties": {
+                "metric": { "const": "grid_energy_quota_deviation_kwh" }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": { "const": "C06" },
+            "subtype": { "enum": ["AVOIDABLE_START_STOP", "INEFFICIENT_POWER_ALLOCATION"] },
+            "impact": {
+              "type": "object",
+              "required": ["metric"],
+              "properties": {
+                "metric": { "const": "extra_energy_consumption_kwh" }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "code": { "const": "C07" },
+            "subtype": { "enum": ["CHARGE_HEADROOM_SHORTFALL", "DISCHARGE_RESERVE_SHORTFALL"] },
+            "impact": {
+              "type": "object",
+              "required": ["metric"],
+              "properties": {
+                "metric": { "const": "bess_regulation_reserve_shortfall_kwh" }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
   "properties": {
     "schemaVersion": { "const": 1 },
     "eventId": { "type": "string", "minLength": 1 },
@@ -209,7 +306,7 @@
           "checkId": { "type": "string", "minLength": 1 },
           "title": { "type": "string", "minLength": 1 },
           "status": {
-            "enum": ["passed", "warning", "failed", "not_applicable"]
+            "enum": ["passed", "warning", "failed", "unknown", "not_applicable"]
           },
           "message": { "type": "string", "minLength": 1 },
           "constraintId": { "type": "string" },

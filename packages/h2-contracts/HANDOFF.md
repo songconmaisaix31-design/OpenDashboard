@@ -87,3 +87,28 @@
 - Decide whether integration should add a package export/path alias for
   `@opendashboard/h2-contracts` or keep downstream imports relative during the
   competition branch assembly.
+
+## H0 Contract Correction (2026-08-19)
+
+- Correction predecessor: `513ac90ef6b3ae02c3a24d35aa15c8720d51c56c`.
+- The canonical safety status now includes `unknown`, preserving all prior
+  states. TypeScript and JSON Schema now correlate anomaly code, subtype, and
+  primary impact metric; focused negative tests reject cross-code combinations.
+- The sanitized CSV now contains 22 continuous one-minute rows from
+  `2026-01-05T10:20:00Z` through `2026-01-05T10:41:00Z`, matching the dataset
+  metadata and covering every C03/C04 event and evidence timestamp. Its
+  file-byte SHA-256 is
+  `799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca`, used
+  by the dataset manifest and every golden-fixture provenance record.
+- Dataset display metadata now uses concise Chinese labels while contract keys
+  remain English.
+
+### Commands and Results
+
+- `npm run typecheck` - passed.
+- `node --import tsx --test "packages/h2-contracts/test/*.test.ts"` - passed;
+  14 H2 contract tests passed.
+- `npm run test` - passed; 46 repository tests passed.
+- `npm run build` - passed.
+- `npm run check` - passed.
+- `git diff --check` - passed before commit.

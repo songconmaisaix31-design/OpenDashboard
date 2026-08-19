@@ -22,6 +22,19 @@
     "first_detection_time",
     "requires_human_confirmation"
   ],
+  "allOf": [
+    {
+      "oneOf": [
+        { "properties": { "anomaly_code": { "const": "C01" }, "anomaly_subtype": { "const": "SETPOINT_OSCILLATION" }, "primary_impact_metric": { "const": "bess_extra_regulation_energy_kwh" } } },
+        { "properties": { "anomaly_code": { "const": "C02" }, "anomaly_subtype": { "const": "CAPACITY_NOT_SYNCHRONIZED" }, "primary_impact_metric": { "const": "unserved_elz_energy_kwh" } } },
+        { "properties": { "anomaly_code": { "const": "C03" }, "anomaly_subtype": { "const": "BESS_DIRECTION_REVERSED" }, "primary_impact_metric": { "const": "abnormal_grid_exchange_energy_kwh" } } },
+        { "properties": { "anomaly_code": { "const": "C04" }, "anomaly_subtype": { "enum": ["EXPORT_POWER_LIMIT_NOT_TRACKED", "IMPORT_POWER_LIMIT_NOT_TRACKED"] }, "primary_impact_metric": { "const": "pcc_power_limit_violation_energy_kwh" } } },
+        { "properties": { "anomaly_code": { "const": "C05" }, "anomaly_subtype": { "enum": ["EXPORT_ENERGY_QUOTA_RISK", "IMPORT_ENERGY_QUOTA_RISK"] }, "primary_impact_metric": { "const": "grid_energy_quota_deviation_kwh" } } },
+        { "properties": { "anomaly_code": { "const": "C06" }, "anomaly_subtype": { "enum": ["AVOIDABLE_START_STOP", "INEFFICIENT_POWER_ALLOCATION"] }, "primary_impact_metric": { "const": "extra_energy_consumption_kwh" } } },
+        { "properties": { "anomaly_code": { "const": "C07" }, "anomaly_subtype": { "enum": ["CHARGE_HEADROOM_SHORTFALL", "DISCHARGE_RESERVE_SHORTFALL"] }, "primary_impact_metric": { "const": "bess_regulation_reserve_shortfall_kwh" } } }
+      ]
+    }
+  ],
   "properties": {
     "pred_event_id": { "type": "string", "minLength": 1 },
     "start_time": { "type": "string", "minLength": 1 },

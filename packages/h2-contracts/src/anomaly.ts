@@ -27,6 +27,9 @@ type H2AnomalySubtypeMap = typeof H2_ANOMALY_SUBTYPES_BY_CODE
 export type H2AnomalySubtype =
   H2AnomalySubtypeMap[keyof H2AnomalySubtypeMap][number]
 
+export type H2AnomalySubtypeForCode<TCode extends H2AnomalyCode> =
+  H2AnomalySubtypeMap[TCode][number]
+
 export const H2_SEVERITIES = ['low', 'medium', 'high', 'critical'] as const
 
 export type H2Severity = (typeof H2_SEVERITIES)[number]
@@ -43,6 +46,9 @@ export const H2_PRIMARY_IMPACT_METRIC_BY_CODE = {
 
 export type H2ImpactMetric =
   (typeof H2_PRIMARY_IMPACT_METRIC_BY_CODE)[H2AnomalyCode]
+
+export type H2PrimaryImpactMetricForCode<TCode extends H2AnomalyCode> =
+  (typeof H2_PRIMARY_IMPACT_METRIC_BY_CODE)[TCode]
 
 export type H2ControlObject =
   | 'EMS_ELECTROLYZER_GROUP_CONTROL'
@@ -115,8 +121,8 @@ export interface H2EvidenceItem {
   readonly comparator?: H2EvidenceComparator
 }
 
-export interface H2ImpactResult {
-  readonly metric: H2ImpactMetric
+export interface H2ImpactResult<TCode extends H2AnomalyCode = H2AnomalyCode> {
+  readonly metric: H2PrimaryImpactMetricForCode<TCode>
   readonly value: number
   readonly unit: 'kWh' | 'kW' | 'percent' | 'minutes' | 'count'
   readonly formulaVersion: string
@@ -129,6 +135,7 @@ export type H2SafetyStatus =
   | 'passed'
   | 'warning'
   | 'failed'
+  | 'unknown'
   | 'not_applicable'
 
 export interface H2SafetyCheck {
@@ -160,11 +167,11 @@ export interface H2Recommendation {
 
 export type H2ReviewState = 'open' | 'confirmed' | 'dismissed' | 'resolved'
 
-export interface H2AnomalyEvent {
+export interface H2AnomalyEventForCode<TCode extends H2AnomalyCode> {
   readonly schemaVersion: 1
   readonly eventId: string
-  readonly code: H2AnomalyCode
-  readonly subtype: H2AnomalySubtype
+  readonly code: TCode
+  readonly subtype: H2AnomalySubtypeForCode<TCode>
   readonly title: string
   readonly startTime: string
   readonly endTime: string
@@ -174,7 +181,7 @@ export interface H2AnomalyEvent {
   readonly primaryControlObject: H2ControlObjectRef
   readonly affectedEquipment: readonly H2EquipmentRef[]
   readonly evidence: readonly H2EvidenceItem[]
-  readonly impact: H2ImpactResult
+  readonly impact: H2ImpactResult<TCode>
   readonly safetyChecks: readonly H2SafetyCheck[]
   readonly recommendations: readonly H2Recommendation[]
   readonly rootCause: string
@@ -184,11 +191,22 @@ export interface H2AnomalyEvent {
   readonly requiresHumanConfirmation: boolean
 }
 
-export function isH2AnomalySubtypeForCode(
-  code: H2AnomalyCode,
-  subtype: H2AnomalySubtype,
-): boolean {
+export type H2AnomalyEvent = {
+  readonly [TCode in H2AnomalyCode]: H2AnomalyEventForCode<TCode>
+}[H2AnomalyCode]
+
+export function isH2AnomalySubtypeForCode<TCode extends H2AnomalyCode>(
+  code: TCode,
+  subtype: string,
+): subtype is H2AnomalySubtypeForCode<TCode> {
   return (H2_ANOMALY_SUBTYPES_BY_CODE[code] as readonly string[]).includes(
     subtype,
   )
+}
+
+export function isH2PrimaryImpactMetricForCode<TCode extends H2AnomalyCode>(
+  code: TCode,
+  metric: string,
+): metric is H2PrimaryImpactMetricForCode<TCode> {
+  return H2_PRIMARY_IMPACT_METRIC_BY_CODE[code] === metric
 }

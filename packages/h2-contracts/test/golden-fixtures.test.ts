@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
 
 import {
   H2_PRIMARY_IMPACT_METRIC_BY_CODE,
+  H2_FIXTURE_DATASET,
   H2_GOLDEN_C03_EVENT,
   H2_GOLDEN_C04_EVENT,
+  isH2PrimaryImpactMetricForCode,
   isH2AnomalySubtypeForCode,
   type H2AnomalyEvent,
 } from '../src/index.ts'
@@ -56,9 +59,25 @@ describe('H2 golden fixtures', () => {
     const invalidRows = parseCsv(csvFixture('tiny-invalid-timeseries.csv'))
 
     assert.equal(validRows.headers[0], 'timestamp')
-    assert.equal(validRows.rows.length, 3)
-    assert.equal(new Set(validRows.rows.map((row) => row.timestamp)).size, 3)
+    assert.deepEqual(
+      [...validRows.headers].sort(),
+      H2_FIXTURE_DATASET.fields.map(({ name }) => name).sort(),
+    )
+    assert.equal(validRows.rows.length, H2_FIXTURE_DATASET.rowCount)
+    assert.equal(
+      validRows.rows[0]?.timestamp,
+      H2_FIXTURE_DATASET.timeRange.startTime,
+    )
+    assert.equal(
+      validRows.rows.at(-1)?.timestamp,
+      H2_FIXTURE_DATASET.timeRange.endTime,
+    )
+    assertContinuousOneMinuteSamples(validRows.rows)
     assert(validRows.rows.every((row) => row.pcc_power_kw !== ''))
+    assertGoldenEventEvidenceIsCovered(validRows.rows, H2_GOLDEN_C03_EVENT)
+    assertGoldenEventEvidenceIsCovered(validRows.rows, H2_GOLDEN_C04_EVENT)
+    assertGoldenEvidenceMatchesCsv(validRows.rows, H2_GOLDEN_C03_EVENT)
+    assertGoldenEvidenceMatchesCsv(validRows.rows, H2_GOLDEN_C04_EVENT)
 
     assert.equal(invalidRows.rows.length, 3)
     assert.notEqual(
@@ -68,10 +87,36 @@ describe('H2 golden fixtures', () => {
     assert(invalidRows.rows.some((row) => row.pcc_power_kw === ''))
     assert(invalidRows.rows.some((row) => Number(row.bess_soc_percent) > 90))
   })
+
+  it('uses the real CSV byte digest in dataset and JSON fixture provenance', () => {
+    const csvBytes = readFileSync(
+      new URL('../fixtures/tiny-valid-timeseries.csv', import.meta.url),
+    )
+    const expectedFingerprint = `sha256:${createHash('sha256')
+      .update(csvBytes)
+      .digest('hex')}`
+
+    assert.equal(H2_FIXTURE_DATASET.fingerprint, expectedFingerprint)
+    assert.equal(H2_FIXTURE_DATASET.provenance.datasetFingerprint, expectedFingerprint)
+
+    for (const name of ['golden-c03.json', 'golden-c04.json']) {
+      const text = readFileSync(
+        new URL(`../fixtures/${name}`, import.meta.url),
+        'utf8',
+      )
+      const fixtureFingerprints = [
+        ...text.matchAll(/"datasetFingerprint": "([^"]+)"/g),
+      ].map((match) => match[1])
+
+      assert(fixtureFingerprints.length > 0)
+      assert(fixtureFingerprints.every((value) => value === expectedFingerprint))
+    }
+  })
 })
 
 function assertEventInvariants(event: H2AnomalyEvent): void {
   assert(isH2AnomalySubtypeForCode(event.code, event.subtype))
+  assert(isH2PrimaryImpactMetricForCode(event.code, event.impact.metric))
   assert.equal(event.impact.metric, H2_PRIMARY_IMPACT_METRIC_BY_CODE[event.code])
   assert.equal(event.requiresHumanConfirmation, true)
   assert(event.confidence >= 0 && event.confidence <= 1)
@@ -88,6 +133,61 @@ function assertEventInvariants(event: H2AnomalyEvent): void {
   ]
 
   assert(referencedEvidenceIds.every((id) => evidenceIds.has(id)))
+}
+
+function assertContinuousOneMinuteSamples(
+  rows: readonly Record<string, string>[],
+): void {
+  for (let index = 1; index < rows.length; index += 1) {
+    const previousTimestamp = rows[index - 1]?.timestamp
+    const currentTimestamp = rows[index]?.timestamp
+    assert(previousTimestamp)
+    assert(currentTimestamp)
+    assert.equal(
+      Date.parse(currentTimestamp) - Date.parse(previousTimestamp),
+      H2_FIXTURE_DATASET.samplingIntervalMinutes * 60_000,
+    )
+  }
+}
+
+function assertGoldenEventEvidenceIsCovered(
+  rows: readonly Record<string, string>[],
+  event: H2AnomalyEvent,
+): void {
+  const timestamps = new Set(rows.map((row) => row.timestamp))
+  assert(timestamps.has(event.startTime))
+  assert(timestamps.has(event.endTime))
+  event.evidence.forEach((item) => {
+    if (item.timestamp) {
+      assert(timestamps.has(item.timestamp))
+    }
+    if (item.interval) {
+      assert(timestamps.has(item.interval.startTime))
+      assert(timestamps.has(item.interval.endTime))
+    }
+  })
+}
+
+function assertGoldenEvidenceMatchesCsv(
+  rows: readonly Record<string, string>[],
+  event: H2AnomalyEvent,
+): void {
+  const rowsByTimestamp = new Map(rows.map((row) => [row.timestamp, row]))
+
+  event.evidence.forEach((item) => {
+    if (
+      item.kind !== 'measurement' ||
+      !item.timestamp ||
+      !item.variable ||
+      typeof item.actualValue !== 'number'
+    ) {
+      return
+    }
+
+    const row = rowsByTimestamp.get(item.timestamp)
+    assert(row, `missing source row for ${item.evidenceId}`)
+    assert.equal(Number(row[item.variable]), item.actualValue)
+  })
 }
 
 function assertFixtureIdentity(
