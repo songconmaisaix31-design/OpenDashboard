@@ -1,5 +1,42 @@
 # H2 Sentinel QA Handoff
 
+## Post-H6 assembly update (2026-08-19)
+
+- QA reassembly base: `6d04ee38f39d81801c87190f31eff0a1915862c6`.
+- Write boundary remains `tests/h2-sentinel/**` only; no root script, runtime,
+  submission, CI, dependency, or implementation file was changed.
+- `run-contract-qa.mjs` no longer turns A01-A08 into assembly `SKIP` rows.
+  After C01-C04 it starts the H6 public launcher in Fixture and Local modes and
+  invokes `assembled/run-assembled-qa.mjs`.
+- The assembled runner parses `--ready-json`, uses only local ephemeral ports,
+  validates owned PID exit and port rebind, and emits a redacted JSON summary.
+  It retains neither PIDs nor generated reports.
+- Independent Local API checks passed for import, analyze, C03/C04 events,
+  corrected C04 `29.333333333333332`, direct loopback Host/Origin policy,
+  deterministic no-LLM assistant, C03 HTML/hash/safe filename, exact 16-column
+  submission CSV, and redacted unknown-run error.
+- Launcher checks passed for Fixture-no-Python, occupied Web/analytics ports,
+  redirecting unhealthy sidecar timeout, and cleanup.
+- A source/HTTP gate verified generic and H2 entries, closed invalid-mode alert
+  path, and six navigation declarations. It is not visual automation.
+- H2-QA-002 was reproduced on the QA baseline and then fixed by the supplied
+  H2 Plugin dependency `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa` (cherry-pick
+  `93bc789` in this isolated QA tree). The rerun verified Fixture C03
+  `text/html`, a safe `.html` filename, and a matching SHA-256 descriptor.
+
+## Current rerun commands
+
+```text
+npm ci
+npm run h2:qa
+npm run h2:check
+git diff --check 6d04ee38f39d81801c87190f31eff0a1915862c6..HEAD
+```
+
+`npm run h2:qa` passes after the fixture correction. Manual desktop and 390 px
+review remains required because this lane intentionally adds no browser
+automation dependency.
+
 ## Ownership and base
 
 - Branch: `songconmaisaix31-design/h2-qa`
