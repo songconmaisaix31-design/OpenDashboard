@@ -31,7 +31,7 @@ these constants; no arbitrary route is accepted by this adapter.
 
 - `npm ci` completed from the locked root dependencies.
 - `npm run typecheck` passed.
-- `npm run test` passed: 54 tests, including Fixture, static registration,
+- At the original Wave 1 handoff, `npm run test` passed 54 tests, including Fixture, static registration,
   invalid URL, malformed response/redaction, timeout/cancellation, local-mode
   factory, provenance, and report artifact assertions.
 - `npm run build` passed through `npm run check`.
@@ -57,3 +57,34 @@ in the worker completion report after push succeeds.
 - A Vite library build of `plugins/h2-ems/src/index.ts` confirms that the public
   browser bundle has no `node:crypto` or `createHash` import and retains
   `crypto.subtle.digest`.
+
+## Post-assembly remote trust-boundary hardening
+
+- Every Live route now validates the complete closed envelope and its nested
+  H0 contract before returning data. Unknown fields, enum values, missing
+  members, non-finite/out-of-range numbers, malformed provenance, invalid ISO
+  timestamps, reversed ranges, and invalid event time order fail closed with
+  the stable redacted `remote_response_invalid` error.
+- Event validation imports the H0 anomaly codes, subtype/impact correlation
+  helpers, severities, provenance modes, and assistant question vocabulary.
+  Runtime enum constants that H0 does not yet export remain small local arrays
+  checked with `satisfies` against the canonical H0 union types. A future H0
+  runtime-vocabulary export or schema-code generation pass can remove those
+  arrays without changing this adapter's validation surface.
+- Dataset manifests require a plain CSV basename using the analytics ingestion
+  rules, matching mode/provenance and fingerprint metadata. Import and analysis
+  composites require matching dataset identity, row count, time range, and
+  exact event counts by code and severity.
+- Responses are bound to their request identity for quality, analysis,
+  overview, event, series, assistant, report, and submission calls. Assistant
+  responses also preserve the no-LLM request policy and the refused-control
+  boundary, preventing a structurally valid replay from changing UI claims.
+- Report validation correlates kind, format, media type, filename extension,
+  status, run/event request identity, and recomputes `contentHash` with the
+  shared browser-safe SHA-256 helper before the artifact reaches the UI.
+- Validators are separated into endpoint, anomaly, report, and primitive
+  modules. No validation dependency or Node runtime import was added.
+- Final branch verification passed `npm run h2:test` (40 tests), `npm run
+  check` (72 tests plus the 684-module production build), and `npm run
+  h2:smoke` (six launcher and real analytics compatibility scenarios). The
+  build retains the existing chunk-size warning; it has no validation failure.
