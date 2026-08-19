@@ -20,6 +20,7 @@ import {
 import { isEventArray } from './remote-anomaly-validation.ts'
 import {
   CLAIM_KINDS,
+  hasMatchingDatasetProvenance,
   isClosedRecord,
   isCountRecord,
   isFiniteNumber,
@@ -57,6 +58,11 @@ const QUALITY_CHECK_CODES = [
 const QUALITY_SEVERITIES = [
   'info', 'warning', 'blocking',
 ] as const satisfies readonly H2QualitySeverity[]
+const QUALITY_SEVERITY_BY_STATUS = {
+  passed: 'info',
+  warning: 'warning',
+  blocked: 'blocking',
+} as const
 const ANALYSIS_STATUSES = ['queued', 'running', 'completed', 'failed'] as const
 const ASSISTANT_QUESTION_IDS = H2_ASSISTANT_QUESTIONS.map(
   ({ questionId }) => questionId,
@@ -88,7 +94,7 @@ export function isCsvImportResult(value: unknown): value is H2CsvImportResult {
 export function isQualityReport(
   value: unknown,
 ): value is H2DataQualityReport {
-  return (
+  if (!(
     isClosedRecord(value, [
       'schemaVersion', 'reportId', 'datasetId', 'status', 'generatedAt',
       'rowCount', 'timeRange', 'checks', 'warnings', 'blockingReasons',
@@ -106,7 +112,8 @@ export function isQualityReport(
     isStringArray(value.warnings) &&
     isStringArray(value.blockingReasons) &&
     isProvenance(value.provenance)
-  )
+  )) return false
+  return hasConsistentQualitySummary(value as unknown as H2DataQualityReport)
 }
 
 export function isAnalysisRun(value: unknown): value is H2AnalysisRun {
@@ -137,7 +144,8 @@ export function isAnalysisRun(value: unknown): value is H2AnalysisRun {
       value.eventCountsBySeverity,
     ) &&
     isStringArray(value.warnings) &&
-    isProvenance(value.provenance)
+    isProvenance(value.provenance) &&
+    hasConsistentAnalysisProvenance(value as unknown as H2AnalysisRun)
   )
 }
 
@@ -225,7 +233,9 @@ function isDatasetField(value: unknown): boolean {
   )
 }
 
-function isQualityCheck(value: unknown): boolean {
+function isQualityCheck(
+  value: unknown,
+): value is H2DataQualityReport['checks'][number] {
   return (
     isClosedRecord(
       value,
@@ -246,6 +256,31 @@ function isQualityCheck(value: unknown): boolean {
     isOptionalFiniteNumberOrString(value, 'threshold') &&
     isOptionalString(value, 'unit') &&
     isProvenance(value.provenance)
+  )
+}
+
+function hasConsistentQualitySummary(
+  quality: H2DataQualityReport,
+): boolean {
+  const warnings = quality.checks
+    .filter(({ status }) => status === 'warning')
+    .map(({ message }) => message)
+  const blockingReasons = quality.checks
+    .filter(({ status }) => status === 'blocked')
+    .map(({ message }) => message)
+  const status = blockingReasons.length > 0
+    ? 'blocked'
+    : warnings.length > 0
+      ? 'warning'
+      : 'passed'
+  return (
+    quality.status === status &&
+    sameStrings(quality.warnings, warnings) &&
+    sameStrings(quality.blockingReasons, blockingReasons) &&
+    quality.checks.every((check) =>
+      check.severity === QUALITY_SEVERITY_BY_STATUS[check.status] &&
+      hasMatchingDatasetProvenance(check.provenance, quality.provenance),
+    )
   )
 }
 
@@ -321,7 +356,26 @@ function qualityMatchesDataset(
     quality.datasetId === dataset.datasetId &&
     quality.rowCount === dataset.rowCount &&
     quality.timeRange.startTime === dataset.timeRange.startTime &&
-    quality.timeRange.endTime === dataset.timeRange.endTime
+    quality.timeRange.endTime === dataset.timeRange.endTime &&
+    hasMatchingDatasetProvenance(quality.provenance, dataset.provenance)
+  )
+}
+
+function hasConsistentAnalysisProvenance(run: H2AnalysisRun): boolean {
+  return (
+    hasMatchingDatasetProvenance(run.provenance, run.dataset.provenance) &&
+    run.events.every((event) =>
+      hasMatchingDatasetProvenance(event.provenance, run.dataset.provenance),
+    )
+  )
+}
+
+function sameStrings(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  return left.length === right.length && left.every(
+    (value, index) => value === right[index],
   )
 }
 

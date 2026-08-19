@@ -88,9 +88,27 @@ in the worker completion report after push succeeds.
 - Report validation correlates kind, format, media type, filename extension,
   status, run/event request identity, and recomputes `contentHash` with the
   shared browser-safe SHA-256 helper before the artifact reaches the UI.
+- CSV import responses are bound to the exact request filename and the
+  SHA-256 digest of the exact UTF-8 request text. The browser helper emits the
+  same lowercase `sha256:<hex>` value as analytics ingestion; mismatches and
+  digest failures use the stable redacted `remote_response_invalid` error.
+- Quality summaries reproduce the analytics aggregation contract: check status
+  and severity must correlate, top-level status uses blocked-before-warning
+  precedence, and warnings/blocking reasons are exact ordered projections of
+  the checks.
+- Event evidence, safety-check, and recommendation identifiers must be unique.
+  Every impact, safety, and recommendation reference must be unique and resolve
+  within the event before the payload reaches the UI.
+- Dataset, quality/check, run, event, evidence, impact, safety, and
+  recommendation provenance must retain the same mode and dataset fingerprint.
+  These semantic checks mirror the current analytics construction path while
+  preserving H0's closed structural validation.
 - Validators are separated into endpoint, anomaly, report, and primitive
   modules. No validation dependency or Node runtime import was added.
-- Final branch verification passed `npm run h2:test` (42 tests), `npm run
-  check` (74 tests plus the 684-module production build), and `npm run
-  h2:smoke` (six launcher and real analytics compatibility scenarios). The
+- Final branch verification passed `npm run h2:test` (47 tests), `npm run
+  check` (79 tests plus the 684-module production build), and `npm run
+  h2:smoke` (eight launcher and real analytics compatibility scenarios). The
   build retains the existing chunk-size warning; it has no validation failure.
+
+The optional series `eventId` request binding and period-report `timeRange`
+binding remain under final-audit review and are not claimed by this follow-up.

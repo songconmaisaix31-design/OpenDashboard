@@ -15,6 +15,7 @@ import {
 
 import {
   CLAIM_KINDS,
+  hasMatchingDatasetProvenance,
   isClosedRecord,
   isFiniteNumber,
   isNonEmptyString,
@@ -98,7 +99,11 @@ export function isEvent(value: unknown): value is H2AnomalyEvent {
     !isProvenance(value.provenance) ||
     typeof value.requiresHumanConfirmation !== 'boolean'
   ) return false
-  return true
+  const event = value as unknown as H2AnomalyEvent
+  return (
+    hasConsistentEventReferences(event) &&
+    hasConsistentEventProvenance(event)
+  )
 }
 
 export function isEventArray(
@@ -201,4 +206,49 @@ function isRecommendation(value: unknown): boolean {
     value.requiresHumanConfirmation === true &&
     isProvenance(value.provenance)
   )
+}
+
+function hasConsistentEventReferences(event: H2AnomalyEvent): boolean {
+  const evidenceIds = event.evidence.map(({ evidenceId }) => evidenceId)
+  const safetyCheckIds = event.safetyChecks.map(({ checkId }) => checkId)
+  const recommendationIds = event.recommendations.map(
+    ({ recommendationId }) => recommendationId,
+  )
+  const knownEvidenceIds = new Set(evidenceIds)
+  const knownSafetyCheckIds = new Set(safetyCheckIds)
+  return (
+    isUnique(evidenceIds) &&
+    isUnique(safetyCheckIds) &&
+    isUnique(recommendationIds) &&
+    referencesKnownIds(event.impact.evidenceIds, knownEvidenceIds) &&
+    event.safetyChecks.every(({ evidenceIds: references }) =>
+      referencesKnownIds(references, knownEvidenceIds),
+    ) &&
+    event.recommendations.every((recommendation) =>
+      referencesKnownIds(recommendation.evidenceIds, knownEvidenceIds) &&
+      referencesKnownIds(recommendation.safetyCheckIds, knownSafetyCheckIds),
+    )
+  )
+}
+
+function hasConsistentEventProvenance(event: H2AnomalyEvent): boolean {
+  return [
+    ...event.evidence.map(({ provenance }) => provenance),
+    event.impact.provenance,
+    ...event.safetyChecks.map(({ provenance }) => provenance),
+    ...event.recommendations.map(({ provenance }) => provenance),
+  ].every((provenance) =>
+    hasMatchingDatasetProvenance(provenance, event.provenance),
+  )
+}
+
+function referencesKnownIds(
+  references: readonly string[],
+  knownIds: ReadonlySet<string>,
+): boolean {
+  return isUnique(references) && references.every((id) => knownIds.has(id))
+}
+
+function isUnique(values: readonly string[]): boolean {
+  return new Set(values).size === values.length
 }

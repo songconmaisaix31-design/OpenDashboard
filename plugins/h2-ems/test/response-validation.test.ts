@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { describe, it } from 'node:test'
 
 import {
@@ -398,6 +399,75 @@ describe('H2 EMS remote response validation', () => {
     )
   })
 
+  it('rejects a CSV import result replayed under another filename', async () => {
+    const fixtureText = await readFile(
+      new URL('../../../packages/h2-contracts/fixtures/tiny-valid-timeseries.csv', import.meta.url),
+      'utf8',
+    )
+    const canonicalResult = {
+      dataset: H2_FIXTURE_DATASET,
+      quality: H2_FIXTURE_QUALITY_REPORT,
+    }
+
+    await rejectsInvalid(() =>
+      sourceFor(envelope(canonicalResult)).importCsv({
+        filename: 'replayed.csv',
+        text: fixtureText,
+      }),
+    )
+  })
+
+  it('rejects contradictory quality summaries with otherwise valid shapes', async () => {
+    const message = H2_FIXTURE_QUALITY_REPORT.checks[0].message
+    const mutations: Array<(quality: JsonRecord) => void> = [
+      (quality) => {
+        const check = (quality.checks as JsonRecord[])[0] as JsonRecord
+        check.status = 'blocked'
+        check.severity = 'blocking'
+        quality.blockingReasons = [message]
+      },
+      (quality) => {
+        quality.status = 'warning'
+        quality.warnings = ['Unrelated warning']
+      },
+      (quality) => {
+        const check = (quality.checks as JsonRecord[])[0] as JsonRecord
+        check.status = 'warning'
+        check.severity = 'info'
+        quality.status = 'warning'
+        quality.warnings = [message]
+      },
+      (quality) => {
+        const check = (quality.checks as JsonRecord[])[0] as JsonRecord
+        check.status = 'blocked'
+        check.severity = 'blocking'
+        quality.status = 'blocked'
+        quality.blockingReasons = ['Different blocking reason']
+      },
+    ]
+
+    for (const mutate of mutations) {
+      const quality = clone(H2_FIXTURE_QUALITY_REPORT) as unknown as JsonRecord
+      mutate(quality)
+      await rejectsInvalid(() =>
+        sourceFor(envelope(quality)).getDataQuality(H2_FIXTURE_DATASET.datasetId),
+      )
+    }
+  })
+
+  it('rejects a CSV import result replayed for different UTF-8 content', async () => {
+    const canonicalResult = {
+      dataset: H2_FIXTURE_DATASET,
+      quality: H2_FIXTURE_QUALITY_REPORT,
+    }
+    await rejectsInvalid(() =>
+      sourceFor(envelope(canonicalResult)).importCsv({
+        filename: H2_FIXTURE_DATASET.sourceFilename,
+        text: 'timestamp,reading\npassword=not-for-ui,1\n',
+      }),
+    )
+  })
+
   it('binds series points to requested variables, range, and order', async () => {
     const request = {
       runId: H2_FIXTURE_ANALYSIS_RUN.runId,
@@ -459,6 +529,131 @@ describe('H2 EMS remote response validation', () => {
     const firstCitation = (duplicate.citations as JsonRecord[])[0] as JsonRecord
     ;(duplicate.citations as JsonRecord[]).push(clone(firstCitation))
     await rejectsInvalid(() => sourceFor(envelope(duplicate)).ask(request))
+  })
+
+  it('rejects duplicate and dangling event evidence and safety references', async () => {
+    const mutations: Array<(event: JsonRecord) => void> = [
+      (event) => {
+        const evidence = event.evidence as JsonRecord[]
+        evidence[1]!.evidenceId = evidence[0]!.evidenceId
+      },
+      (event) => {
+        const checks = event.safetyChecks as JsonRecord[]
+        checks[1]!.checkId = checks[0]!.checkId
+      },
+      (event) => {
+        const recommendations = event.recommendations as JsonRecord[]
+        recommendations.push(clone(recommendations[0]!))
+      },
+      (event) => {
+        ;(event.impact as JsonRecord).evidenceIds = ['missing-evidence']
+      },
+      (event) => {
+        const evidenceId = ((event.impact as JsonRecord).evidenceIds as string[])[0]
+        ;(event.impact as JsonRecord).evidenceIds = [evidenceId, evidenceId]
+      },
+      (event) => {
+        ;((event.safetyChecks as JsonRecord[])[0] as JsonRecord).evidenceIds = ['missing-evidence']
+      },
+      (event) => {
+        const check = (event.safetyChecks as JsonRecord[])[0] as JsonRecord
+        const evidenceId = (check.evidenceIds as string[])[0]
+        check.evidenceIds = [evidenceId, evidenceId]
+      },
+      (event) => {
+        ;((event.recommendations as JsonRecord[])[0] as JsonRecord).evidenceIds = ['missing-evidence']
+      },
+      (event) => {
+        const recommendation = (event.recommendations as JsonRecord[])[0] as JsonRecord
+        const evidenceId = (recommendation.evidenceIds as string[])[0]
+        recommendation.evidenceIds = [evidenceId, evidenceId]
+      },
+      (event) => {
+        ;((event.recommendations as JsonRecord[])[0] as JsonRecord).safetyCheckIds = ['missing-check']
+      },
+      (event) => {
+        const recommendation = (event.recommendations as JsonRecord[])[0] as JsonRecord
+        const checkId = (recommendation.safetyCheckIds as string[])[0]
+        recommendation.safetyCheckIds = [checkId, checkId]
+      },
+    ]
+
+    for (const mutate of mutations) {
+      const event = clone(H2_GOLDEN_C03_EVENT) as unknown as JsonRecord
+      mutate(event)
+      await rejectsInvalid(() =>
+        sourceFor(envelope(event)).getEvent(
+          H2_FIXTURE_ANALYSIS_RUN.runId,
+          H2_GOLDEN_C03_EVENT.eventId,
+        ),
+      )
+    }
+  })
+
+  it('rejects provenance contradictions across quality, run, and event data', async () => {
+    const foreignProvenance = {
+      ...H2_FIXTURE_PROVENANCE,
+      mode: 'LIVE_ANALYSIS',
+      datasetFingerprint: `sha256:${'0'.repeat(64)}`,
+    }
+    const eventMutations: Array<(event: JsonRecord) => void> = [
+      (event) => {
+        ;((event.evidence as JsonRecord[])[0] as JsonRecord).provenance = foreignProvenance
+      },
+      (event) => {
+        ;(event.impact as JsonRecord).provenance = foreignProvenance
+      },
+      (event) => {
+        ;((event.safetyChecks as JsonRecord[])[0] as JsonRecord).provenance = foreignProvenance
+      },
+      (event) => {
+        ;((event.recommendations as JsonRecord[])[0] as JsonRecord).provenance = foreignProvenance
+      },
+    ]
+
+    for (const mutate of eventMutations) {
+      const event = clone(H2_GOLDEN_C03_EVENT) as unknown as JsonRecord
+      mutate(event)
+      await rejectsInvalid(() =>
+        sourceFor(envelope(event)).getEvent(
+          H2_FIXTURE_ANALYSIS_RUN.runId,
+          H2_GOLDEN_C03_EVENT.eventId,
+        ),
+      )
+    }
+
+    const runMutations: Array<(run: JsonRecord) => void> = [
+      (run) => {
+        const quality = run.quality as JsonRecord
+        quality.provenance = foreignProvenance
+        for (const check of quality.checks as JsonRecord[]) {
+          check.provenance = foreignProvenance
+        }
+      },
+      (run) => { run.provenance = foreignProvenance },
+      (run) => {
+        const event = (run.events as JsonRecord[])[0] as JsonRecord
+        event.provenance = foreignProvenance
+        ;(event.impact as JsonRecord).provenance = foreignProvenance
+        for (const evidence of event.evidence as JsonRecord[]) {
+          evidence.provenance = foreignProvenance
+        }
+        for (const check of event.safetyChecks as JsonRecord[]) {
+          check.provenance = foreignProvenance
+        }
+        for (const recommendation of event.recommendations as JsonRecord[]) {
+          recommendation.provenance = foreignProvenance
+        }
+      },
+    ]
+
+    for (const mutate of runMutations) {
+      const run = clone(H2_FIXTURE_ANALYSIS_RUN) as unknown as JsonRecord
+      mutate(run)
+      await rejectsInvalid(() =>
+        sourceFor(envelope(run)).getOverview(H2_FIXTURE_ANALYSIS_RUN.runId),
+      )
+    }
   })
 
   it('correlates report kind, format, media type, filename, status, and content hash', async () => {

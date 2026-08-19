@@ -24,6 +24,7 @@ import {
   isIsoTimestamp,
   verifyRemoteIdentity,
 } from './remote-validation-primitives.ts'
+import { sha256 } from './sha256.ts'
 
 export interface H2EmsLiveAdapterOptions {
   readonly enabled: true
@@ -70,7 +71,20 @@ export function createLiveH2EmsDataSource(
   return {
     getMode: () => request(H2_EMS_LIVE_ROUTES.mode, undefined, isDatasetMode),
     listDatasets: () => request(H2_EMS_LIVE_ROUTES.datasets, undefined, isDatasetArray),
-    importCsv: (input) => request(H2_EMS_LIVE_ROUTES.importCsv, input, isCsvImportResult),
+    importCsv: async (input) => {
+      let expectedFingerprint: `sha256:${string}`
+      try {
+        expectedFingerprint = await sha256(input.text)
+      } catch {
+        throw new H2EmsAdapterError('remote_response_invalid', false)
+      }
+      return verifyRemoteIdentity(
+        await request(H2_EMS_LIVE_ROUTES.importCsv, input, isCsvImportResult),
+        ({ dataset }) =>
+          dataset.sourceFilename === input.filename &&
+          dataset.fingerprint === expectedFingerprint,
+      )
+    },
     getDataQuality: async (datasetId) => verifyRemoteIdentity(
       await request(H2_EMS_LIVE_ROUTES.quality, { datasetId }, isQualityReport),
       (quality) => quality.datasetId === datasetId,
