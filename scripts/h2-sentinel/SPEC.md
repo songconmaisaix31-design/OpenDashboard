@@ -55,7 +55,7 @@ available only from the two explicit, equivalent `/h2-sentinel` and
 
 ## Verification
 
-Run root npm checks (81 repository tests), H2 checks (49 focused tests, five
+Run root npm checks (89 repository tests), H2 checks (57 focused tests, five
 assembled QA groups, eight launcher/composition tests, and the 684-module
 production build), locked `uv` checks and 32 Python tests, golden and submission
 validation, all nine launcher fixture/local/failure/shutdown smoke scenarios,
