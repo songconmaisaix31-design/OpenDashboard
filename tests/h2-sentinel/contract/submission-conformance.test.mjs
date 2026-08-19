@@ -81,7 +81,7 @@ describe('H2 Sentinel QA submission conformance', () => {
         anomaly_code: 'C04',
         anomaly_subtype: 'EXPORT_POWER_LIMIT_NOT_TRACKED',
         primary_impact_metric: 'pcc_power_limit_violation_energy_kwh',
-        estimated_impact_value: 86.5,
+        estimated_impact_value: 29.333333333333332,
         requires_human_confirmation: true,
       },
     )

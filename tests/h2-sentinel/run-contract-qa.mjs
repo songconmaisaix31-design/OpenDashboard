@@ -11,6 +11,7 @@ const contractsDirectory = resolve(repositoryRoot, 'packages/h2-contracts')
 const passed = []
 const skipped = []
 const failed = []
+const canonicalC04ImpactKwh = 29.333333333333332
 
 function run(name, test) {
   try {
@@ -151,7 +152,11 @@ run('C03 golden C04 impact is reproducible from the sanitized minute fixture', (
         Math.max(Number(row.pcc_power_kw) - Number(row.pcc_export_limit_kw), 0) / 60,
       0,
     )
-  assert.equal(impact, c04.impact.value)
+  assert.equal(c04.impact.value, canonicalC04ImpactKwh)
+  assert.ok(
+    Math.abs(impact - canonicalC04ImpactKwh) < 1e-10,
+    `CSV-derived C04 impact must equal ${canonicalC04ImpactKwh} kWh`,
+  )
 })
 
 run('C04 report, submission, and redaction contracts retain safe export boundaries', () => {
