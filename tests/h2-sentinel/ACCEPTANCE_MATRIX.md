@@ -28,7 +28,7 @@ only an implemented dependency may change a row from `SKIP` to `PASS`.
 | --- | --- | --- | --- | --- |
 | C01 | Dataset fingerprint, row count, and deterministic fixture identity | `node tests/h2-sentinel/run-contract-qa.mjs` prints `PASS C01` | None | PASS |
 | C02 | C03 command-versus-BESS evidence, provenance, and human confirmation | Same command prints `PASS C02` | None | PASS |
-| C03 | C04 PCC-limit impact can be recomputed from sanitized minute samples | Same command prints `PASS C03` | None | PASS |
+| C03 | C04 PCC-limit impact can be recomputed from sanitized minute samples | Same command prints `PASS C03` against corrected gate `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94` | None | FAIL on archived H0; PASS required on corrected gate |
 | C04 | Report/submission surface and fixture redaction boundary | Same command prints `PASS C04`; public API test asserts exact C03/C04 submission values | None | PASS |
 | A01 | CSV import, quality warning/blocking result, and API success/error envelope | Invoke analytics API contract test after adapter assembly | H2 analytics API | SKIP |
 | A02 | Adapter activation, port implementation, and no hidden I/O in Fixture mode | Invoke plugin-runtime integration test after adapter assembly | H2 plugin adapter | SKIP |
