@@ -104,11 +104,13 @@ const bootstrapH2Sentinel = async (mode: H2Mode): Promise<void> => {
   )
 }
 
-const bootstrap = (): Promise<void> => {
+const bootstrap = async (): Promise<void> => {
   const entry = readApplicationEntry(window.location)
-  return entry.kind === 'generic'
-    ? bootstrapGenericDemo()
-    : bootstrapH2Sentinel(entry.mode)
+  if (entry.kind === 'generic') {
+    await bootstrapGenericDemo()
+    return
+  }
+  await bootstrapH2Sentinel(entry.mode)
 }
 
 void bootstrap().catch(() => {
