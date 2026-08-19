@@ -13,10 +13,10 @@
 | R01 | Candidate SHA and source inventory | Passed | Identifies H6 composition at `6d04ee3`; it is not a `main` publication. |
 | R02 | Windows and shell launcher commands | Passed | `npm run h2:fixture`, `npm run h2:local`, and wrappers are recorded in the H6 handoff. |
 | R03 | Fixture-only start without Python or LLM key | Passed | The smoke covered Fixture without analytics; no-LLM golden determinism is separately exercised in Local mode. |
-| R04 | Fixture C03 journey | Passed with report-format limitation | Mounted Fixture C03 UI was manually reviewed; do not claim a Fixture HTML download while the known mismatch is open. |
+| R04 | Fixture C03 journey | Passed | Mounted Fixture C03 UI was manually reviewed; `92f7b78` additionally makes its single-event report deterministic safe HTML. |
 | R05 | Fixture C04 detail and export journey | Passed for detail | C04 and corrected `29.333333333333332 kWh` were reviewed; do not upgrade this to official-data evidence. |
 | R06 | Generated `submission.csv` and validator | Passed in Local deterministic smoke | Two rows and the exact 16 columns passed the Python validator. |
-| R07 | Generated report evidence | Passed for Local C03 HTML; Fixture pending recheck | Local C03 HTML passed. Fixture HTML-labeled cards can return JSON, so that assertion remains open. |
+| R07 | Generated report evidence | Passed for Local C03 and designated Fixture HTML reports | `92f7b78` maps single-event, period, and quality Fixture reports to safe HTML; JSON/CSV kinds retain their own formats. |
 | R08 | Loopback health, proxy, and failures | Passed | Smoke covered redirecting unhealthy sidecar, occupied ports, Local cleanup, and preview proxy; no broad isolation claim follows. |
 | R09 | Official CSV import and quality record | Not delivered | Official data is absent. |
 | R10 | Versioned validation report and metrics | Not delivered | No matching policy/metrics artifact exists. |
@@ -32,8 +32,11 @@ occupied Web port, redirecting unhealthy sidecar, occupied analytics port,
 Local golden/export/cleanup, and production-preview proxy. This is executable
 candidate evidence; it is neither a production deployment nor a remote CI run.
 
-## Final-candidate hold
+## Report-format correction
 
-The current Fixture provider/report-card mismatch is H6-discovered and must be
-rechecked after its owner assembles a fix. Until then, retain the Local C03 HTML
-report evidence but do not claim Fixture HTML export parity.
+Plugin source `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa`, integrated by the
+coordinator as `abe454b`, resolves the H6-discovered Fixture format mismatch.
+It proves deterministic safe HTML only for single-event diagnosis, period
+summary, and quality reports. It does not change the evidence limits for JSON,
+CSV, official data, scores, deployment, remote CI, screenshots, or network
+isolation.

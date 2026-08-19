@@ -54,11 +54,13 @@ review checked the Fixture overview, C03, and C04 at desktop and 390x844 without
 document-width overflow. The production bundle is about 884 kB minified
 (about 292 kB gzip), so Vite emitted its standard greater-than-500-kB warning.
 
-One worker-owned Fixture report-format mismatch remains pending final-candidate
-revalidation: H3 cards label single-event, period, and quality reports as HTML,
-while the current H2 Fixture provider returns JSON for non-submission reports.
-Do not present the Fixture card as a verified HTML download. This does not
-affect the Local C03 HTML report evidence.
+Fixture report-format parity is resolved by plugin source commit
+`92f7b78027b9492a5a5fe8ced2e851ed4199aeaa`, integrated by the coordinator as
+`abe454b`. Single-event diagnosis, period summary, and quality Fixture reports
+now use deterministic safe HTML with matching media type and filename. JSON and
+CSV report kinds retain their corresponding formats. This resolves format parity
+only; it does not turn Fixture output into official data, a score, or a
+deployment artifact.
 
 ## Contents
 

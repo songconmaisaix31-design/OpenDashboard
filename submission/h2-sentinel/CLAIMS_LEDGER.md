@@ -15,7 +15,7 @@ and the H6 checks recorded on 2026-08-19.
 | C07 | “A human Chrome review checked desktop and 390x844 Fixture screens without document-width overflow.” | Manual Chrome evidence | H6 handoff | Do not call this automated screenshot regression or claim image assets exist. |
 | C08 | “The production H2 bundle is about 884 kB minified and Vite emitted its standard greater-than-500-kB warning.” | Current H6 evidence | H6 build result | Do not imply the bundle-warning issue is resolved. |
 | C09 | “Recommendations are advisory and require human confirmation.” | Implemented behavior and contract fact | H2 UI/contract/H6 review | Never describe direct equipment control. |
-| C10 | “The Fixture card exports verified HTML reports.” | Pending final candidate recheck | H6 reproduced JSON returned by HTML-labeled Fixture cards | Prohibited until the owner fix is assembled and revalidated. |
+| C10 | “Fixture single-event diagnosis, period summary, and quality reports export deterministic safe HTML with matching media type and filename.” | Current plugin evidence | Source `92f7b78`, coordinator integration `abe454b`, focused plugin test coverage | Scope to the three HTML report kinds; JSON and CSV retain their own formats. |
 | C11 | “Official CSV data was imported and analyzed.” | Unverified | No authorized official dataset/run | Prohibited. |
 | C12 | “Validation precision, recall, F1, delay, per-class results, score, rank, or approval are X.” | Unverified | No versioned validation or organizer artifact | Prohibited; a validation report would not equal an organizer score. |
 | C13 | “The app is deployed, online, or present on `main`.” | Unverified | No deployment or main publication evidence | Prohibited. |
@@ -28,5 +28,5 @@ and the H6 checks recorded on 2026-08-19.
 - Local deterministic smoke must not become an official-data or deployment claim.
 - Manual Chrome review must not become screenshot automation or a submitted screenshot.
 - A committed workflow must not become a remote CI result.
-- The unresolved Fixture JSON-versus-HTML mismatch must not become a resolved report claim.
+- Fixture HTML format parity must not become an official-data, score, deployment, or broad report-format claim.
 - Every recommendation retains the human-confirmation qualification.
