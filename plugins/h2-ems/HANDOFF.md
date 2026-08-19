@@ -103,6 +103,9 @@ in the worker completion report after push succeeds.
 - Event evidence, safety-check, and recommendation identifiers must be unique.
   Every impact, safety, and recommendation reference must be unique and resolve
   within the event before the payload reaches the UI.
+- Event arrays require a unique `eventId` after every event passes its deep
+  guard. This applies to run and list responses; evidence, safety-check, and
+  recommendation IDs intentionally remain scoped to their containing event.
 - Dataset, quality/check, run, event, evidence, impact, safety, and
   recommendation provenance must retain the same mode and dataset fingerprint.
   These semantic checks mirror the current analytics construction path while
@@ -114,9 +117,9 @@ in the worker completion report after push succeeds.
   infer a claim-kind correlation that the canonical fixture does not define.
 - Validators are separated into endpoint, anomaly, report, and primitive
   modules. No validation dependency or Node runtime import was added.
-- Final branch verification passed `npm run h2:test` (54 tests), `npm run
-  check` (86 tests plus the 684-module production build), and `npm run
-  h2:smoke` (eight launcher and real analytics compatibility scenarios). The
+- Final branch verification passed `npm run h2:test` (59 tests), `npm run
+  check` (91 tests plus the 684-module production build), and `npm run
+  h2:smoke` (nine launcher and real analytics compatibility scenarios). The
   build retains the existing chunk-size warning; it has no validation failure.
 
 The optional series `eventId` request binding and period-report `timeRange`

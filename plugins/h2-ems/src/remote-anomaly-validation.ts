@@ -109,7 +109,8 @@ export function isEvent(value: unknown): value is H2AnomalyEvent {
 export function isEventArray(
   value: unknown,
 ): value is readonly H2AnomalyEvent[] {
-  return Array.isArray(value) && value.every(isEvent)
+  if (!Array.isArray(value) || !value.every(isEvent)) return false
+  return new Set(value.map(({ eventId }) => eventId)).size === value.length
 }
 
 function isControlObject(value: unknown): boolean {
