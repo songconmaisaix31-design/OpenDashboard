@@ -2,46 +2,42 @@
 
 ## Identity and scope
 
-- Worker branch: `songconmaisaix31-design/h2-submission`
-- Immutable Wave 1 gate: `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4`
-- Canonical contract-correction integration SHA: `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`
-- Owned write path: `submission/h2-sentinel/**`
-- Scope: truthful submission documentation only. No product code, contracts, root manifests, tests, CI, start scripts, or main-branch operation changed.
+- Submission working branch: `songconmaisaix31-design/h2-submission-final`.
+- Original H6 integration gate: `8bcc8d59e352def535c26504683975959ff7f18d`.
+- Coordinator cherry-picked candidate: `6d04ee38f39d81801c87190f31eff0a1915862c6`.
+- Owned write path: `submission/h2-sentinel/**`.
+- Scope: current H6 evidence packaging only. No product code, contracts, root manifests, CI, launcher, tests, `MEMORY.md`, or `main` branch was modified.
 
-## Delivered
+## Delivered documentation
 
-- Product/architecture narrative and exactly ten narrative pages.
-- 3–5 minute Fixture demo script and 30-second fallback.
-- Screenshot capture plan, claims ledger, license checklist, judge checklist, and H6 runtime-evidence checklist.
-- Local documentation validator at `scripts/validate-submission.ps1`.
+- Updated README, claims ledger, runtime checklist, demo/fallback script, judge checklist, ten-page narrative, architecture narrative, screenshot plan, and license checklist for the assembled H6 candidate.
+- Kept explicit distinctions among current runtime checks, sanitized Fixture evidence, Local deterministic results, manual Chrome observations, and unverified or undelivered evidence.
+- Kept the package validator in `scripts/validate-submission.ps1` unchanged.
 
 ## Evidence basis
 
-- [H2 PRD](../../docs/competition/h2-sentinel/PRD.md)
-- [H2 multi-agent plan](../../docs/competition/h2-sentinel/MULTI_AGENT_TASKS.md)
-- [H2 branch overview](../../docs/competition/h2-sentinel/BRANCH_OVERVIEW.md)
-- [H2 contracts](../../packages/h2-contracts/README.md)
-- [H2 contract handoff](../../packages/h2-contracts/HANDOFF.md)
+- [H6 integration handoff](../../scripts/h2-sentinel/HANDOFF.md)
+- [H2 contracts handoff](../../packages/h2-contracts/HANDOFF.md)
+- [H2 analytics handoff](../../services/h2-analytics/HANDOFF.md)
+- [H2 plugin handoff](../../plugins/h2-ems/HANDOFF.md)
+- [H2 Web handoff](../../apps/web/src/features/h2-sentinel/HANDOFF.md)
+- [H2 QA matrix](../../tests/h2-sentinel/ACCEPTANCE_MATRIX.md)
 
-The package distinguishes contract facts, sanitized Fixture evidence, H6-pending assembly evidence, unavailable official-data metrics, and roadmap statements. It contains no screenshot, score, deployment claim, external approval, official dataset, generated report, or generated submission CSV.
+H6 records 65 generic tests, 33 focused H2 tests, 7 launcher/composition tests, and 24 Python tests. The Python suite emitted one upstream Starlette `httpx` deprecation warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
 
-The corrected sanitized C04 Fixture impact is `29.333333333333332 kWh` from
-eight inclusive one-minute rows at `(720 - 500) / 60`; no superseded C04
-expectation or claim remains in this owned package.
+## Known hold
 
-## Verification
+H6 reproduced a worker-owned mismatch: non-submission Fixture reports can return JSON while the H3 card labels them HTML. This package treats that as pending final-candidate revalidation. The verified Local C03 HTML report and two-row, exact-16-column `submission.csv` remain separate Local deterministic evidence.
+
+## Verification commands
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File submission/h2-sentinel/scripts/validate-submission.ps1
-git diff --check
+pwsh -NoProfile -File submission/h2-sentinel/scripts/validate-submission.ps1
+git diff --check 6d04ee38f39d81801c87190f31eff0a1915862c6..HEAD
 ```
 
-The validator checks required files, local Markdown links, exactly ten page sections, and obvious placeholder language. It does not validate an H2 runtime, exports, metrics, or screenshots.
-
-## H6 follow-up
-
-Use [RUNTIME_EVIDENCE_CHECKLIST.md](RUNTIME_EVIDENCE_CHECKLIST.md) and update [CLAIMS_LEDGER.md](CLAIMS_LEDGER.md) only with candidate-specific evidence. H6 must still close launcher, Fixture C03/C04 path, report/CSV export, loopback behavior if used, official-data path, validation labeling, visual QA, checks, notices, and archive evidence.
+The validator covers ten required documents, ten narrative pages, local links, and placeholder language. It does not validate runtime behavior, an owner fix, official data, validation metrics, deployment, remote CI, screenshots, or network isolation.
 
 ## Project memory
 
-`MEMORY.md` was not updated: it is outside this task's sole write allowlist.
+`MEMORY.md` was not updated because it is outside the sole write allowlist.

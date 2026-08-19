@@ -1,50 +1,67 @@
 # H2 Sentinel: Product and Architecture Narrative
 
-## Product narrative
+## Product and safety boundary
 
-H2 Sentinel / 氢哨 is designed for an operations engineer who must decide whether a weak-grid green-hydrogen EMS deviation is a cross-device coordination anomaly, what evidence supports it, and what bounded next check merits review. It turns data into a traceable workflow instead of an opaque alert, a classifier-only notebook, or an autonomous controller.
+H2 Sentinel / 氢哨 helps an operations engineer review a suspected weak-grid
+green-hydrogen EMS coordination anomaly through timing, evidence, impact,
+safety checks, provenance, and an advisory next step. It is decision support:
+recommendations require human confirmation and it does not control equipment,
+replace an EMS, dispatch power, or turn language output into a control action.
 
-```text
-data import -> quality result -> event -> time-aligned evidence
--> impact calculation -> safety checks -> advisory recommendation
--> human confirmation -> report and structured export
-```
-
-Its user value is traceability: event timing, equipment, evidence, assumptions, provenance, and the advisory status are visible before a person acts.
-
-## Safety and trust boundary
-
-The H2 source of truth requires: models detect, deterministic rules verify, AI explains, and humans decide. H2 Sentinel is not an EMS replacement, real-time industrial controller, autonomous dispatcher, or general-purpose agent platform. Recommendations that could influence operations require human confirmation.
-
-No H2 runtime or deployment has been verified in this worktree. Claims about a complete application, local sidecar, launcher, report, or CSV must await H6 evidence.
-
-## Intended architecture, not runtime proof
+## Assembled architecture
 
 ```text
-OpenDashboard Web shell
-  -> H2 Sentinel feature UI
-      -> H2 EMS data source
-          -> Fixture adapter OR loopback API adapter
-              -> trusted local analytics sidecar
+generic / -> existing Fixture Demo
+
+/h2-sentinel/?mode=fixture -> statically registered H2 EMS Fixture plugin
+/h2-sentinel/?mode=local   -> statically registered H2 EMS loopback plugin
+                                   -> same-origin /api/v1/h2-sentinel proxy
+                                       -> 127.0.0.1 deterministic analytics sidecar
 ```
 
-The intended sidecar is loopback-only with a fixed H2 API namespace, bounded validated input, redacted failure evidence, and no required outbound network. It is a competition-specific adapter, not a general plugin runtime and not proof that such a process runs today.
+Gate `6d04ee38f39d81801c87190f31eff0a1915862c6` preserves the generic default
+and accepts only the two explicit H2 modes. The Fixture path starts no Python
+service. The Local path uses a fixed namespace and a validated loopback target;
+it is not a general sidecar runtime, remote-host interface, dynamic plugin
+loader, arbitrary shell surface, or evidence of broad network isolation.
 
-## What exists at this gate
+## Current evidence
 
-[H2 contracts](../../packages/h2-contracts/README.md) define TypeScript and JSON Schema shapes for dataset manifests, quality, events, provenance, assistant answers, reports, API envelopes, and the exact `submission.csv` column order. They include sanitized synthetic golden C03/C04 fixtures. The contract handoff states that official data, analytics, plugin, Web UI, root wiring, launcher, and submission package were not changed by that track.
+The 2026-08-19 H6 record shows the assembled H2 feature, statically reviewed
+plugin service, launcher, and loopback proxy exercising C03/C04. The locked
+Local golden run produced deterministic no-LLM C03 HTML output and a two-row
+`submission.csv` whose validator confirmed the exact 16-column contract. The
+analytics service uses loopback Host/Origin checks and no permissive CORS policy;
+these source and smoke facts are not a claim of a deployed or independently
+penetration-tested service.
 
-This package adds documentation only. It creates no runtime artifact, score, screenshot, report, CSV export, release, approval, or third-party attribution record.
+Manual Chrome review at desktop and 390x844 verified the mounted Fixture
+overview, C03, C04, provenance, human-confirmation boundary, corrected C04
+impact of `29.333333333333332 kWh`, and no document-width overflow. No screenshot
+asset or automated visual-regression proof was produced.
 
-## Competition scope and limits
+## Provenance and known limitation
 
-The PRD P0 target is CSV validation, C01-C07 event vocabulary, evidence and impact presentation, safety checks, deterministic answers for ten official questions, report/CSV export, and six H2 views. C03 (BESS direction reversal) and C04 (PCC boundary tracking) are the primary story cases because sanitized fixtures exist for both.
+The C03/C04 Fixture remains sanitized synthetic evidence. `FIXTURE` must never
+be called official data, a plant result, a validation metric, or an organizer
+score. `LIVE_ANALYSIS` describes the explicit Local adapter mode, but no official
+dataset or official-data run is included or claimed.
 
-Official data, labels, validation metrics, event-level precision/recall/F1, organizer score, and deployment status are unavailable here. Keep them blank or explicitly unavailable until verified artifacts exist.
+The current Fixture provider has a worker-owned report-format mismatch: cards
+labeled HTML can return JSON for single-event, period, and quality reports.
+H6 reproduced it and did not mask it. The Local C03 HTML report passed; the
+Fixture HTML-card claim remains pending a final candidate recheck.
+
+## Current boundaries
+
+The candidate includes no official dataset, labels, versioned validation report,
+precision/recall/F1 result, organizer score, deployment record, remote GitHub
+Actions run, network-isolation proof, or committed screenshot asset. The H2
+workflow is committed, but a committed workflow is not proof of a remote run.
 
 ## Sources
 
-- [H2 PRD](../../docs/competition/h2-sentinel/PRD.md)
-- [H2 multi-agent plan](../../docs/competition/h2-sentinel/MULTI_AGENT_TASKS.md)
-- [H2 branch overview](../../docs/competition/h2-sentinel/BRANCH_OVERVIEW.md)
+- [H6 integration handoff](../../scripts/h2-sentinel/HANDOFF.md)
 - [H2 contracts handoff](../../packages/h2-contracts/HANDOFF.md)
+- [H2 analytics handoff](../../services/h2-analytics/HANDOFF.md)
+- [H2 QA acceptance matrix](../../tests/h2-sentinel/ACCEPTANCE_MATRIX.md)

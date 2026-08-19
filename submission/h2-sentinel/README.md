@@ -2,26 +2,63 @@
 
 ## Status
 
-This is a truthful pre-assembly competition-submission package for H2 Sentinel / 氢哨. It is based on immutable Wave 1 gate `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4`, with the canonical contract correction frozen on integration SHA `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`; it is not evidence of a runtime, deployment, official-data result, score, approval, or screenshot.
+This package records the assembled H6 candidate at coordinator gate
+`6d04ee38f39d81801c87190f31eff0a1915862c6`. H6 began from original integration
+gate `8bcc8d59e352def535c26504683975959ff7f18d`; the coordinator cherry-picked
+the accepted H6 work into the stated candidate. It is not a claim that `main`
+changed, that the application was deployed, or that a GitHub Actions workflow
+has run remotely.
 
-H2 Sentinel is a local-first supervision and diagnosis concept for weak-grid green-hydrogen EMS data. It presents evidence and advisory recommendations for human confirmation; it does not issue equipment commands or replace the EMS.
+H2 Sentinel / 氢哨 is a local-first, evidence-first H2 EMS diagnosis and
+decision-support application. It presents advisory recommendations that require
+human confirmation; it does not issue equipment commands or replace the EMS.
 
 ## Evidence labels
 
 | Label | Meaning |
 | --- | --- |
-| Implemented contract fact | Present in `packages/h2-contracts/**` at the gate. |
-| Fixture evidence | Sanitized synthetic C03/C04 data; not official data or a score. |
-| Assembly pending | Requires the future H6 integration candidate and runtime proof. |
-| Metric unavailable | Official-data, validation, organizer, or deployment evidence absent here. |
-| Roadmap | A PRD future option, not a present capability. |
+| Current H6 evidence | A reproducible command or manual check recorded for gate `6d04ee3` on 2026-08-19. |
+| Fixture evidence | Sanitized synthetic C03/C04 data, visibly `FIXTURE`; never official data, a score, or live plant evidence. |
+| Local deterministic evidence | The explicit loopback analytics path with deterministic fallback; it is not an official-data validation result. |
+| Manual Chrome evidence | A human desktop/390x844 observation, not screenshot automation and not a submitted image asset. |
+| Unverified or undelivered | Official data, scores, deployment, remote CI execution, network-isolation proof, and screenshot assets. |
 
-## Contract correction reference
+## Reproduction entry points
 
-For the sanitized C04 Fixture only, the canonical impact is
-`29.333333333333332 kWh`, derived from eight inclusive one-minute rows at
-`(720 - 500) / 60`. This is a corrected contract/Fixture fact, not an
-official-data metric or a runtime-performance claim.
+The generic Fixture Demo remains the default at `/`. H2 mounts only at these
+explicit modes:
+
+```text
+/h2-sentinel/?mode=fixture
+/h2-sentinel/?mode=local
+```
+
+From the repository root, use `npm run h2:fixture` for the no-Python Fixture
+path or `npm run h2:local` for the deterministic local sidecar path. Local
+browser requests stay same-origin; Vite proxies only
+`/api/v1/h2-sentinel` to a validated `127.0.0.1` target. The route does not
+prove network isolation beyond the exercised loopback policy.
+
+## Current H6 evidence and limitation
+
+At the candidate gate, `npm run test` passed 65 generic tests,
+`npm run h2:check` passed 33 focused H2 tests plus 7 launcher/composition tests,
+and the locked Python suite passed 24 tests with one upstream Starlette `httpx`
+deprecation warning. The H6 smoke covered six launcher conditions: Fixture
+without analytics, occupied Web port, redirecting unhealthy sidecar, occupied
+analytics port, Local golden/export/cleanup, and production-preview proxy.
+
+The Local golden path produced a deterministic no-LLM C03 HTML report and a
+two-row `submission.csv` validated against its exact 16 columns. Manual Chrome
+review checked the Fixture overview, C03, and C04 at desktop and 390x844 without
+document-width overflow. The production bundle is about 884 kB minified
+(about 292 kB gzip), so Vite emitted its standard greater-than-500-kB warning.
+
+One worker-owned Fixture report-format mismatch remains pending final-candidate
+revalidation: H3 cards label single-event, period, and quality reports as HTML,
+while the current H2 Fixture provider returns JSON for non-submission reports.
+Do not present the Fixture card as a verified HTML download. This does not
+affect the Local C03 HTML report evidence.
 
 ## Contents
 
@@ -37,9 +74,13 @@ official-data metric or a runtime-performance claim.
 
 ## Source inputs
 
-- [H2 PRD](../../docs/competition/h2-sentinel/PRD.md)
-- [H2 multi-agent plan](../../docs/competition/h2-sentinel/MULTI_AGENT_TASKS.md)
-- [H2 branch overview](../../docs/competition/h2-sentinel/BRANCH_OVERVIEW.md)
-- [Canonical H2 contracts](../../packages/h2-contracts/README.md)
+- [H6 integration handoff](../../scripts/h2-sentinel/HANDOFF.md)
+- [H2 contracts](../../packages/h2-contracts/README.md)
+- [H2 analytics handoff](../../services/h2-analytics/HANDOFF.md)
+- [H2 plugin handoff](../../plugins/h2-ems/HANDOFF.md)
+- [H2 Web handoff](../../apps/web/src/features/h2-sentinel/HANDOFF.md)
+- [H2 QA acceptance matrix](../../tests/h2-sentinel/ACCEPTANCE_MATRIX.md)
 
-Run `powershell -ExecutionPolicy Bypass -File submission/h2-sentinel/scripts/validate-submission.ps1` from the repository root to validate this package's required files, local links, ten-page structure, and placeholder scan.
+Run `pwsh -NoProfile -File submission/h2-sentinel/scripts/validate-submission.ps1`
+from the repository root to validate this package's required files, local links,
+ten-page structure, and placeholder scan.
