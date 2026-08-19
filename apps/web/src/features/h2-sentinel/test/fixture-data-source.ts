@@ -211,4 +211,3 @@ function assertReference(actual: string, expected: string): void {
 }
 
 export { H2_FIXTURE_PROVENANCE }
-

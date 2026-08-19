@@ -55,4 +55,3 @@ export function SafetyPanel({ event }: SafetyPanelProps) {
     </section>
   )
 }
-

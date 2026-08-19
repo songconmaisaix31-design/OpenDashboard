@@ -82,4 +82,3 @@ export function EChartsCanvas({ ariaLabel, className = '', option }: EChartsCanv
     />
   )
 }
-

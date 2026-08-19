@@ -122,4 +122,3 @@ export function EventsPage({ onNavigate, workspace }: EventsPageProps) {
     </div>
   )
 }
-

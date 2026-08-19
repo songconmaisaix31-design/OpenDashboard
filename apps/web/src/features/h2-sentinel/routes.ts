@@ -26,7 +26,11 @@ export function parseH2SentinelHash(hash: string): H2NavigationTarget {
 
   const route = routeCandidate as H2SentinelRoute
   if (route === 'diagnosis' && eventId) {
-    return { route, eventId: decodeURIComponent(eventId) }
+    try {
+      return { route, eventId: decodeURIComponent(eventId) }
+    } catch {
+      return { route: 'overview' }
+    }
   }
 
   return { route }
@@ -40,4 +44,3 @@ export function toH2SentinelHash(target: H2NavigationTarget): string {
 
   return `#h2/${target.route}${eventSegment}`
 }
-

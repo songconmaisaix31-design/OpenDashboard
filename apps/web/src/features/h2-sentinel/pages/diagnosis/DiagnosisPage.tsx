@@ -124,4 +124,3 @@ export function DiagnosisPage({ event, events, onNavigate, series, seriesError }
     </div>
   )
 }
-

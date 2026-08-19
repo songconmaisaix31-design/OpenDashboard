@@ -7,4 +7,3 @@ export {
   type H2NavigationTarget,
   type H2SentinelRoute,
 } from './routes.ts'
-

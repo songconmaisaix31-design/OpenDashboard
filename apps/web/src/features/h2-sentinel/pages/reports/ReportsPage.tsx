@@ -72,4 +72,3 @@ export function ReportsPage({ artifact, error, event, notice, onDownload, onExpo
 }
 
 export type { ReportDefinition }
-

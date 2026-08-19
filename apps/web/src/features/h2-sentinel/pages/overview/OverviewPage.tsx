@@ -145,7 +145,6 @@ export function OverviewPage({ onNavigate, workspace }: OverviewPageProps) {
     </div>
   )
 }
-
 function GoldenCase({
   code,
   event,
@@ -193,4 +192,3 @@ function ChartUnavailable({ message }: { readonly message: string | null }) {
     </div>
   )
 }
-
