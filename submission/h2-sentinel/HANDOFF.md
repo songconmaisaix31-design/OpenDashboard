@@ -23,7 +23,7 @@
 - [H2 Web handoff](../../apps/web/src/features/h2-sentinel/HANDOFF.md)
 - [H2 QA matrix](../../tests/h2-sentinel/ACCEPTANCE_MATRIX.md)
 
-The assembled verification recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine H2 smoke scenarios. Its production build processed 684 modules and emitted 899.97 kB minified JavaScript (297.13 kB gzip) plus 47.44 kB CSS, with the expected greater-than-500-kB warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
+The assembled verification recorded 92 repository tests, 60 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine H2 smoke scenarios. Its production build processed 684 modules and emitted 900.01 kB minified JavaScript (297.15 kB gzip) plus 47.44 kB CSS, with the expected greater-than-500-kB warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
 
 ## Resolved report-format correction
 

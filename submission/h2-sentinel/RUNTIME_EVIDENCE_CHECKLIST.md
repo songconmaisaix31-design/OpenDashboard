@@ -21,7 +21,7 @@
 | R09 | Official CSV import and quality record | Not delivered | Official data is absent. |
 | R10 | Versioned validation report and metrics | Not delivered | No matching policy/metrics artifact exists. |
 | R11 | Desktop and narrow-width visual evidence | Manual pass; assets not delivered | Human Chrome review at desktop and 390x844 found no document-width overflow; no automated screenshot suite or committed images exists. |
-| R12 | TypeScript, Web, launcher, Python, and diff checks | Current assembled pass | The assembled snapshot recorded 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine smoke scenarios. |
+| R12 | TypeScript, Web, launcher, Python, and diff checks | Current assembled pass | The assembled snapshot recorded 92 repository tests, 60 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine smoke scenarios. |
 | R13 | Third-party notice and asset review | Notice passed; assets not delivered | `THIRD_PARTY_NOTICES.md` inventories shipped dependencies; screenshots/datasets/reports are absent and need review before distribution. |
 | R14 | Release/archive manifest and hashes | Not delivered | There is no release or deployment archive proof. |
 

@@ -16,7 +16,7 @@
 | Safety/provenance | Current H6 evidence | Human confirmation and `FIXTURE` visibility were manually reviewed. |
 | C03/C04 workflow | Current H6 evidence | Fixture overview/C03/C04 were manually checked at desktop and 390x844. |
 | Local deterministic path | Current H6 evidence | Local smoke produced C03 HTML output and a 16-column, two-row validated CSV. |
-| Reproducibility | Current assembled evidence | 89 repository tests, 57 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine smoke scenarios are recorded for the assembled snapshot. |
+| Reproducibility | Current assembled evidence | 92 repository tests, 60 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine smoke scenarios are recorded for the assembled snapshot. |
 | Visual proof | Manual only | No committed screenshots and no automated screenshot regression. |
 | Fixture report cards | Current plugin evidence | `92f7b78` makes single-event, period, and quality cards deterministic safe HTML; JSON/CSV kinds retain their formats. |
 | Evaluation metrics | Not delivered | No official-data validation report, score, rank, or approval. |

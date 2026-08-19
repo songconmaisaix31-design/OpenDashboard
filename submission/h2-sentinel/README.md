@@ -40,7 +40,7 @@ prove network isolation beyond the exercised loopback policy.
 
 ## Current H6 evidence and limitation
 
-The assembled verification recorded 89 repository tests, 57 focused H2 tests,
+The assembled verification recorded 92 repository tests, 60 focused H2 tests,
 32 Python pytest cases, nine launcher tests, five assembled QA groups, and
 nine H2 smoke scenarios. This is current-worktree evidence for the assembled
 snapshot, not a remote CI result.
@@ -49,7 +49,7 @@ The Local golden path produced a deterministic no-LLM C03 HTML report and a
 two-row `submission.csv` validated against its exact 16 columns. Manual Chrome
 review checked the Fixture overview, C03, and C04 at desktop and 390x844 without
 document-width overflow. The assembled production build processed 684 modules
-and emitted 899.97 kB minified JavaScript (297.13 kB gzip) plus 47.44 kB CSS;
+and emitted 900.01 kB minified JavaScript (297.15 kB gzip) plus 47.44 kB CSS;
 Vite still emits its standard greater-than-500-kB warning.
 
 The recorded local hardening checks reject a 307 health redirect, cover
