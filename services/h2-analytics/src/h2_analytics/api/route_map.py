@@ -28,4 +28,3 @@ ROUTE_MAP: Final[tuple[dict[str, str], ...]] = (
         "path": f"{API_NAMESPACE}/submissions:export",
     },
 )
-

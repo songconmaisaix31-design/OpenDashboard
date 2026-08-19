@@ -81,4 +81,3 @@ class LightGbmRowDetector:
                 )
             )
         return tuple(candidates)
-

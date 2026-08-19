@@ -110,4 +110,3 @@ def _segments(
         else:
             segments.append([candidate])
     return tuple(tuple(segment) for segment in segments)
-
