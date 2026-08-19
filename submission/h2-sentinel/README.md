@@ -41,18 +41,20 @@ prove network isolation beyond the exercised loopback policy.
 
 ## Current H6 evidence and limitation
 
-At the candidate gate, `npm run test` passed 65 generic tests,
-`npm run h2:check` passed 33 focused H2 tests plus 7 launcher/composition tests,
-and the locked Python suite passed 24 tests with one upstream Starlette `httpx`
-deprecation warning. The H6 smoke covered six launcher conditions: Fixture
-without analytics, occupied Web port, redirecting unhealthy sidecar, occupied
-analytics port, Local golden/export/cleanup, and production-preview proxy.
+The historical H6 gate recorded 65 generic tests, 33 focused H2 tests, 7
+launcher/composition tests, and 24 Python tests with one upstream Starlette
+`httpx` deprecation warning. After the plugin/UI fixes were assembled, the
+final coordinator root reran `npm run check` with 66 repository tests and 34
+focused H2 tests. The H6 smoke covered six launcher conditions: Fixture without
+analytics, occupied Web port, redirecting unhealthy sidecar, occupied analytics
+port, Local golden/export/cleanup, and production-preview proxy.
 
 The Local golden path produced a deterministic no-LLM C03 HTML report and a
 two-row `submission.csv` validated against its exact 16 columns. Manual Chrome
 review checked the Fixture overview, C03, and C04 at desktop and 390x844 without
-document-width overflow. The production bundle is about 884 kB minified
-(about 292 kB gzip), so Vite emitted its standard greater-than-500-kB warning.
+document-width overflow. The post-assembly final production bundle is about
+887 kB minified (293 kB gzip); Vite still emits its standard greater-than-500-kB
+warning.
 
 Fixture report-format parity is resolved by plugin source commit
 `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa`, integrated by the coordinator as
