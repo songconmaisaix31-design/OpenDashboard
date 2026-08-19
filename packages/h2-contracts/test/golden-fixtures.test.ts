@@ -41,6 +41,54 @@ describe('H2 golden fixtures', () => {
     assertFixtureIdentity(jsonFixture('golden-c04.json'), H2_GOLDEN_C04_EVENT)
   })
 
+  it('derives the C04 violation energy from every inclusive event sample', () => {
+    const rows = parseCsv(csvFixture('tiny-valid-timeseries.csv')).rows
+    const expectedImpact = 29.333333333333332
+    const intervalRows = rows.filter(
+      (row) => {
+        const timestamp = row.timestamp
+        return (
+          timestamp !== undefined &&
+          timestamp >= H2_GOLDEN_C04_EVENT.startTime &&
+          timestamp <= H2_GOLDEN_C04_EVENT.endTime
+        )
+      },
+    )
+    const violationPowerMinutes = intervalRows.reduce(
+      (total, row) =>
+        total +
+        Math.max(Number(row.pcc_power_kw) - Number(row.pcc_export_limit_kw), 0),
+      0,
+    )
+    const calculatedImpact = violationPowerMinutes / 60
+
+    assert.equal(intervalRows.length, 8)
+    assert(intervalRows.every((row) => Number(row.pcc_power_kw) === 720))
+    assert(intervalRows.every((row) => Number(row.pcc_export_limit_kw) === 500))
+    assert.equal(calculatedImpact, expectedImpact)
+    assert.equal(H2_GOLDEN_C04_EVENT.impact.value, calculatedImpact)
+
+    const jsonC04 = jsonFixture('golden-c04.json')
+    assert(isObject(jsonC04))
+    assert(isObject(jsonC04.impact))
+    assert.equal(jsonC04.impact.value, calculatedImpact)
+    assert(Array.isArray(jsonC04.evidence))
+    const derivedEvidence = jsonC04.evidence.find(
+      (item) =>
+        isObject(item) &&
+        item.evidenceId === 'C04-EV-003' &&
+        item.variable === 'pcc_power_limit_violation_energy_kwh',
+    )
+    assert(isObject(derivedEvidence))
+    assert.equal(derivedEvidence.actualValue, calculatedImpact)
+    assert.equal(
+      H2_GOLDEN_C04_EVENT.evidence.find(
+        (item) => item.evidenceId === 'C04-EV-003',
+      )?.actualValue,
+      calculatedImpact,
+    )
+  })
+
   it('do not contain absolute paths or secret-shaped values', () => {
     const allFixtureText = [
       JSON.stringify(H2_GOLDEN_C03_EVENT),

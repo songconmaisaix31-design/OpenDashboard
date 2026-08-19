@@ -39,6 +39,17 @@ dependencies.
   official competition dataset or score artifact.
 - The submission header is exactly `H2_SUBMISSION_COLUMNS` in source order.
 
+## CCR-H4-001 Correction
+
+The C04 fixture's `pcc_power_limit_violation_energy_kwh` is
+`29.333333333333332`. The previous `86.5` value incorrectly overstated the
+impact. The authoritative C04 calculation uses the eight inclusive one-minute
+samples from `2026-01-05T10:32:00Z` through `2026-01-05T10:39:00Z`: each has
+`pcc_power_kw=720` and `pcc_export_limit_kw=500`, so the evidence is
+`sum(max(720 - 500, 0) / 60) = 29.333333333333332 kWh`. The CSV and its LF
+byte fingerprint are unchanged; the JSON and TypeScript C04 evidence and impact
+representations are corrected together and covered by a focused regression test.
+
 ## Data Source Modes
 
 - Fixture mode returns deterministic, explicitly `FIXTURE`-provenanced data and
