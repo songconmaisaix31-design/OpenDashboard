@@ -194,6 +194,34 @@ async function requestEnvelope(baseUrl, route, payload) {
   return body.data
 }
 
+function canonicalHealthEnvelope() {
+  return {
+    ok: true,
+    status: 'success',
+    data: {
+      status: 'healthy',
+      apiVersion: 'v1',
+      serviceVersion: '0.1.0',
+      featureVersion: 'h2-features-v1',
+      aggregationVersion: 'h2-events-v1',
+      ruleVersion: 'h2-rules-v1',
+      configurationVersion: 'official-constraints-v1',
+      namespace: '/api/v1/h2-sentinel',
+      bindHost: LOOPBACK_HOST,
+      detectorVersion: 'deterministic-c03-c04-v1',
+    },
+    warnings: [],
+    provenance: {
+      mode: 'RULE',
+      source: 'h2-analytics-api',
+      generatedAt: '2026-08-19T00:00:00Z',
+      ruleVersion: 'h2-rules-v1',
+      configurationVersion: 'official-constraints-v1',
+      limitations: ['Loopback-only deterministic API metadata.'],
+    },
+  }
+}
+
 async function runFixtureSmoke() {
   const webPort = await getFreePort()
   const session = await startLauncher([
@@ -244,7 +272,7 @@ async function runHealthTimeoutSmoke() {
       return
     }
     response.writeHead(200, { 'content-type': 'application/json' })
-    response.end(JSON.stringify({ ok: true, status: 'success', data: { status: 'healthy' } }))
+    response.end(JSON.stringify(canonicalHealthEnvelope()))
   })
   await new Promise((resolvePromise, rejectPromise) => {
     unhealthy.once('error', rejectPromise)
@@ -262,10 +290,106 @@ async function runHealthTimeoutSmoke() {
     const result = await waitForExit(session.child, 10_000)
     assert.equal(result.code, 1)
     assert.match(session.stderr.join(' '), /health check timed out/)
+    assert.doesNotMatch(session.stdout.join(' '), /"event":"READY"/)
   } finally {
     await new Promise((resolvePromise) => unhealthy.close(resolvePromise))
   }
   console.log('PASS launcher rejects a redirecting external sidecar health endpoint')
+}
+
+async function runUntrustedHealthImplementationSmoke() {
+  const port = await getFreePort()
+  let responseBody = null
+  const untrusted = createHttpServer((request, response) => {
+    if (request.url !== '/health') {
+      response.writeHead(404)
+      response.end()
+      return
+    }
+    response.writeHead(200, { 'content-type': 'application/json' })
+    response.end(JSON.stringify(responseBody))
+  })
+  await new Promise((resolvePromise, rejectPromise) => {
+    untrusted.once('error', rejectPromise)
+    untrusted.listen({ host: LOOPBACK_HOST, port }, resolvePromise)
+  })
+  try {
+    const cases = [
+      ['incomplete envelope', { ok: true, status: 'success', data: { status: 'healthy' } }],
+      ['wrong namespace', (() => {
+        const value = canonicalHealthEnvelope()
+        value.data.namespace = '/api/v1/other'
+        return value
+      })()],
+      ['hostname alias', (() => {
+        const value = canonicalHealthEnvelope()
+        value.data.bindHost = 'localhost'
+        return value
+      })()],
+      ['extra top-level field', { ...canonicalHealthEnvelope(), extra: true }],
+    ]
+    for (const [label, value] of cases) {
+      responseBody = value
+      const session = spawnForFailure([
+        '--mode',
+        'local',
+        '--external-sidecar-url',
+        `http://${LOOPBACK_HOST}:${port}/`,
+        '--health-timeout-ms',
+        '500',
+      ])
+      const result = await waitForExit(session.child, 10_000)
+      assert.equal(result.code, 1, label)
+      assert.match(session.stderr.join(' '), /health check timed out/, label)
+      assert.doesNotMatch(session.stdout.join(' '), /"event":"READY"/, label)
+    }
+  } finally {
+    await new Promise((resolvePromise) => untrusted.close(resolvePromise))
+  }
+  await assertPortReleased(port)
+  console.log('PASS launcher rejects incomplete, wrong-origin, and extra-field health lookalikes')
+}
+
+async function runCanonicalExternalSidecarSmoke() {
+  const webPort = await getFreePort()
+  const analyticsPort = await getFreePort()
+  const sidecar = createHttpServer((request, response) => {
+    if (request.url !== '/health') {
+      response.writeHead(404)
+      response.end()
+      return
+    }
+    response.writeHead(200, { 'content-type': 'application/json' })
+    response.end(JSON.stringify(canonicalHealthEnvelope()))
+  })
+  await new Promise((resolvePromise, rejectPromise) => {
+    sidecar.once('error', rejectPromise)
+    sidecar.listen({ host: LOOPBACK_HOST, port: analyticsPort }, resolvePromise)
+  })
+
+  let session
+  try {
+    session = await startLauncher([
+      '--mode',
+      'local',
+      '--web-port',
+      String(webPort),
+      '--external-sidecar-url',
+      `http://${LOOPBACK_HOST}:${analyticsPort}/`,
+    ])
+    assert.equal(session.ready.analyticsUrl, `http://${LOOPBACK_HOST}:${analyticsPort}/`)
+    assert.equal(session.ready.analyticsPid, null)
+  } finally {
+    try {
+      if (session) await stopLauncher(session)
+    } finally {
+      await new Promise((resolvePromise) => sidecar.close(resolvePromise))
+    }
+  }
+  await assertPidStopped(session.ready.webPid)
+  await assertPortReleased(webPort)
+  await assertPortReleased(analyticsPort)
+  console.log('PASS launcher accepts a canonical external sidecar without claiming ownership')
 }
 
 async function runOccupiedAnalyticsPortSmoke() {
@@ -441,6 +565,8 @@ try {
   await runFixtureSmoke()
   await runOccupiedPortSmoke()
   await runHealthTimeoutSmoke()
+  await runUntrustedHealthImplementationSmoke()
+  await runCanonicalExternalSidecarSmoke()
   await runOccupiedAnalyticsPortSmoke()
   await runLocalGoldenSmoke()
   await runLocalPreviewProxySmoke()
