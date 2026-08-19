@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>H2 Sentinel {{ event.eventId if event else run.runId }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; color: #172033; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #cbd2dc; padding: 0.5rem; text-align: left; }
+    .notice { border-left: 4px solid #c47d00; padding: 0.75rem; background: #fff8e8; }
+  </style>
+</head>
+<body>
+  <h1>H2 Sentinel {{ "Diagnosis" if event else "Period Summary" }}</h1>
+  <p>Run: {{ run.runId }} · Dataset: {{ run.dataset.name }} · Mode: {{ run.dataset.mode }}</p>
+  <p>Dataset fingerprint: {{ run.dataset.fingerprint }}</p>
+  {% if event %}
+  <h2>{{ event.eventId }} — {{ event.title }}</h2>
+  <p>{{ event.startTime }} to {{ event.endTime }}; first detected {{ event.firstDetectionTime }}.</p>
+  <h3>Evidence</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Claim</th><th>Conclusion</th></tr></thead>
+    <tbody>
+    {% for item in event.evidence %}
+      <tr><td>{{ item.evidenceId }}</td><td>{{ item.claimKind }}</td><td>{{ item.conclusion }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h3>Impact</h3>
+  <p>{{ event.impact.metric }}: {{ event.impact.value }} {{ event.impact.unit }} ({{ event.impact.formulaVersion }})</p>
+  <h3>Likely cause</h3><p>{{ event.rootCause }}</p>
+  <h3>Safety and recommendation</h3>
+  <ul>{% for check in event.safetyChecks %}<li>{{ check.status }} — {{ check.message }}</li>{% endfor %}</ul>
+  <ul>{% for item in event.recommendations %}<li>{{ item.summary }}</li>{% endfor %}</ul>
+  {% else %}
+  <p>Events in this deterministic summary: {{ events|length }}.</p>
+  <ul>{% for item in events %}<li>{{ item.eventId }} — {{ item.title }}</li>{% endfor %}</ul>
+  {% endif %}
+  <p class="notice">{{ disclaimer }}</p>
+</body>
+</html>
+
