@@ -107,22 +107,14 @@ select different loopback ports.
 | Chrome manual visual review | Desktop and 390x844 Fixture overview/C03/C04 rendered; provenance, human-confirmation boundary, and corrected 29.33 kWh were visible; document width did not overflow. Generic `/` stayed generic. Invalid mode and `localhost` Local entry showed the Chinese startup alert. |
 | Post-smoke residue audit | No H2 integration Node/Python/uv/esbuild process or owned listener remained. |
 
-The checked-in H4 `run-contract-qa.mjs` still prints eight assembly rows as
-`SKIP` because that worker-owned harness predates H6 composition. H6 does not
-rewrite those results. The real `h2:smoke` covers the assembled loopback,
-Fixture/Local, export, failure, preview proxy, and cleanup paths; independent H4
-must publish its own post-assembly acceptance update.
+## Post-assembly status and remaining limitations
 
-## Known limitations and routed defect
-
-- **Worker-owned Fixture report format mismatch:** the H3 report cards label
-  single-event, period, and quality reports as HTML, while the H2 Fixture
-  provider's `createFixtureReport()` returns JSON/`.json` for every non-
-  submission report. Chrome manual review reproduced
-  `single_event_diagnosis-run-fixture-h2-sentinel-golden.json` after clicking
-  the HTML-labeled card. H6 did not change or hide this H2/H3-owned mismatch.
-  Local analytics correctly produced and validated the required C03 HTML
-  report.
+- Plugin fix source `92f7b78` resolves the previously routed Fixture report
+  mismatch: single-event, period, and quality Fixture reports now produce safe,
+  deterministic HTML. Submission export remains CSV.
+- H4 assembled acceptance commit `d6b4538` reports four assembly checks as
+  `PASS`, with zero `FAIL` and zero `SKIP`. Visual verification remains manual;
+  this handoff does not claim an automated screenshot regression suite.
 - The production bundle is about 884 kB minified (about 292 kB gzip) and Vite
   reports its standard greater-than-500-kB warning. No speculative split or new
   dependency was added during composition.
@@ -130,8 +122,8 @@ must publish its own post-assembly acceptance update.
   or production remote-host behavior was tested or claimed.
 - The H2 workflow is committed but a remote GitHub Actions run is not local
   runtime evidence.
-- Manual Chrome review is visual evidence from this worktree, not an automated
-  screenshot regression suite; no screenshots were committed.
+- Manual Chrome review is visual evidence from this worktree; no screenshots
+  were committed.
 
 ## Write-set and memory
 
