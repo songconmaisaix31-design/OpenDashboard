@@ -12,4 +12,3 @@ class AnalyticsError(ValueError):
         self.message = message
         self.retryable = retryable
         self.details = details
-

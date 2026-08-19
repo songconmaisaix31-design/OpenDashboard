@@ -16,10 +16,8 @@ def valid_csv(repository_root: Path) -> str:
         repository_root / "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv"
     ).read_text(encoding="utf-8")
 
-
 @pytest.fixture(scope="session")
 def invalid_csv(repository_root: Path) -> str:
     return (
         repository_root / "packages/h2-contracts/fixtures/tiny-invalid-timeseries.csv"
     ).read_text(encoding="utf-8")
-

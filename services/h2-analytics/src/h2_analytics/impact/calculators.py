@@ -53,7 +53,6 @@ class ImpactCalculator:
         raise ImpactUnavailable(
             f"{metric} ({formula}) requires an official field mapping not frozen by this gate."
         )
-
     @staticmethod
     def _calculate_c03(
         window: EventWindow,
@@ -114,4 +113,3 @@ class ImpactCalculator:
                 "Every inclusive minute sample contributes max(export excess, import excess).",
             ),
         )
-

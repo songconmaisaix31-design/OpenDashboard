@@ -158,7 +158,6 @@ class QualityChecker:
         if observed is not None:
             value["observedValue"] = observed
         return value
-
     @staticmethod
     def _power_balance_check(
         diagnostics: ParseDiagnostics,
@@ -186,4 +185,3 @@ class QualityChecker:
         value["threshold"] = DEFAULT_CONSTRAINTS.power_balance_warning_kw
         value["unit"] = "kW"
         return value
-

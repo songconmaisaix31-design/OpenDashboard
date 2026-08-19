@@ -36,7 +36,6 @@ def success_envelope(
         "provenance": provenance or api_provenance(),
     }
 
-
 def error_envelope(
     *,
     code: str,
@@ -65,4 +64,3 @@ def error_envelope(
         "warnings": [],
         "provenance": api_provenance(),
     }
-

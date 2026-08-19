@@ -17,4 +17,3 @@
     { "operationId": "exportSubmission", "method": "POST", "path": "/api/v1/h2-sentinel/submissions:export" }
   ]
 }
-

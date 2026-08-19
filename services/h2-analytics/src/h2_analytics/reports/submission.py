@@ -64,4 +64,3 @@ def _cell(value: Any) -> Any:
     if isinstance(value, bool):
         return "true" if value else "false"
     return value
-

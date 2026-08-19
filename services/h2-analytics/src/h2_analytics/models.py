@@ -34,4 +34,3 @@ class ImportedDataset:
     manifest: dict[str, Any]
     quality: dict[str, Any]
     rows: tuple[DataRow, ...]
-
