@@ -29,6 +29,12 @@ cherry-pick order, are:
   diagnosis, declared impact identities, three-state safety evaluation, and
   deterministic assistant suggestions.
 - Escaped HTML, JSON, and exact 16-column submission exports with content hashes.
+- Report-format parity for every canonical kind: single-event diagnosis,
+  period summary, and data quality are `text/html`; analysis result and
+  validation metrics are `application/json`; submission is `text/csv`.
+  The local quality HTML includes status, rows, time range, checks,
+  warnings/blocking reasons, provenance, limitations, and the advisory
+  human-confirmation disclaimer.
 - A loopback-only FastAPI service with disabled OpenAPI/docs, redacted errors,
   bounded requests, and strict loopback Host/Origin checks. H6 remains the
   browser same-origin proxy; no permissive CORS policy was added.
@@ -65,6 +71,28 @@ Commands run from `services/h2-analytics` on 2026-08-19:
 | `python -m mypy src` with optional local mypy 2.1.0 | Passed; 36 source files and no issues; mypy is not a committed dependency. |
 | Real `python -m h2_analytics --port 18765` health probe | Passed; `healthy`, version `0.1.0`, bind host `127.0.0.1`; process was stopped. |
 | `git diff f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4 --check` | Passed after removing trailing EOF blank lines. |
+
+### Post-integration report-format correction
+
+The coordinator cherry-picked the report-format correction as
+`competition/h2-sentinel@bed239e`. Its analytics-only source commit is
+`53733ae2542dafb3abbef19da0eb153fdd9f58c7` on
+`fix/h2-analytics-report-parity`.
+
+| Command | Exact result |
+|---|---|
+| `uv lock --check` | Passed; resolved 36 packages. |
+| `uv sync --locked` | Passed. |
+| `uv sync --locked --extra dev --offline` | Passed using the locked local cache. |
+| `uv run --locked --extra dev python -m pytest` | Passed; 32 tests. One upstream Starlette/httpx deprecation warning. |
+| `uv run --locked --extra dev python -m h2_analytics.tools.smoke_golden` | Passed; C03/C04 emitted and C04 impact remained `29.333333333333332`. |
+| `uv run --locked --extra dev python -m h2_analytics.tools.validate_submission artifacts/submission.csv` | Passed; exact 16 columns and two valid rows. |
+| `git diff --check` | Passed. |
+
+The added adversarial coverage verifies all six canonical report kinds and
+their media types, and verifies Jinja escaping for a malicious imported
+filename in every HTML-producing kind. This is local deterministic behavior;
+it is not evidence of an official competition dataset, score, or deployment.
 
 The focused suite exercises malformed CSV, unsafe filenames, invalid and
 out-of-range values, blocked quality, C03, C04 inclusive boundaries, threshold

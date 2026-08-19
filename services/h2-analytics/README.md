@@ -22,6 +22,28 @@ The documented server command binds Uvicorn to `127.0.0.1:8765`. The
 application also rejects non-loopback Host and Origin values. No route accepts
 a filesystem path, command, Python expression, plugin, or remote target.
 
+## Report artifact formats
+
+The local adapter follows the frozen H2 report-kind mapping. This keeps the
+same user-visible export behavior in `LIVE_ANALYSIS` as the static Fixture
+provider without inferring an official score or dataset result.
+
+| Report kind | Format | Media type |
+|---|---|---|
+| `single_event_diagnosis` | HTML | `text/html` |
+| `period_summary` | HTML | `text/html` |
+| `analysis_result_json` | JSON | `application/json` |
+| `validation_metrics` | JSON | `application/json` |
+| `quality_report` | HTML | `text/html` |
+| `submission_csv` | CSV | `text/csv` |
+
+The quality HTML artifact contains the dataset/run identity, quality status,
+row count, time range, checks, warnings or blocking reasons, provenance,
+limitations, and the human-confirmation disclaimer. HTML is rendered through
+Jinja autoescaping; imported filenames and report values are never inserted as
+trusted markup. The JSON validation artifact contains the run ID, quality
+payload, and provenance. Submission output remains the frozen 16-column CSV.
+
 ## Route map
 
 `ROUTES.json` is the cross-track route contract. The same map is exported at
