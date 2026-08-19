@@ -10,6 +10,11 @@ export type H2ReportKind =
 
 export type H2ReportFormat = 'html' | 'json' | 'csv'
 
+export type H2ReportMediaType =
+  | 'text/html'
+  | 'application/json'
+  | 'text/csv'
+
 export type H2ReportStatus = 'ready' | 'failed'
 
 export interface H2ReportDescriptor {
@@ -26,4 +31,10 @@ export interface H2ReportDescriptor {
   readonly warnings: readonly string[]
   readonly safetyDisclaimer: string
   readonly provenance: H2Provenance
+}
+
+export interface H2ReportArtifact {
+  readonly descriptor: H2ReportDescriptor
+  readonly mediaType: H2ReportMediaType
+  readonly content: string
 }
