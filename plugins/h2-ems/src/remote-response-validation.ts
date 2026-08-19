@@ -5,6 +5,8 @@ import {
   type H2AnalysisRun,
   type H2AnomalyEvent,
   type H2AssistantAnswer,
+  type H2AssistantAnswerSection,
+  type H2AssistantCitation,
   type H2CsvImportResult,
   type H2DataQualityReport,
   type H2DatasetFieldRole,
@@ -180,6 +182,7 @@ export function isAssistantAnswer(value: unknown): value is H2AssistantAnswer {
     value.sections.every(isAssistantSection) &&
     Array.isArray(value.citations) &&
     value.citations.every(isAssistantCitation) &&
+    hasConsistentCitations(value.sections, value.citations) &&
     value.refusedControlClaim === true &&
     isProvenance(value.provenance)
   )
@@ -246,7 +249,7 @@ function isQualityCheck(value: unknown): boolean {
   )
 }
 
-function isAssistantSection(value: unknown): boolean {
+function isAssistantSection(value: unknown): value is H2AssistantAnswerSection {
   return (
     isClosedRecord(value, ['sectionId', 'claimKind', 'text', 'citationIds']) &&
     isNonEmptyString(value.sectionId) &&
@@ -256,7 +259,7 @@ function isAssistantSection(value: unknown): boolean {
   )
 }
 
-function isAssistantCitation(value: unknown): boolean {
+function isAssistantCitation(value: unknown): value is H2AssistantCitation {
   return (
     isClosedRecord(
       value,
@@ -268,6 +271,19 @@ function isAssistantCitation(value: unknown): boolean {
     isOneOf(value.sourceType, ASSISTANT_SOURCE_TYPES) &&
     isNonEmptyString(value.sourceId) &&
     isOptionalString(value, 'eventId')
+  )
+}
+
+function hasConsistentCitations(
+  sections: readonly H2AssistantAnswerSection[],
+  citations: readonly H2AssistantCitation[],
+): boolean {
+  const citationIds = new Set(citations.map(({ citationId }) => citationId))
+  return (
+    citationIds.size === citations.length &&
+    sections.every((section) =>
+      section.citationIds.every((citationId) => citationIds.has(citationId)),
+    )
   )
 }
 

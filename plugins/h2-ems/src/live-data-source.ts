@@ -1,5 +1,7 @@
 import type {
   H2SentinelDataSource,
+  H2SeriesRequest,
+  H2SeriesResponse,
 } from '../../../packages/h2-contracts/src/index.ts'
 
 import { H2EmsAdapterError } from './errors.ts'
@@ -18,7 +20,10 @@ import {
   verifyReportContentHash,
   verifyReportIdentity,
 } from './remote-response-validation.ts'
-import { verifyRemoteIdentity } from './remote-validation-primitives.ts'
+import {
+  isIsoTimestamp,
+  verifyRemoteIdentity,
+} from './remote-validation-primitives.ts'
 
 export interface H2EmsLiveAdapterOptions {
   readonly enabled: true
@@ -85,9 +90,7 @@ export function createLiveH2EmsDataSource(
     ),
     getSeries: async (input) => verifyRemoteIdentity(
       await request(H2_EMS_LIVE_ROUTES.series, input, isSeriesResponse),
-      (series) =>
-        series.runId === input.runId &&
-        sameStrings(series.variables, input.variables),
+      (series) => seriesMatchesRequest(series, input),
     ),
     ask: async (input) => verifyRemoteIdentity(
       await request(H2_EMS_LIVE_ROUTES.assistant, input, isAssistantAnswer),
@@ -199,4 +202,36 @@ async function requestEnvelope<T>(
 
 function sameStrings(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index])
+}
+
+function seriesMatchesRequest(
+  series: H2SeriesResponse,
+  input: H2SeriesRequest,
+): boolean {
+  if (
+    series.runId !== input.runId ||
+    !sameStrings(series.variables, input.variables) ||
+    new Set(series.variables).size !== series.variables.length ||
+    !isIsoTimestamp(input.startTime) ||
+    !isIsoTimestamp(input.endTime)
+  ) return false
+
+  const start = Date.parse(input.startTime)
+  const end = Date.parse(input.endTime)
+  if (start > end) return false
+
+  let previous = start
+  for (const point of series.points) {
+    const timestamp = Date.parse(point.timestamp)
+    const keys = Object.keys(point.values)
+    if (
+      timestamp < start ||
+      timestamp > end ||
+      timestamp < previous ||
+      keys.length !== series.variables.length ||
+      !series.variables.every((variable) => Object.hasOwn(point.values, variable))
+    ) return false
+    previous = timestamp
+  }
+  return true
 }

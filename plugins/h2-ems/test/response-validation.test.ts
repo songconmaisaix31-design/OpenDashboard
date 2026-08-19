@@ -398,6 +398,69 @@ describe('H2 EMS remote response validation', () => {
     )
   })
 
+  it('binds series points to requested variables, range, and order', async () => {
+    const request = {
+      runId: H2_FIXTURE_ANALYSIS_RUN.runId,
+      variables: ['pcc_power_kw', 'bess_power_kw'],
+      startTime: '2026-01-05T10:20:00Z',
+      endTime: '2026-01-05T10:22:00Z',
+    }
+    const valid = {
+      runId: request.runId,
+      variables: request.variables,
+      points: [
+        {
+          timestamp: '2026-01-05T10:20:00Z',
+          values: { pcc_power_kw: 10, bess_power_kw: -5 },
+        },
+        {
+          timestamp: '2026-01-05T10:21:00Z',
+          values: { pcc_power_kw: 11, bess_power_kw: -4 },
+        },
+      ],
+    }
+    const mutations: Array<(series: JsonRecord) => void> = [
+      (series) => {
+        delete (((series.points as JsonRecord[])[0] as JsonRecord).values as JsonRecord).bess_power_kw
+      },
+      (series) => {
+        ;(((series.points as JsonRecord[])[0] as JsonRecord).values as JsonRecord).secret_value = 1
+      },
+      (series) => {
+        ;((series.points as JsonRecord[])[0] as JsonRecord).timestamp = '2026-01-05T10:19:59Z'
+      },
+      (series) => {
+        const points = series.points as JsonRecord[]
+        ;[points[0], points[1]] = [points[1] as JsonRecord, points[0] as JsonRecord]
+      },
+    ]
+
+    for (const mutate of mutations) {
+      const series = clone(valid) as unknown as JsonRecord
+      mutate(series)
+      await rejectsInvalid(() => sourceFor(envelope(series)).getSeries(request))
+    }
+  })
+
+  it('rejects dangling and duplicate assistant citations', async () => {
+    const request = {
+      runId: H2_FIXTURE_ASSISTANT_ANSWER.runId,
+      questionId: H2_FIXTURE_ASSISTANT_ANSWER.questionId,
+      ...(H2_FIXTURE_ASSISTANT_ANSWER.eventId
+        ? { eventId: H2_FIXTURE_ASSISTANT_ANSWER.eventId }
+        : {}),
+      allowLlmRendering: false,
+    }
+    const dangling = clone(H2_FIXTURE_ASSISTANT_ANSWER) as unknown as JsonRecord
+    ;((dangling.sections as JsonRecord[])[0] as JsonRecord).citationIds = ['missing-citation']
+    await rejectsInvalid(() => sourceFor(envelope(dangling)).ask(request))
+
+    const duplicate = clone(H2_FIXTURE_ASSISTANT_ANSWER) as unknown as JsonRecord
+    const firstCitation = (duplicate.citations as JsonRecord[])[0] as JsonRecord
+    ;(duplicate.citations as JsonRecord[]).push(clone(firstCitation))
+    await rejectsInvalid(() => sourceFor(envelope(duplicate)).ask(request))
+  })
+
   it('correlates report kind, format, media type, filename, status, and content hash', async () => {
     const valid = await createFixtureH2EmsDataSource().exportReport({
       runId: H2_FIXTURE_ANALYSIS_RUN.runId,
