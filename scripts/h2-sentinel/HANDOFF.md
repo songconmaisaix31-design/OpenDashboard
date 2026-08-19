@@ -102,11 +102,11 @@ select different loopback ports.
 | --- | --- |
 | `npm ci` | Passed; 31 locked packages installed. |
 | `npm run typecheck` | Passed with strict TypeScript. |
-| `npm run test` | Passed through `npm run check`; 89 repository tests. |
-| `npm run build` | Passed; 684 modules. JavaScript was 899.97 kB minified / 297.13 kB gzip and CSS was 47.44 kB. Vite reported the known large-chunk warning. |
-| `npm run check` | Passed; typecheck, 89 repository tests, and the 684-module production build. |
+| `npm run test` | Passed through `npm run check`; 92 repository tests. |
+| `npm run build` | Passed; 684 modules. JavaScript was 900.01 kB minified / 297.15 kB gzip and CSS was 47.44 kB. Vite reported the known large-chunk warning. |
+| `npm run check` | Passed; typecheck, 92 repository tests, and the 684-module production build. |
 | `npm run h2:build` | Passed; production H2 composition included in the Web bundle. |
-| `npm run h2:check` | Passed; typecheck, 57 focused H2 tests, five assembled QA groups, 9 launcher/composition tests, and the 684-module build. |
+| `npm run h2:check` | Passed; typecheck, 60 focused H2 tests, five assembled QA groups, 9 launcher/composition tests, and the 684-module build. |
 | `npm run h2:smoke` | Passed; all 9 scenarios: Fixture no-analytics/cleanup, occupied Web, redirect rejection, malformed health lookalikes, canonical external sidecar ownership, occupied analytics, owned Analytics exit after health/before `READY`, Local golden/export/cleanup, and production-preview proxy. |
 | `uv lock --check` | Passed; 36 locked packages resolved. |
 | `uv sync --locked --extra dev` | Passed; 30 packages checked. |
@@ -131,9 +131,9 @@ select different loopback ports.
 - The assembled QA runner reports five automated groups as `PASS`, with zero
   `FAIL`. Visual verification remains manual; this handoff does not claim an
   automated screenshot regression suite or a formal screenshot artifact.
-- The final candidate passes 89 repository tests, 57 focused H2 tests, 32 Python
+- The final candidate passes 92 repository tests, 60 focused H2 tests, 32 Python
   tests, and 9 launcher/composition tests. Its 684-module production bundle is
-  899.97 kB minified / 297.13 kB gzip for JavaScript and 47.44 kB for CSS. Vite
+  900.01 kB minified / 297.15 kB gzip for JavaScript and 47.44 kB for CSS. Vite
   retains its standard greater-than-500-kB warning; no speculative split or new
   dependency was added during composition.
 - The verified H2 path is read-only. The deterministic assistant uses no LLM,

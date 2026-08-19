@@ -55,14 +55,14 @@ available only from the two explicit, equivalent `/h2-sentinel` and
 
 ## Verification
 
-Run root npm checks (89 repository tests), H2 checks (57 focused tests, five
+Run root npm checks (92 repository tests), H2 checks (60 focused tests, five
 assembled QA groups, nine launcher/composition tests, and the 684-module
 production build), locked `uv` checks and 32 Python tests, golden and submission
 validation, all nine launcher fixture/local/failure/shutdown smoke scenarios,
 visual checks at desktop and narrow widths, `git diff --check`, and the H6
 write-set audit before handoff.
 
-The verified bundle remains 899.97 kB minified / 297.13 kB gzip for JavaScript
+The verified bundle remains 900.01 kB minified / 297.15 kB gzip for JavaScript
 and 47.44 kB for CSS, so Vite's greater-than-500-kB warning remains an accepted
 limitation rather than a passing performance claim. H2 is read-only, uses no LLM
 for the verified deterministic path, and executes no control action. Verification
