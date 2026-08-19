@@ -56,8 +56,8 @@ export function H2SentinelApp({
   const [loadAttempt, setLoadAttempt] = useState(0)
 
   const hydrateWorkspace = useCallback(
-    (mode: Awaited<ReturnType<H2SentinelDataSource['getMode']>>, datasets: readonly H2DatasetManifest[], dataset: H2DatasetManifest): Promise<H2Workspace> =>
-      hydrateH2Workspace(dataSource, mode, datasets, dataset),
+    (datasets: readonly H2DatasetManifest[], dataset: H2DatasetManifest): Promise<H2Workspace> =>
+      hydrateH2Workspace(dataSource, datasets, dataset),
     [dataSource],
   )
 
@@ -77,7 +77,7 @@ export function H2SentinelApp({
           return
         }
 
-        const workspace = await hydrateWorkspace(mode, datasets, dataset)
+        const workspace = await hydrateWorkspace(datasets, dataset)
         if (!disposed) setWorkspaceState({ status: 'ready', workspace })
       })
       .catch(() => {
