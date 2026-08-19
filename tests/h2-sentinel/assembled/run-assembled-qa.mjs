@@ -159,16 +159,18 @@ async function stopLauncher(session) {
 }
 
 function startExpectedFailure(argumentsList) {
+  const stdout = []
   const stderr = []
   const child = spawn(process.execPath, [launcherPath, ...argumentsList, '--ready-json'], {
     cwd: repositoryRoot,
     env: process.env,
     shell: false,
-    stdio: ['ignore', 'ignore', 'pipe'],
+    stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
   })
+  collectLines(child.stdout, stdout)
   collectLines(child.stderr, stderr)
-  return { child, stderr }
+  return { child, stdout, stderr }
 }
 
 async function request(baseUrl, route, payload, headers = {}) {
@@ -236,6 +238,49 @@ function assertRedactedError(result, expectedStatus) {
   assert.equal(typeof result.body.error?.message, 'string')
   assert.equal(typeof result.body.error?.retryable, 'boolean')
   assertSafePublicText(result.text)
+}
+
+function assertArtifact(artifact, expected) {
+  assert.equal(artifact.descriptor.kind, expected.kind)
+  assert.equal(artifact.descriptor.format, expected.format)
+  assert.equal(artifact.mediaType, expected.mediaType)
+  assert.match(artifact.descriptor.filename, expected.filename)
+  assert.match(artifact.descriptor.filename, /^[A-Za-z0-9][A-Za-z0-9._-]*$/)
+  assert.equal(artifact.descriptor.status, 'ready')
+  assert.equal(artifact.descriptor.contentHash, `sha256:${createHash('sha256').update(artifact.content).digest('hex')}`)
+  assertSafePublicText(`${artifact.descriptor.safetyDisclaimer}\n${artifact.content}`)
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function canonicalExternalHealth() {
+  return {
+    ok: true,
+    status: 'success',
+    data: {
+      status: 'healthy',
+      apiVersion: 'v1',
+      serviceVersion: '0.1.0',
+      featureVersion: 'h2-features-v1',
+      aggregationVersion: 'h2-events-v1',
+      ruleVersion: 'h2-rules-v1',
+      configurationVersion: 'official-constraints-v1',
+      namespace: '/api/v1/h2-sentinel',
+      bindHost: LOOPBACK,
+      detectorVersion: 'deterministic-c03-c04-v1',
+    },
+    warnings: [],
+    provenance: {
+      mode: 'RULE',
+      source: 'h2-analytics-api',
+      generatedAt: '2026-08-19T00:00:00Z',
+      ruleVersion: 'h2-rules-v1',
+      configurationVersion: 'official-constraints-v1',
+      limitations: ['Loopback-only deterministic API metadata.'],
+    },
+  }
 }
 
 function parseCsv(text) {
@@ -393,23 +438,85 @@ async function testLocalCanonicalApiAndExports() {
     assert.equal(assistantFirst.mode, 'DETERMINISTIC_TEMPLATE')
     assert.deepEqual(assistantSecond, assistantFirst)
 
-    const report = assertSuccess(await request(
-      session.ready.analyticsUrl,
-      '/api/v1/h2-sentinel/reports:export',
-      { runId: run.runId, kind: 'single_event_diagnosis', eventId: events[0].eventId },
-    ))
-    assert.equal(report.mediaType, 'text/html')
-    assert.equal(report.descriptor.format, 'html')
-    assert.match(report.descriptor.filename, /^[A-Za-z0-9][A-Za-z0-9._-]*$/)
-    assert.equal(report.descriptor.contentHash, `sha256:${createHash('sha256').update(report.content).digest('hex')}`)
-    assertSafePublicText(`${report.descriptor.safetyDisclaimer}\n${report.content}`)
+    const reportRequests = [
+      {
+        kind: 'single_event_diagnosis',
+        payload: { runId: run.runId, kind: 'single_event_diagnosis', eventId: events[0].eventId },
+        format: 'html',
+        mediaType: 'text/html',
+        filename: /^C03-20260105-001-diagnosis\.html$/,
+      },
+      {
+        kind: 'period_summary',
+        payload: { runId: run.runId, kind: 'period_summary', timeRange: run.dataset.timeRange },
+        format: 'html',
+        mediaType: 'text/html',
+        filename: /-period-summary\.html$/,
+      },
+      {
+        kind: 'analysis_result_json',
+        payload: { runId: run.runId, kind: 'analysis_result_json' },
+        format: 'json',
+        mediaType: 'application/json',
+        filename: /-analysis\.json$/,
+      },
+      {
+        kind: 'submission_csv',
+        payload: { runId: run.runId, kind: 'submission_csv' },
+        format: 'csv',
+        mediaType: 'text/csv',
+        filename: /^submission\.csv$/,
+      },
+      {
+        kind: 'validation_metrics',
+        payload: { runId: run.runId, kind: 'validation_metrics' },
+        format: 'json',
+        mediaType: 'application/json',
+        filename: /-validation-metrics\.json$/,
+      },
+      {
+        kind: 'quality_report',
+        payload: { runId: run.runId, kind: 'quality_report' },
+        format: 'html',
+        mediaType: 'text/html',
+        filename: /-quality-report\.html$/,
+      },
+    ]
+    const reports = new Map()
+    for (const expected of reportRequests) {
+      const artifact = assertSuccess(await request(
+        session.ready.analyticsUrl,
+        '/api/v1/h2-sentinel/reports:export',
+        expected.payload,
+      ))
+      assertArtifact(artifact, expected)
+      assert.equal(artifact.descriptor.runId, run.runId)
+      if (expected.kind === 'single_event_diagnosis') {
+        assert.equal(artifact.descriptor.eventId, events[0].eventId)
+      } else {
+        assert.equal(artifact.descriptor.eventId, undefined)
+      }
+      reports.set(expected.kind, artifact)
+    }
 
-    const submission = assertSuccess(await request(
-      session.ready.analyticsUrl,
-      '/api/v1/h2-sentinel/submissions:export',
-      { runId: run.runId },
-    ))
-    assert.equal(submission.mediaType, 'text/csv')
+    const analysisResult = JSON.parse(reports.get('analysis_result_json').content)
+    assert.equal(analysisResult.runId, run.runId)
+    assert.deepEqual(analysisResult.events.map((event) => event.eventId), events.map((event) => event.eventId))
+    const validation = JSON.parse(reports.get('validation_metrics').content)
+    assert.equal(validation.reportKind, 'validation_metrics')
+    assert.equal(validation.runId, run.runId)
+    assert.deepEqual(validation.quality, run.quality)
+    assert.deepEqual(validation.provenance, run.provenance)
+    const qualityHtml = reports.get('quality_report').content
+    assert.match(qualityHtml, /H2 Sentinel Data Quality Report/)
+    assert.match(qualityHtml, new RegExp(`Quality status: ${escapeRegex(run.quality.status)}`))
+    assert.match(qualityHtml, new RegExp(escapeRegex(run.quality.reportId)))
+    assert.match(qualityHtml, /<th>Check<\/th><th>Status<\/th><th>Severity<\/th><th>Message<\/th>/)
+    for (const qualityCheck of run.quality.checks) {
+      assert.match(qualityHtml, new RegExp(escapeRegex(qualityCheck.code)))
+    }
+
+    const submission = reports.get('submission_csv')
     const submissionRows = parseCsv(submission.content)
     assert.equal(submissionRows[0].length, 16)
     assert.deepEqual(submissionRows[0], [
@@ -423,6 +530,12 @@ async function testLocalCanonicalApiAndExports() {
       ['C04-20260105-001', 'C04', '29.333333333333332'],
     ])
     assertSafePublicText(submission.content)
+    const dedicatedSubmission = assertSuccess(await request(
+      session.ready.analyticsUrl,
+      '/api/v1/h2-sentinel/submissions:export',
+      { runId: run.runId },
+    ))
+    assert.equal(dedicatedSubmission.content, submission.content)
 
     const missingRun = await request(
       session.ready.analyticsUrl,
@@ -436,6 +549,68 @@ async function testLocalCanonicalApiAndExports() {
   await assertPidStopped(session.ready.webPid)
   await assertPidStopped(session.ready.analyticsPid)
   await assertPortReleased(webPort)
+  await assertPortReleased(analyticsPort)
+}
+
+async function testExternalSidecarHealthContract() {
+  const analyticsPort = await freePort()
+  let healthBody = null
+  const sidecar = createHttpServer((incoming, response) => {
+    if (incoming.url !== '/health') {
+      response.writeHead(404)
+      response.end()
+      return
+    }
+    response.writeHead(200, { 'content-type': 'application/json' })
+    response.end(JSON.stringify(healthBody))
+  })
+  await new Promise((resolvePromise, rejectPromise) => {
+    sidecar.once('error', rejectPromise)
+    sidecar.listen({ host: LOOPBACK, port: analyticsPort }, resolvePromise)
+  })
+  try {
+    const invalidHealthCases = [
+      ['minimal', { ok: true, status: 'success', data: { status: 'healthy' } }],
+      ['wrong namespace', { ...canonicalExternalHealth(), data: { ...canonicalExternalHealth().data, namespace: '/api/v1/other' } }],
+      ['wrong host', { ...canonicalExternalHealth(), data: { ...canonicalExternalHealth().data, bindHost: 'localhost' } }],
+      ['extra top-level', { ...canonicalExternalHealth(), unexpected: true }],
+    ]
+    for (const [, candidate] of invalidHealthCases) {
+      healthBody = candidate
+      const webPort = await freePort()
+      const session = startExpectedFailure([
+        '--mode', 'local', '--web-port', String(webPort),
+        '--external-sidecar-url', `http://${LOOPBACK}:${analyticsPort}/`,
+        '--health-timeout-ms', '500',
+      ])
+      const result = await waitForExit(session.child, 10_000)
+      assert.equal(result.code, 1)
+      assert.match(session.stderr.join(' '), /health check timed out/)
+      assert.doesNotMatch(session.stdout.join(' '), /"event":"READY"/)
+      await assertPortReleased(webPort)
+    }
+
+    healthBody = canonicalExternalHealth()
+    const webPort = await freePort()
+    const session = await startLauncher([
+      '--mode', 'local', '--web-port', String(webPort),
+      '--external-sidecar-url', `http://${LOOPBACK}:${analyticsPort}/`,
+    ])
+    try {
+      assert.equal(session.ready.analyticsUrl, `http://${LOOPBACK}:${analyticsPort}/`)
+      assert.equal(session.ready.analyticsPid, null)
+      const web = await fetch(session.ready.webUrl, { signal: AbortSignal.timeout(5_000) })
+      assert.equal(web.ok, true)
+    } finally {
+      await stopLauncher(session)
+    }
+    await assertPidStopped(session.ready.webPid)
+    await assertPortReleased(webPort)
+    const health = await fetch(`http://${LOOPBACK}:${analyticsPort}/health`, { signal: AbortSignal.timeout(5_000) })
+    assert.equal(health.ok, true, 'external sidecar must remain unowned after launcher cleanup')
+  } finally {
+    await new Promise((resolvePromise) => sidecar.close(resolvePromise))
+  }
   await assertPortReleased(analyticsPort)
 }
 
@@ -499,8 +674,9 @@ async function testLaunchFailureBoundaries() {
 }
 
 await check('A02/A05', 'Fixture launcher starts without a Python sidecar, exports a C03 HTML artifact, and cleans its owned Web process', testFixtureLaunchAndArtifact)
-await check('A01/A03/A04/A05/A07', 'Local public API import, analysis, events, deterministic assistant, export, loopback boundary, and redacted error', testLocalCanonicalApiAndExports)
+await check('A01/A03/A04/A05/A07', 'Local public API import, analysis, six report/export contracts, deterministic assistant, loopback boundary, and redacted error', testLocalCanonicalApiAndExports)
 await check('A04/A07', 'Occupied ports and redirecting sidecar readiness fail visibly and safely', testLaunchFailureBoundaries)
+await check('A04', 'External sidecar accepts only the exact canonical health envelope and leaves external ownership intact', testExternalSidecarHealthContract)
 await check('A06/A08', 'Source-level generic/H2 entry, closed invalid-mode alert, and six-page navigation contract', verifySourceLevelEntryContract)
 
 for (const child of activeLaunchers) {
@@ -508,7 +684,7 @@ for (const child of activeLaunchers) {
 }
 
 const summary = {
-  contract: 'h2-sentinel-assembled-qa-v1',
+  contract: 'h2-sentinel-assembled-qa-v2',
   results: outcomes,
   counts: Object.fromEntries(['PASS', 'FAIL'].map((status) => [status, outcomes.filter((item) => item.status === status).length])),
   visualVerification: 'MANUAL_REQUIRED: no browser automation dependency was added; inspect Fixture desktop and 390px widths separately.',

@@ -24,6 +24,8 @@ node scripts/h2-sentinel/launch.mjs --mode fixture|local --web-port ... --analyt
 It parses the `READY` record, verifies owned PID exit and loopback rebind after
 shutdown, and emits one redacted JSON evidence summary to stdout. It does not
 persist generated reports, PIDs, raw startup output, absolute paths, or secrets.
+An external sidecar remains explicitly unowned: canonical health can start Web,
+while launcher cleanup must not terminate that external listener.
 
 ## Completion criteria
 
@@ -45,11 +47,11 @@ persist generated reports, PIDs, raw startup output, absolute paths, or secrets.
 | A01 | CSV import, analysis, C03/C04 events, canonical success envelope | Local launcher then public `datasets:import`, `datasets:analyze`, and `runs/events` requests | Local analytics API | PASS on 2026-08-19 baseline |
 | A02 | Fixture mode starts no Python sidecar and its owned Web PID exits | Fixture launcher `READY` record plus shutdown/rebind assertion | H6 launcher + H2 Fixture plugin | PASS after `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa` |
 | A03 | Assembled Local C03/C04 golden data traverses import, analysis, event list, assistant, report, and CSV public APIs | Local launcher and public API requests only | H6 launcher + analytics + proxy | PASS on 2026-08-19 baseline |
-| A04 | Local sidecar uses literal `127.0.0.1`; external Host is 400, external Origin is 403; occupied ports and redirect health fail | Direct raw HTTP boundary requests and launcher failure probes | H6 launcher + analytics API | PASS on 2026-08-19 baseline |
-| A05 | C03 HTML report has matching SHA-256 descriptor and safe filename; `submission.csv` has exact 16 columns | Fixture public adapter probe and Local public report/export APIs | H2 Fixture plugin + analytics exporter | PASS after `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa` |
-| A06 | Fixture/Live provenance is visible in all views | Manual desktop and 390 px screenshot review; source-level labels are supplementary only | Web composition | MANUAL REQUIRED |
+| A04 | Local sidecar uses literal `127.0.0.1`; external Host is 400, external Origin is 403; occupied ports, redirect health, minimal/spoofed external health, wrong namespace/host, and extra top-level health fields fail without `READY`; exact external health can `READY` and remains unowned | Direct raw HTTP and H6 public launcher probes | H6 launcher + analytics API | PASS after `df8fbec` |
+| A05 | Every real Local report kind has canonical format/media/extension/hash: diagnosis HTML, period HTML, analysis JSON, submission CSV, validation JSON, quality HTML; quality semantics and CSV 16 columns remain valid | Fixture public adapter plus Local public report/export APIs | H2 Fixture plugin + analytics exporter | PASS after `53733ae` and `0e6847e` |
+| A06 | Fixture/Live provenance is visible in all views | Coordinator manual desktop and 390 px review; source-level labels are supplementary only | Web composition | COORDINATOR MANUAL REQUIRED |
 | A07 | Unknown run exposes stable redacted error; error body contains no path, secret, auth, or stack material | Local public API failure request | Analytics API | PASS on 2026-08-19 baseline |
-| A08 | Generic entry, H2 entry, closed invalid-mode alert, and all six navigation route declarations exist | Fixture launcher HTTP reachability plus source-level entry/navigation gate | H6 + Web composition | PASS (source/HTTP); MANUAL REQUIRED for layout |
+| A08 | Generic entry, H2 entry, closed invalid-mode alert, and all six navigation route declarations exist | Fixture launcher HTTP reachability plus source-level entry/navigation gate | H6 + Web composition | PASS (source/HTTP); coordinator manual review required for layout |
 
 ## Assembly test inputs and assertions
 
@@ -63,8 +65,8 @@ reviewed, sanitized fixture.
 | Analytics API | Public `datasets:import` accepts `filename` and text only, then yields an analyzed C03/C04 run through canonical envelopes. |
 | Plugin adapter | The adapter exposes `H2SentinelDataSource` and Fixture activation performs no network, process, persistence, or filesystem operation. |
 | Fixture golden | Fixture `READY` has null analytics fields; the public Fixture adapter must export C03 as an HTML report and retain a matching content hash. |
-| Loopback | The sidecar binds exactly to loopback; Host/Origin validation and bounded timeout failures are observable and redacted. |
-| Reports | The C03 HTML descriptor hash equals the content SHA-256; filename is safe; exact CSV header/value order and public-text redaction are checked. |
+| Loopback | The sidecar binds exactly to loopback; Host/Origin validation and bounded timeout failures are observable and redacted. External sidecars must match the whole canonical health envelope, not merely `data.status`. |
+| Reports | All six report kinds are exercised through `reports:export`; descriptor kind/format/media/extension/hash, safe filename, quality HTML semantics, validation JSON semantics, exact CSV header/value order, and public-text redaction are checked. |
 | UI provenance | Every fixture display uses an explicit Fixture label; Live Analysis is never shown for precomputed fixture data. |
 | Failure/redaction | Public error codes and retryability are stable; stack traces, request bodies, credentials, and absolute paths are absent. |
-| Responsive smoke | The runner verifies entry/nav declarations only. Manual desktop and 390 px review must confirm primary navigation, C03/C04, clipping, overlap, and horizontal overflow. |
+| Responsive smoke | The runner verifies entry/nav declarations only. Coordinator manual desktop and 390 px review must confirm primary navigation, C03/C04, clipping, overlap, and horizontal overflow. |
