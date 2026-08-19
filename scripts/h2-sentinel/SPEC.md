@@ -24,6 +24,12 @@ available only from the two explicit, equivalent `/h2-sentinel` and
   provenance: canonical namespace, literal `127.0.0.1`, stable versions, and
   matching rule/configuration versions. Minimal lookalikes, wrong namespaces,
   `localhost`, extra top-level fields, and redirects fail closed.
+- Every owned spawn records a persistent terminal state immediately. Analytics
+  health, Web readiness, the pre-`READY` gate, and steady state observe all owned
+  children. On Windows, a closed role-only Job Object wrapper assigns the fixed
+  Analytics or Web child before resuming it and uses kill-on-close ownership, so
+  an exited wrapper cannot orphan its descendants. POSIX retains detached process
+  groups. External sidecars remain outside launcher ownership.
 - Fixture launch does not require `uv`, Python, an analytics listener, or an LLM
   credential. Local launch uses the committed `uv.lock` environment.
 - No launcher option accepts a command, executable path, filesystem path,
@@ -49,14 +55,14 @@ available only from the two explicit, equivalent `/h2-sentinel` and
 
 ## Verification
 
-Run root npm checks (74 repository tests), H2 checks (42 focused tests, five
-assembled QA groups, seven launcher/composition tests, and the 684-module
+Run root npm checks (81 repository tests), H2 checks (49 focused tests, five
+assembled QA groups, eight launcher/composition tests, and the 684-module
 production build), locked `uv` checks and 32 Python tests, golden and submission
-validation, all eight launcher fixture/local/failure/shutdown smoke scenarios,
+validation, all nine launcher fixture/local/failure/shutdown smoke scenarios,
 visual checks at desktop and narrow widths, `git diff --check`, and the H6
 write-set audit before handoff.
 
-The verified bundle remains 897.64 kB minified / 296.57 kB gzip for JavaScript
+The verified bundle remains 899.97 kB minified / 297.13 kB gzip for JavaScript
 and 47.44 kB for CSS, so Vite's greater-than-500-kB warning remains an accepted
 limitation rather than a passing performance claim. H2 is read-only, uses no LLM
 for the verified deterministic path, and executes no control action. Verification

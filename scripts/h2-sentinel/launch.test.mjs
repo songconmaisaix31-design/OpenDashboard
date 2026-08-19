@@ -121,6 +121,37 @@ test('keeps repeated termination signals handled until cleanup completes', async
   assert.equal((source.match(/redirect: 'error'/g) ?? []).length, 2)
 })
 
+test('establishes persistent lifecycle observation and closed Windows Job ownership', async () => {
+  const source = await import('node:fs/promises').then(({ readFile }) =>
+    readFile(new URL('./launch.mjs', import.meta.url), 'utf8'),
+  )
+  const wrapper = await import('node:fs/promises').then(({ readFile }) =>
+    readFile(new URL('./windows-owned-process.ps1', import.meta.url), 'utf8'),
+  )
+  const adversarialLauncher = await import('node:fs/promises').then(({ readFile }) =>
+    readFile(new URL('./adversarial-launch.mjs', import.meta.url), 'utf8'),
+  )
+
+  assert.match(source, /child\.once\('exit',[\s\S]*settleTerminal/)
+  assert.match(source, /terminalPromise/)
+  assert.match(source, /WINDOWS_OWNED_EXIT_PATTERN/)
+  assert.match(source, /message\.type === 'shutdown'/)
+  assert.doesNotMatch(source, /hold-after-analytics-health|continue-after-analytics-health/)
+  assert.match(adversarialLauncher, /afterAnalyticsHealth/)
+  assert.match(adversarialLauncher, /removeListener\('message', continueStartup\)/)
+  assert.match(adversarialLauncher, /if \(process\.connected\) process\.disconnect\(\)/)
+  assert.match(source, /waitDuringStartup\([\s\S]*waitForWeb\([\s\S]*ownedProcesses/)
+  assert.ok(source.indexOf('const lifecycle = waitForShutdownOrChildExit') < source.indexOf('console.log(options.readyJson'))
+
+  assert.match(wrapper, /ValidateSet\('Analytics', 'Web'\)/)
+  assert.doesNotMatch(wrapper, /\[string\]\s*\$Command/)
+  assert.match(wrapper, /JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE/)
+  assert.match(wrapper, /\[H2_SENTINEL_OWNED_EXIT\]/)
+  const runBody = wrapper.slice(wrapper.indexOf('public static int Run'))
+  assert.ok(runBody.indexOf('SetInformationJobObject(') < runBody.indexOf('CreateProcess('))
+  assert.ok(runBody.indexOf('AssignProcessToJobObject(') < runBody.indexOf('ResumeThread('))
+})
+
 test('requires the exact canonical analytics health contract', () => {
   assert.equal(isHealthyAnalyticsEnvelope(canonicalHealthEnvelope()), true)
 

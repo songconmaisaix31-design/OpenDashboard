@@ -56,6 +56,12 @@ const repositoryRoot = resolve(scriptDirectory, '../..')
 const analyticsDirectory = resolve(repositoryRoot, 'services/h2-analytics')
 const viteEntry = resolve(repositoryRoot, 'node_modules/vite/bin/vite.js')
 const productionIndex = resolve(repositoryRoot, 'apps/web/dist/index.html')
+const windowsOwnedProcessWrapper = resolve(scriptDirectory, 'windows-owned-process.ps1')
+const WINDOWS_OWNED_PID_PATTERN = /^\[H2_SENTINEL_OWNED_PID\] (Analytics|Web) (\d+)$/
+const WINDOWS_OWNED_EXIT_PATTERN = /^\[H2_SENTINEL_OWNED_EXIT\] (Analytics|Web) (\d+) (\d+)$/
+const NOOP_LIFECYCLE_HOOKS = Object.freeze({
+  afterAnalyticsHealth: () => Promise.resolve(),
+})
 
 class LauncherError extends Error {
   constructor(message) {
@@ -263,19 +269,120 @@ async function assertPortAvailable(port, label) {
   })
 }
 
-function spawnOwnedProcess(label, port, command, argumentsList, options) {
-  const child = spawn(command, argumentsList, {
-    ...options,
-    detached: process.platform !== 'win32',
-    shell: false,
-    stdio: 'inherit',
-    windowsHide: true,
+function spawnOwnedProcess(label, port, command, argumentsList, options, windowsOptions = {}) {
+  const usesWindowsWrapper = process.platform === 'win32'
+  const wrapperArguments = [
+    '-NoProfile',
+    '-NonInteractive',
+    '-ExecutionPolicy',
+    'Bypass',
+    '-File',
+    windowsOwnedProcessWrapper,
+    '-Role',
+    label,
+    '-Port',
+    String(port),
+  ]
+  if (label === 'Web') {
+    wrapperArguments.push('-WebRuntime', windowsOptions.webRuntime)
+  }
+  const child = spawn(
+    usesWindowsWrapper ? 'powershell.exe' : command,
+    usesWindowsWrapper ? wrapperArguments : argumentsList,
+    {
+      ...options,
+      detached: process.platform !== 'win32',
+      shell: false,
+      stdio: usesWindowsWrapper ? ['inherit', 'pipe', 'inherit'] : 'inherit',
+      windowsHide: true,
+    },
+  )
+  let resolveManagedPid
+  let resolveTerminal
+  const managedPidPromise = new Promise((resolvePromise) => {
+    resolveManagedPid = resolvePromise
   })
-  const record = { label, port, child, spawnError: null }
-  child.on('error', (error) => {
+  const terminalPromise = new Promise((resolvePromise) => {
+    resolveTerminal = resolvePromise
+  })
+  const record = {
+    label,
+    port,
+    child,
+    spawnError: null,
+    managedPid: usesWindowsWrapper ? null : child.pid ?? null,
+    wrapperPid: usesWindowsWrapper ? child.pid ?? null : null,
+    terminal: null,
+    managedPidPromise,
+    terminalPromise,
+  }
+  if (record.managedPid !== null) resolveManagedPid(record.managedPid)
+
+  const settleTerminal = (terminal) => {
+    if (record.terminal !== null) return
+    record.terminal = terminal
+    if (record.managedPid === null) resolveManagedPid(null)
+    resolveTerminal(record)
+  }
+  child.once('error', (error) => {
     record.spawnError = error
+    settleTerminal({ kind: 'error', error })
   })
+  child.once('exit', (code, signal) => {
+    settleTerminal({ kind: 'exit', code, signal })
+  })
+  if (usesWindowsWrapper) {
+    captureWindowsManagedPid(record, resolveManagedPid, settleTerminal)
+  }
   return record
+}
+
+function captureWindowsManagedPid(record, resolveManagedPid, settleTerminal) {
+  let pending = ''
+  const forwardLine = (line) => {
+    const pidMatch = WINDOWS_OWNED_PID_PATTERN.exec(line)
+    if (pidMatch) {
+      if (pidMatch[1] !== record.label || record.managedPid !== null) {
+        const error = new Error('Windows ownership wrapper emitted an invalid PID record.')
+        record.spawnError = error
+        settleTerminal({ kind: 'error', error })
+        try {
+          record.child.kill('SIGKILL')
+        } catch {
+          // The invalid wrapper may already have exited.
+        }
+        return
+      }
+      record.managedPid = Number(pidMatch[2])
+      resolveManagedPid(record.managedPid)
+      return
+    }
+    const exitMatch = WINDOWS_OWNED_EXIT_PATTERN.exec(line)
+    if (exitMatch) {
+      if (
+        exitMatch[1] !== record.label ||
+        Number(exitMatch[2]) !== record.managedPid
+      ) {
+        const error = new Error('Windows ownership wrapper emitted an invalid exit record.')
+        record.spawnError = error
+        settleTerminal({ kind: 'error', error })
+      } else {
+        settleTerminal({ kind: 'exit', code: Number(exitMatch[3]), signal: null })
+      }
+      return
+    }
+    process.stdout.write(`${line}\n`)
+  }
+  record.child.stdout.setEncoding('utf8')
+  record.child.stdout.on('data', (chunk) => {
+    pending += chunk
+    const lines = pending.split(/\r?\n/)
+    pending = lines.pop() ?? ''
+    for (const line of lines) forwardLine(line)
+  })
+  record.child.stdout.on('end', () => {
+    if (pending) forwardLine(pending)
+  })
 }
 
 export function childFailure(record, phase) {
@@ -290,11 +397,14 @@ export function childFailure(record, phase) {
       `Web could not start on ${endpoint}. Run npm ci and retry with an available --web-port.`,
     )
   }
-  if (record.child.exitCode !== null || record.child.signalCode !== null) {
+  const terminal = record.terminal
+  const exitCode = terminal?.kind === 'exit' ? terminal.code : record.child.exitCode
+  const signalCode = terminal?.kind === 'exit' ? terminal.signal : record.child.signalCode
+  if (terminal != null || exitCode !== null || signalCode !== null) {
     const outcome =
-      record.child.exitCode === null
-        ? `signal ${record.child.signalCode ?? 'unknown'}`
-        : `exit code ${record.child.exitCode}`
+      exitCode === null
+        ? `signal ${signalCode ?? 'unknown'}`
+        : `exit code ${exitCode}`
     return new LauncherError(
       `${record.label} process exited ${phase} on ${endpoint} (${outcome}). Verify the selected ${record.label.toLowerCase()} port is still available.`,
     )
@@ -302,15 +412,11 @@ export function childFailure(record, phase) {
   return null
 }
 
-async function waitForAnalyticsHealth(url, timeoutMs, analyticsProcess) {
+async function waitForAnalyticsHealth(url, timeoutMs) {
   const deadline = Date.now() + timeoutMs
   const healthUrl = new URL('/health', url)
 
   while (Date.now() < deadline) {
-    if (analyticsProcess) {
-      const failure = childFailure(analyticsProcess, 'before readiness')
-      if (failure) throw failure
-    }
     try {
       const response = await fetch(healthUrl, {
         redirect: 'error',
@@ -328,11 +434,9 @@ async function waitForAnalyticsHealth(url, timeoutMs, analyticsProcess) {
   )
 }
 
-async function waitForWeb(url, timeoutMs, webProcess) {
+async function waitForWeb(url, timeoutMs) {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
-    const failure = childFailure(webProcess, 'before readiness')
-    if (failure) throw failure
     try {
       const response = await fetch(url, {
         redirect: 'error',
@@ -351,6 +455,53 @@ async function waitForWeb(url, timeoutMs, webProcess) {
 
 function delay(milliseconds) {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds))
+}
+
+function rejectAfter(milliseconds, createError) {
+  return new Promise((_, rejectPromise) => {
+    const timeout = setTimeout(() => rejectPromise(createError()), milliseconds)
+    timeout.unref()
+  })
+}
+
+async function waitForOwnedProcessStart(record, timeoutMs, ownedProcesses, shutdown) {
+  if (record.managedPid !== null) return true
+  return waitDuringStartup(
+    Promise.race([
+      record.managedPidPromise.then((pid) => {
+        if (pid === null) throw childFailure(record, 'during ownership bootstrap')
+      }),
+      rejectAfter(
+        timeoutMs,
+        () => new LauncherError(
+          `${record.label} ownership bootstrap timed out on ${LOOPBACK_HOST}:${record.port}.`,
+        ),
+      ),
+    ]),
+    ownedProcesses,
+    shutdown,
+    'during ownership bootstrap',
+  )
+}
+
+function waitDuringStartup(operation, records, shutdown, phase) {
+  const processFailures = records.map((record) =>
+    record.terminalPromise.then(() => {
+      throw childFailure(record, phase)
+    }),
+  )
+  return Promise.race([
+    operation.then(() => true),
+    shutdown.promise.then(() => false),
+    ...processFailures,
+  ])
+}
+
+function assertOwnedProcessesRunning(records, phase) {
+  for (const record of records) {
+    const failure = childFailure(record, phase)
+    if (failure) throw failure
+  }
 }
 
 function runAndWait(command, argumentsList) {
@@ -382,6 +533,24 @@ async function waitForExit(child, timeoutMs) {
   })
 }
 
+function isPidRunning(pid) {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function waitForPidExit(pid, timeoutMs) {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (!isPidRunning(pid)) return true
+    await delay(25)
+  }
+  return !isPidRunning(pid)
+}
+
 export async function terminatePidTree(pid) {
   if (!pid) return true
 
@@ -409,6 +578,29 @@ export async function terminatePidTree(pid) {
 }
 
 export async function terminateProcessTree(record) {
+  if (process.platform === 'win32' && record.wrapperPid) {
+    if (record.child.exitCode === null && record.child.signalCode === null) {
+      try {
+        record.child.kill('SIGKILL')
+      } catch {
+        // The wrapper may have exited after the lifecycle probe.
+      }
+    }
+    if (!(await waitForExit(record.child, 2_000))) {
+      await terminatePidTree(record.wrapperPid)
+    }
+    if (record.managedPid && !(await waitForPidExit(record.managedPid, 5_000))) {
+      await terminatePidTree(record.managedPid)
+    }
+    if (record.managedPid && !(await waitForPidExit(record.managedPid, 2_000))) {
+      throw new LauncherError(`${record.label} managed process could not be stopped.`)
+    }
+    if (!(await waitForExit(record.child, 2_000))) {
+      throw new LauncherError(`${record.label} ownership wrapper could not be stopped.`)
+    }
+    return
+  }
+
   const pid = record.child.pid
   if (!pid) return
   await terminatePidTree(pid)
@@ -440,19 +632,10 @@ async function stopOwnedProcesses(records) {
 
 function waitForShutdownOrChildExit(records, shutdown) {
   const exits = records.map(
-    (record) =>
-      new Promise((_, rejectPromise) => {
-        record.child.once('exit', (code, signal) => {
-          if (!shutdown.requested) {
-            const outcome = code === null ? `signal ${signal ?? 'unknown'}` : `exit code ${code}`
-            rejectPromise(
-              new LauncherError(
-                `${record.label} process exited unexpectedly on ${LOOPBACK_HOST}:${record.port} (${outcome}).`,
-              ),
-            )
-          }
-        })
-      }),
+    (record) => record.terminalPromise.then(() => {
+      if (shutdown.requested) return
+      throw childFailure(record, 'unexpectedly')
+    }),
   )
   return Promise.race([shutdown.promise, ...exits])
 }
@@ -473,7 +656,7 @@ function createShutdownSignal() {
   return shutdown
 }
 
-export async function runLauncher(options) {
+export async function runLauncher(options, lifecycleHooks = NOOP_LIFECYCLE_HOOKS) {
   if (!existsSync(viteEntry)) {
     throw new LauncherError('Vite is unavailable. Run npm ci before starting H2 Sentinel.')
   }
@@ -527,8 +710,29 @@ export async function runLauncher(options) {
           { cwd: analyticsDirectory, env: process.env },
         )
         ownedProcesses.push(analyticsProcess)
+        if (!(await waitForOwnedProcessStart(
+          analyticsProcess,
+          options.healthTimeoutMs,
+          ownedProcesses,
+          shutdown,
+        ))) return
       }
-      await waitForAnalyticsHealth(analyticsUrl, options.healthTimeoutMs, analyticsProcess)
+      if (!(await waitDuringStartup(
+        waitForAnalyticsHealth(analyticsUrl, options.healthTimeoutMs),
+        ownedProcesses,
+        shutdown,
+        'before analytics readiness',
+      ))) return
+      if (analyticsProcess) {
+        if (!(await waitDuringStartup(
+          lifecycleHooks.afterAnalyticsHealth({
+            analyticsPid: analyticsProcess.managedPid,
+          }),
+          ownedProcesses,
+          shutdown,
+          'after analytics readiness',
+        ))) return
+      }
     }
 
     const webEnvironment = { ...process.env }
@@ -555,25 +759,46 @@ export async function runLauncher(options) {
       process.execPath,
       [viteEntry, ...viteArguments],
       { cwd: repositoryRoot, env: webEnvironment },
+      { webRuntime: options.webRuntime },
     )
     ownedProcesses.push(webProcess)
+    if (!(await waitForOwnedProcessStart(
+      webProcess,
+      options.healthTimeoutMs,
+      ownedProcesses,
+      shutdown,
+    ))) return
 
     const webUrl = new URL(
       `/h2-sentinel/?mode=${options.mode}`,
       `http://${LOOPBACK_HOST}:${options.webPort}/`,
     )
-    await waitForWeb(webUrl, options.healthTimeoutMs, webProcess)
+    if (!(await waitDuringStartup(
+      waitForWeb(webUrl, options.healthTimeoutMs),
+      ownedProcesses,
+      shutdown,
+      'before Web readiness',
+    ))) return
+
+    const lifecycle = waitForShutdownOrChildExit(ownedProcesses, shutdown)
+    if (!(await waitDuringStartup(
+      new Promise((resolvePromise) => setImmediate(resolvePromise)),
+      ownedProcesses,
+      shutdown,
+      'before READY',
+    ))) return
+    assertOwnedProcessesRunning(ownedProcesses, 'before READY')
 
     const readyRecord = {
       event: 'READY',
       mode: options.mode,
       webUrl: webUrl.href,
       analyticsUrl,
-      webPid: webProcess.child.pid ?? null,
-      analyticsPid: analyticsProcess?.child.pid ?? null,
+      webPid: webProcess.managedPid,
+      analyticsPid: analyticsProcess?.managedPid ?? null,
     }
     console.log(options.readyJson ? JSON.stringify(readyRecord) : `READY ${JSON.stringify(readyRecord)}`)
-    await waitForShutdownOrChildExit(ownedProcesses, shutdown)
+    await lifecycle
   } finally {
     process.removeListener('SIGINT', requestShutdown)
     process.removeListener('SIGTERM', requestShutdown)

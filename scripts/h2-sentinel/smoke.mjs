@@ -12,6 +12,7 @@ const LOOPBACK_HOST = '127.0.0.1'
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const repositoryRoot = resolve(scriptDirectory, '../..')
 const launcherPath = resolve(scriptDirectory, 'launch.mjs')
+const adversarialLauncherPath = resolve(scriptDirectory, 'adversarial-launch.mjs')
 const artifactDirectory = resolve(scriptDirectory, 'artifacts')
 const fixtureCsvPath = resolve(
   repositoryRoot,
@@ -116,14 +117,14 @@ async function stopLauncher(session) {
   }
 }
 
-function spawnForFailure(argumentsList) {
+function spawnForFailure(argumentsList, withIpc = false, entryPath = launcherPath) {
   const stdout = []
   const stderr = []
-  const child = spawn(process.execPath, [launcherPath, ...argumentsList, '--ready-json'], {
+  const child = spawn(process.execPath, [entryPath, ...argumentsList, '--ready-json'], {
     cwd: repositoryRoot,
     env: process.env,
     shell: false,
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: withIpc ? ['ignore', 'pipe', 'pipe', 'ipc'] : ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
   })
   collectLines(child.stdout, stdout)
@@ -174,6 +175,91 @@ async function assertPidStopped(pid) {
     }
   }
   assert.fail(`Owned process ${pid} was not stopped.`)
+}
+
+async function runCaptured(command, argumentsList) {
+  const stdout = []
+  const stderr = []
+  const child = spawn(command, argumentsList, {
+    cwd: repositoryRoot,
+    env: process.env,
+    shell: false,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    windowsHide: true,
+  })
+  collectLines(child.stdout, stdout)
+  collectLines(child.stderr, stderr)
+  const result = await waitForExit(child, 10_000)
+  assert.equal(result.code, 0, `${command} process query failed: ${stderr.join(' ')}`)
+  return stdout.join('\n')
+}
+
+async function terminateDirectProcess(pid) {
+  if (process.platform === 'win32') {
+    await runCaptured('taskkill.exe', ['/PID', String(pid), '/F'])
+    return
+  }
+  process.kill(pid, 'SIGKILL')
+}
+
+async function listProcesses() {
+  if (process.platform === 'win32') {
+    const output = await runCaptured('powershell.exe', [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name | ConvertTo-Json -Compress',
+    ])
+    const parsed = JSON.parse(output)
+    return (Array.isArray(parsed) ? parsed : [parsed]).map((entry) => ({
+      pid: Number(entry.ProcessId),
+      parentPid: Number(entry.ParentProcessId),
+      name: String(entry.Name),
+    }))
+  }
+
+  const output = await runCaptured('ps', ['-eo', 'pid=,ppid=,comm='])
+  return output
+    .split(/\r?\n/)
+    .map((line) => /^(\s*\d+)\s+(\d+)\s+(.+)$/.exec(line))
+    .filter(Boolean)
+    .map((match) => ({
+      pid: Number(match[1]),
+      parentPid: Number(match[2]),
+      name: match[3].trim(),
+    }))
+}
+
+async function listDescendants(rootPid) {
+  const processes = await listProcesses()
+  const descendants = []
+  const knownParents = new Set([rootPid])
+  let foundNewProcess = true
+  while (foundNewProcess) {
+    foundNewProcess = false
+    for (const processEntry of processes) {
+      if (
+        knownParents.has(processEntry.parentPid) &&
+        !knownParents.has(processEntry.pid)
+      ) {
+        knownParents.add(processEntry.pid)
+        descendants.push(processEntry)
+        foundNewProcess = true
+      }
+    }
+  }
+  return descendants
+}
+
+async function waitForDescendant(rootPid, namePattern) {
+  const deadline = Date.now() + 15_000
+  while (Date.now() < deadline) {
+    const descendants = await listDescendants(rootPid)
+    const match = descendants.find((entry) => namePattern.test(entry.name))
+    if (match) return match
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 25))
+  }
+  assert.fail(`Descendant matching ${namePattern} was not observed for PID ${rootPid}.`)
 }
 
 async function requestEnvelope(baseUrl, route, payload) {
@@ -231,6 +317,14 @@ async function runFixtureSmoke() {
     String(webPort),
   ])
   try {
+    assert.deepEqual(Object.keys(session.ready).sort(), [
+      'analyticsPid',
+      'analyticsUrl',
+      'event',
+      'mode',
+      'webPid',
+      'webUrl',
+    ])
     assert.equal(session.ready.mode, 'fixture')
     assert.equal(session.ready.analyticsUrl, null)
     assert.equal(session.ready.analyticsPid, null)
@@ -421,6 +515,71 @@ async function runOccupiedAnalyticsPortSmoke() {
   console.log('PASS launcher rejects an occupied analytics port with its exact role and port')
 }
 
+async function runAnalyticsExitBeforeReadySmoke() {
+  const webPort = await getFreePort()
+  const analyticsPort = await getFreePort()
+  const session = spawnForFailure([
+    '--mode',
+    'local',
+    '--web-port',
+    String(webPort),
+    '--analytics-port',
+    String(analyticsPort),
+  ], true, adversarialLauncherPath)
+  const observedPids = new Set([session.child.pid])
+  try {
+    let armedForTermination = false
+    let pendingHealthRecord = null
+    let terminationStarted = false
+    let resolveAnalyticsHealthy
+    let rejectAnalyticsHealthy
+    const analyticsHealthy = new Promise((resolvePromise, rejectPromise) => {
+      resolveAnalyticsHealthy = resolvePromise
+      rejectAnalyticsHealthy = rejectPromise
+    })
+    const healthTimeout = setTimeout(
+      () => rejectAnalyticsHealthy(new Error('Launcher did not report analytics health before READY.')),
+      15_000,
+    )
+    const terminateAfterHealth = () => {
+      if (!armedForTermination || pendingHealthRecord === null || terminationStarted) return
+      terminationStarted = true
+      clearTimeout(healthTimeout)
+      const healthRecord = pendingHealthRecord
+      terminateDirectProcess(healthRecord.analyticsPid).then(
+        () => resolveAnalyticsHealthy(healthRecord),
+        rejectAnalyticsHealthy,
+      )
+    }
+    session.child.on('message', (message) => {
+      if (message?.type !== 'analytics-healthy') return
+      pendingHealthRecord = message
+      terminateAfterHealth()
+    })
+    const uvProcess = await waitForDescendant(session.child.pid, /^uv(?:\.exe)?$/i)
+    observedPids.add(uvProcess.pid)
+    const pythonProcess = await waitForDescendant(session.child.pid, /^python(?:\.exe)?$/i)
+    observedPids.add(pythonProcess.pid)
+    for (const processEntry of await listDescendants(session.child.pid)) {
+      observedPids.add(processEntry.pid)
+    }
+    armedForTermination = true
+    terminateAfterHealth()
+    const healthRecord = await analyticsHealthy
+    assert.equal(healthRecord.analyticsPid, uvProcess.pid)
+
+    const result = await waitForExit(session.child, 15_000)
+    assert.notEqual(result.code, 0)
+    assert.doesNotMatch(session.stdout.join(' '), /"event":"READY"/)
+  } finally {
+    for (const pid of [...observedPids].reverse()) await terminatePidTree(pid)
+  }
+  for (const pid of observedPids) await assertPidStopped(pid)
+  await assertPortReleased(webPort)
+  await assertPortReleased(analyticsPort)
+  console.log('PASS launcher rejects analytics wrapper exit after health and before Web readiness without leaking owned processes')
+}
+
 async function runSubmissionValidator(submissionPath) {
   const validatorInput = relative(repositoryRoot, submissionPath)
   const child = spawn(
@@ -568,6 +727,7 @@ try {
   await runUntrustedHealthImplementationSmoke()
   await runCanonicalExternalSidecarSmoke()
   await runOccupiedAnalyticsPortSmoke()
+  await runAnalyticsExitBeforeReadySmoke()
   await runLocalGoldenSmoke()
   await runLocalPreviewProxySmoke()
 } finally {

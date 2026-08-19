@@ -66,8 +66,15 @@ this file does not claim its own not-yet-created Git object ID.
   and `analyticsPid`. Every emitted URL uses literal `127.0.0.1`.
 - Owned child trees are cleaned on startup failure, IPC-controlled smoke
   shutdown, `SIGINT`, or `SIGTERM`. Windows uses `taskkill /PID <pid> /T /F`,
-  waits for the owned child to exit, and fails if fallback termination also
-  cannot stop it. POSIX uses a detached process group with TERM/KILL fallback.
+  as a fallback around a closed Analytics/Web-only Job Object wrapper. The Job
+  is configured with kill-on-close before its fixed child is created suspended;
+  assignment must succeed before the child resumes. Wrapper and managed PIDs
+  remain distinct internally while `READY` retains only the managed `webPid`
+  and `analyticsPid`. POSIX uses a detached process group with TERM/KILL fallback.
+- Owned processes publish persistent terminal state from spawn. Analytics health,
+  Web readiness, the pre-`READY` gate, and steady state race every owned child,
+  so an Analytics exit after health cannot be missed while Web starts. External
+  sidecars never enter this ownership set.
 
 ## Reproduction commands
 
@@ -95,12 +102,12 @@ select different loopback ports.
 | --- | --- |
 | `npm ci` | Passed; 31 locked packages installed. |
 | `npm run typecheck` | Passed with strict TypeScript. |
-| `npm run test` | Passed; 74 repository tests. |
-| `npm run build` | Passed; 684 modules. JavaScript was 897.64 kB minified / 296.57 kB gzip and CSS was 47.44 kB. Vite reported the known large-chunk warning. |
-| `npm run check` | Passed; typecheck, 74 tests, and the 684-module production build. |
+| `npm run test` | Passed; 81 repository tests. |
+| `npm run build` | Passed; 684 modules. JavaScript was 899.97 kB minified / 297.13 kB gzip and CSS was 47.44 kB. Vite reported the known large-chunk warning. |
+| `npm run check` | Passed; typecheck, 81 repository tests, and the 684-module production build. |
 | `npm run h2:build` | Passed; production H2 composition included in the Web bundle. |
-| `npm run h2:check` | Passed; typecheck, 42 focused H2 tests, five assembled QA groups, 7 launcher/composition tests, and the 684-module build. |
-| `npm run h2:smoke` | Passed; all 8 scenarios: Fixture no-analytics/cleanup, occupied Web, redirect rejection, malformed health lookalikes, canonical external sidecar ownership, occupied analytics, Local golden/export/cleanup, and production-preview proxy. |
+| `npm run h2:check` | Passed; typecheck, 49 focused H2 tests, five assembled QA groups, 8 launcher/composition tests, and the 684-module build. |
+| `npm run h2:smoke` | Passed; all 9 scenarios: Fixture no-analytics/cleanup, occupied Web, redirect rejection, malformed health lookalikes, canonical external sidecar ownership, occupied analytics, owned Analytics exit after health/before `READY`, Local golden/export/cleanup, and production-preview proxy. |
 | `uv lock --check` | Passed; 36 locked packages resolved. |
 | `uv sync --locked --extra dev` | Passed; 30 packages checked. |
 | `uv run --locked --extra dev python -m pytest` | Passed; 32 tests, with one upstream Starlette `httpx` deprecation warning. |
@@ -124,9 +131,9 @@ select different loopback ports.
 - The assembled QA runner reports five automated groups as `PASS`, with zero
   `FAIL`. Visual verification remains manual; this handoff does not claim an
   automated screenshot regression suite or a formal screenshot artifact.
-- The final candidate passes 74 repository tests, 42 focused H2 tests, 32 Python
-  tests, and 7 launcher/composition tests. Its 684-module production bundle is
-  897.64 kB minified / 296.57 kB gzip for JavaScript and 47.44 kB for CSS. Vite
+- The final candidate passes 81 repository tests, 49 focused H2 tests, 32 Python
+  tests, and 8 launcher/composition tests. Its 684-module production bundle is
+  899.97 kB minified / 297.13 kB gzip for JavaScript and 47.44 kB for CSS. Vite
   retains its standard greater-than-500-kB warning; no speculative split or new
   dependency was added during composition.
 - The verified H2 path is read-only. The deterministic assistant uses no LLM,
