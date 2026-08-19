@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto'
-
 import {
   H2_ASSISTANT_QUESTIONS,
   H2_FIXTURE_ANALYSIS_RUN,
@@ -21,12 +19,79 @@ import {
   type H2ReportRequest,
   type H2SentinelDataSource,
   type H2SeriesRequest,
+  type H2SeriesPoint,
   type H2SeriesResponse,
 } from '../../../packages/h2-contracts/src/index.ts'
 
 import { H2EmsAdapterError } from './errors.ts'
 
 const fixtureEvents = [H2_GOLDEN_C03_EVENT, H2_GOLDEN_C04_EVENT] as const
+
+/** Bundled sanitized rows keep Fixture charts usable without filesystem access. */
+const fixtureSeries = [
+  ['2026-01-05T10:20:00Z', 820, 230, 590, 500, 140, 55, 500, 450, -240],
+  ['2026-01-05T10:21:00Z', 815, 230, 590, 505, 135, 55.2, 500, 450, -240],
+  ['2026-01-05T10:22:00Z', 810, 230, 590, 500, 140, 55.4, 500, 450, -240],
+  ['2026-01-05T10:23:00Z', 805, 230, 590, 500, 145, 55.6, 500, 450, -240],
+  ['2026-01-05T10:24:00Z', 800, 230, 590, 500, 140, 55.8, 500, 450, -240],
+  ['2026-01-05T10:25:00Z', 798, 230, 590, 500, 138, 56, 500, 450, -240],
+  ['2026-01-05T10:26:00Z', 796, 230, 590, 500, 136, 56.2, 500, 450, -240],
+  ['2026-01-05T10:27:00Z', 794, 230, 590, 500, 134, 56.4, 500, 450, -240],
+  ['2026-01-05T10:28:00Z', 792, 230, 590, 500, 132, 56.6, 500, 450, -240],
+  ['2026-01-05T10:29:00Z', 790, 230, 590, 500, 130, 56.8, 500, 450, -240],
+  ['2026-01-05T10:30:00Z', 788, 230, 590, 500, 128, 57, 500, 450, -240],
+  ['2026-01-05T10:31:00Z', 786, 230, 590, 500, 126, 57.2, 500, 450, -240],
+  ['2026-01-05T10:32:00Z', 784, 230, 720, 500, 124, 57.4, 500, 450, -240],
+  ['2026-01-05T10:33:00Z', 782, 230, 720, 500, 122, 57.6, 500, 450, -240],
+  ['2026-01-05T10:34:00Z', 780, 230, 720, 500, 120, 57.8, 500, 450, -240],
+  ['2026-01-05T10:35:00Z', 778, 230, 720, 500, 118, 58, 500, 450, -240],
+  ['2026-01-05T10:36:00Z', 776, 230, 720, 500, 116, 58.2, 500, 450, -240],
+  ['2026-01-05T10:37:00Z', 774, 230, 720, 500, 114, 58.4, 500, 450, -240],
+  ['2026-01-05T10:38:00Z', 772, 230, 720, 500, 112, 58.6, 500, 450, -240],
+  ['2026-01-05T10:39:00Z', 770, 230, 720, 500, 110, 58.8, 500, 450, -240],
+  ['2026-01-05T10:40:00Z', 768, 230, 590, 500, 108, 59, 500, 450, -240],
+  ['2026-01-05T10:41:00Z', 766, 230, 590, 500, 106, 59.2, 500, 450, -240],
+] as const
+
+const fixtureSeriesVariables = [
+  'pv_actual_kw',
+  'bess_power_kw',
+  'pcc_power_kw',
+  'total_electrolyzer_power_kw',
+  'auxiliary_load_kw',
+  'bess_soc_percent',
+  'pcc_export_limit_kw',
+  'pcc_import_limit_kw',
+  'bess_dispatch_command_kw',
+] as const
+
+const fixturePoints: readonly H2SeriesPoint[] = fixtureSeries.map(
+  ([
+    timestamp,
+    pvActual,
+    bessPower,
+    pccPower,
+    electrolyzerPower,
+    auxiliaryLoad,
+    bessSoc,
+    exportLimit,
+    importLimit,
+    bessCommand,
+  ]) => ({
+    timestamp,
+    values: {
+      pv_actual_kw: pvActual,
+      bess_power_kw: bessPower,
+      pcc_power_kw: pccPower,
+      total_electrolyzer_power_kw: electrolyzerPower,
+      auxiliary_load_kw: auxiliaryLoad,
+      bess_soc_percent: bessSoc,
+      pcc_export_limit_kw: exportLimit,
+      pcc_import_limit_kw: importLimit,
+      bess_dispatch_command_kw: bessCommand,
+    },
+  }),
+)
 
 /**
  * Provides only immutable, sanitized contract fixtures. It deliberately does
@@ -126,17 +191,70 @@ function matchesFilter(event: H2AnomalyEvent, filter?: H2EventFilter): boolean {
 }
 
 function createFixtureSeries(request: H2SeriesRequest): H2SeriesResponse {
-  if (request.variables.length === 0 || request.startTime > request.endTime) {
+  if (
+    request.variables.length === 0 ||
+    new Set(request.variables).size !== request.variables.length ||
+    !request.variables.every(isFixtureSeriesVariable) ||
+    !isFixtureTimeRange(request.startTime, request.endTime) ||
+    (request.eventId && !fixtureEvents.some((event) => event.eventId === request.eventId))
+  ) {
+    throw new H2EmsAdapterError('invalid_fixture_request', false)
+  }
+  const points = fixturePoints
+    .filter(
+      ({ timestamp }) =>
+        timestamp >= request.startTime && timestamp <= request.endTime,
+    )
+    .map(({ timestamp, values }) => ({
+      timestamp,
+      values: selectFixtureValues(values, request.variables),
+    }))
+  if (points.length === 0) {
     throw new H2EmsAdapterError('invalid_fixture_request', false)
   }
   return {
     runId: request.runId,
     variables: [...request.variables],
-    points: [],
+    points,
   }
 }
 
-function createFixtureReport(request: H2ReportRequest): H2ReportArtifact {
+function selectFixtureValues(
+  values: Readonly<Record<string, number | null>>,
+  variables: readonly string[],
+): Readonly<Record<string, number | null>> {
+  const selected: Record<string, number | null> = {}
+  for (const variable of variables) {
+    const value = values[variable]
+    if (value === undefined) {
+      throw new H2EmsAdapterError('invalid_fixture_request', false)
+    }
+    selected[variable] = value
+  }
+  return selected
+}
+
+function isFixtureSeriesVariable(
+  value: string,
+): value is (typeof fixtureSeriesVariables)[number] {
+  return fixtureSeriesVariables.includes(
+    value as (typeof fixtureSeriesVariables)[number],
+  )
+}
+
+function isFixtureTimeRange(startTime: string, endTime: string): boolean {
+  return (
+    Number.isFinite(Date.parse(startTime)) &&
+    Number.isFinite(Date.parse(endTime)) &&
+    startTime <= endTime &&
+    startTime >= H2_FIXTURE_DATASET.timeRange.startTime &&
+    endTime <= H2_FIXTURE_DATASET.timeRange.endTime
+  )
+}
+
+async function createFixtureReport(
+  request: H2ReportRequest,
+): Promise<H2ReportArtifact> {
   const event = request.eventId
     ? fixtureEvents.find((item) => item.eventId === request.eventId)
     : undefined
@@ -161,20 +279,20 @@ function createFixtureReport(request: H2ReportRequest): H2ReportArtifact {
   )
 }
 
-function createArtifact(
+async function createArtifact(
   kind: H2ReportArtifact['descriptor']['kind'],
   format: H2ReportArtifact['descriptor']['format'],
   filename: string,
   content: string,
   eventId?: string,
-): H2ReportArtifact {
+): Promise<H2ReportArtifact> {
   const descriptor = {
     ...H2_FIXTURE_REPORT_DESCRIPTOR,
     reportId: `fixture-${kind}-${eventId ?? H2_FIXTURE_ANALYSIS_RUN.runId}`,
     kind,
     format,
     filename,
-    contentHash: `sha256:${createHash('sha256').update(content).digest('hex')}`,
+    contentHash: await sha256(content),
     ...(eventId ? { eventId } : {}),
     provenance: H2_FIXTURE_PROVENANCE,
   } as const
@@ -183,4 +301,15 @@ function createArtifact(
     mediaType: format === 'csv' ? 'text/csv' : format === 'html' ? 'text/html' : 'application/json',
     content,
   }
+}
+
+async function sha256(content: string): Promise<`sha256:${string}`> {
+  const digest = await globalThis.crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(content),
+  )
+  const hex = Array.from(new Uint8Array(digest), (value) =>
+    value.toString(16).padStart(2, '0'),
+  ).join('')
+  return `sha256:${hex}`
 }
