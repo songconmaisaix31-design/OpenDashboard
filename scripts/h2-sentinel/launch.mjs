@@ -13,6 +13,43 @@ const MAX_PORT = 65_535
 const MIN_HEALTH_TIMEOUT_MS = 250
 const MAX_HEALTH_TIMEOUT_MS = 60_000
 const API_NAMESPACE = '/api/v1/h2-sentinel'
+const HEALTH_ENVELOPE_KEYS = Object.freeze([
+  'data',
+  'ok',
+  'provenance',
+  'status',
+  'warnings',
+])
+const HEALTH_DATA_KEYS = Object.freeze([
+  'aggregationVersion',
+  'apiVersion',
+  'bindHost',
+  'configurationVersion',
+  'detectorVersion',
+  'featureVersion',
+  'namespace',
+  'ruleVersion',
+  'serviceVersion',
+  'status',
+])
+const HEALTH_PROVENANCE_KEYS = Object.freeze([
+  'configurationVersion',
+  'generatedAt',
+  'limitations',
+  'mode',
+  'ruleVersion',
+  'source',
+])
+const HEALTH_VERSION_KEYS = Object.freeze([
+  'aggregationVersion',
+  'apiVersion',
+  'configurationVersion',
+  'detectorVersion',
+  'featureVersion',
+  'ruleVersion',
+  'serviceVersion',
+])
+const STABLE_VERSION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const repositoryRoot = resolve(scriptDirectory, '../..')
@@ -157,15 +194,52 @@ function parseExternalSidecarUrl(input) {
 }
 
 export function isHealthyAnalyticsEnvelope(value) {
+  if (!isRecord(value) || !hasExactKeys(value, HEALTH_ENVELOPE_KEYS)) return false
+  if (value.ok !== true || value.status !== 'success') return false
+  if (!Array.isArray(value.warnings) || value.warnings.length !== 0) return false
+  if (!isRecord(value.data) || !hasExactKeys(value.data, HEALTH_DATA_KEYS)) return false
+  if (value.data.status !== 'healthy') return false
+  if (value.data.namespace !== API_NAMESPACE || value.data.bindHost !== LOOPBACK_HOST) {
+    return false
+  }
+  if (!HEALTH_VERSION_KEYS.every((key) => isStableVersion(value.data[key]))) return false
+  return isCanonicalHealthProvenance(value.provenance, value.data)
+}
+
+function isCanonicalHealthProvenance(value, healthData) {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    value.ok === true &&
-    value.status === 'success' &&
-    typeof value.data === 'object' &&
-    value.data !== null &&
-    value.data.status === 'healthy'
+    isRecord(value) &&
+    hasExactKeys(value, HEALTH_PROVENANCE_KEYS) &&
+    value.mode === 'RULE' &&
+    value.source === 'h2-analytics-api' &&
+    isNonEmptyString(value.generatedAt) &&
+    isStableVersion(value.ruleVersion) &&
+    value.ruleVersion === healthData.ruleVersion &&
+    isStableVersion(value.configurationVersion) &&
+    value.configurationVersion === healthData.configurationVersion &&
+    Array.isArray(value.limitations) &&
+    value.limitations.every(isNonEmptyString)
   )
+}
+
+function isRecord(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function hasExactKeys(value, expectedKeys) {
+  const actualKeys = Object.keys(value)
+  return (
+    actualKeys.length === expectedKeys.length &&
+    expectedKeys.every((key) => Object.hasOwn(value, key))
+  )
+}
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.length > 0 && value === value.trim()
+}
+
+function isStableVersion(value) {
+  return isNonEmptyString(value) && STABLE_VERSION_PATTERN.test(value)
 }
 
 async function assertPortAvailable(port, label) {

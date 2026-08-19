@@ -7,6 +7,34 @@ import {
   parseLauncherArguments,
 } from './launch.mjs'
 
+function canonicalHealthEnvelope() {
+  return {
+    ok: true,
+    status: 'success',
+    data: {
+      status: 'healthy',
+      apiVersion: 'v1',
+      serviceVersion: '0.1.0',
+      featureVersion: 'h2-features-v1',
+      aggregationVersion: 'h2-events-v1',
+      ruleVersion: 'h2-rules-v1',
+      configurationVersion: 'official-constraints-v1',
+      namespace: '/api/v1/h2-sentinel',
+      bindHost: '127.0.0.1',
+      detectorVersion: 'deterministic-c03-c04-v1',
+    },
+    warnings: [],
+    provenance: {
+      mode: 'RULE',
+      source: 'h2-analytics-api',
+      generatedAt: '2026-08-19T00:00:00Z',
+      ruleVersion: 'h2-rules-v1',
+      configurationVersion: 'official-constraints-v1',
+      limitations: ['Loopback-only deterministic API metadata.'],
+    },
+  }
+}
+
 test('accepts only the closed Fixture and local launch contracts', () => {
   assert.deepEqual(parseLauncherArguments(['--mode', 'fixture']), {
     mode: 'fixture',
@@ -93,29 +121,81 @@ test('keeps repeated termination signals handled until cleanup completes', async
   assert.equal((source.match(/redirect: 'error'/g) ?? []).length, 2)
 })
 
-test('requires the exact analytics health success envelope', () => {
-  assert.equal(
-    isHealthyAnalyticsEnvelope({
-      ok: true,
-      status: 'success',
-      data: { status: 'healthy' },
-    }),
-    true,
+test('requires the exact canonical analytics health contract', () => {
+  assert.equal(isHealthyAnalyticsEnvelope(canonicalHealthEnvelope()), true)
+
+  for (const key of Object.keys(canonicalHealthEnvelope())) {
+    const candidate = canonicalHealthEnvelope()
+    delete candidate[key]
+    assert.equal(isHealthyAnalyticsEnvelope(candidate), false, `missing envelope key ${key}`)
+  }
+  for (const key of Object.keys(canonicalHealthEnvelope().data)) {
+    const candidate = canonicalHealthEnvelope()
+    delete candidate.data[key]
+    assert.equal(isHealthyAnalyticsEnvelope(candidate), false, `missing health data key ${key}`)
+  }
+  const versionKeys = Object.keys(canonicalHealthEnvelope().data).filter((key) =>
+    key.endsWith('Version'),
   )
-  assert.equal(
-    isHealthyAnalyticsEnvelope({
-      ok: true,
-      status: 'warning',
-      data: { status: 'healthy' },
-    }),
-    false,
-  )
-  assert.equal(
-    isHealthyAnalyticsEnvelope({
-      ok: true,
-      status: 'success',
-      data: { status: 'starting' },
-    }),
-    false,
-  )
+  for (const key of versionKeys) {
+    const candidate = canonicalHealthEnvelope()
+    candidate.data[key] = ''
+    assert.equal(isHealthyAnalyticsEnvelope(candidate), false, `empty health data key ${key}`)
+  }
+  for (const key of Object.keys(canonicalHealthEnvelope().provenance)) {
+    const candidate = canonicalHealthEnvelope()
+    delete candidate.provenance[key]
+    assert.equal(isHealthyAnalyticsEnvelope(candidate), false, `missing provenance key ${key}`)
+  }
+
+  const adversarialMutations = [
+    ['warning envelope', (value) => {
+      value.status = 'warning'
+    }],
+    ['non-empty warnings', (value) => {
+      value.warnings.push({ code: 'spoofed' })
+    }],
+    ['extra envelope key', (value) => {
+      value.extra = true
+    }],
+    ['extra health data key', (value) => {
+      value.data.command = 'spoofed'
+    }],
+    ['wrong health status', (value) => {
+      value.data.status = 'starting'
+    }],
+    ['wrong namespace', (value) => {
+      value.data.namespace = '/api/v1/other'
+    }],
+    ['hostname alias', (value) => {
+      value.data.bindHost = 'localhost'
+    }],
+    ['unstable detector version', (value) => {
+      value.data.detectorVersion = 'detector version/latest'
+    }],
+    ['wrong provenance mode', (value) => {
+      value.provenance.mode = 'LIVE_ANALYSIS'
+    }],
+    ['wrong provenance source', (value) => {
+      value.provenance.source = 'lookalike-api'
+    }],
+    ['extra provenance key', (value) => {
+      value.provenance.modelVersion = 'spoofed-v1'
+    }],
+    ['mismatched rule version', (value) => {
+      value.provenance.ruleVersion = 'other-rules-v1'
+    }],
+    ['empty provenance generatedAt', (value) => {
+      value.provenance.generatedAt = ' '
+    }],
+    ['empty provenance limitation', (value) => {
+      value.provenance.limitations = ['']
+    }],
+  ]
+
+  for (const [label, mutate] of adversarialMutations) {
+    const candidate = canonicalHealthEnvelope()
+    mutate(candidate)
+    assert.equal(isHealthyAnalyticsEnvelope(candidate), false, label)
+  }
 })
