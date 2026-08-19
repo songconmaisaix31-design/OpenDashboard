@@ -5,7 +5,7 @@
 - Branch: `songconmaisaix31-design/h2-qa`
 - Worktree: `C:\Users\DW\orca\workspaces\OpenDashboard\h2-qa`
 - Immutable base SHA: `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4`
-- Current head before this handoff archive: `041f83803a9ffa3a30c8c1b744d973f7442692aa`
+- Current head before this final handoff archive: `93e6238400e86e4402c084fc56ae15f9f36d149f`
 - Owned write paths: `tests/h2-sentinel/**` only.
 - Verified before editing: the branch was at the immutable gate and `git status
   --short` was empty.
@@ -15,6 +15,7 @@
 | SHA | Purpose | Checks |
 | --- | --- | --- |
 | `041f83803a9ffa3a30c8c1b744d973f7442692aa` | Contract acceptance harness, assembly scripts, matrix, and defect protocol | Node syntax checks passed; submission conformance passed; API and Web scripts explicitly skipped without assembled URLs; contract harness found H2-QA-001; `git diff --check` passed. |
+| `93e6238400e86e4402c084fc56ae15f9f36d149f` | Correct QA expectation to canonical C04 impact | Read-only verified corrected integration gate `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`; syntax and diff checks passed; archived-H0 tests intentionally reject the old `86.5` value. |
 
 ## Delivered behavior
 
@@ -64,6 +65,16 @@ git diff --check
   H2-QA-001. The harness now expects corrected C04 impact
   `29.333333333333332 kWh` and must pass after QA consumes the corrected gate.
 - `git diff --check`: passed before archive commit.
+
+Read-only correction verification:
+
+```bash
+git show 4f2a8a3156a96a7670f4ee9830ff1c560faf1c94:packages/h2-contracts/fixtures/golden-c04.json
+```
+
+The corrected integration object contains both C04 derived evidence and impact
+value `29.333333333333332`. No integration or main branch was modified,
+checked out, merged, or cherry-picked by this QA lane.
 
 The existing TypeScript contract-owner test command could not run because this
 restricted QA worktree lacks the already-locked `tsx` dependency. Installing it
@@ -122,7 +133,8 @@ before accepting the correction.
 ## Recommended cherry-pick order
 
 1. `041f83803a9ffa3a30c8c1b744d973f7442692aa`
-2. This handoff archive commit
+2. `93e6238400e86e4402c084fc56ae15f9f36d149f`
+3. This final handoff archive commit
 
 The exact pushed worker `HEAD` for this self-describing handoff archive is
 reported in the orchestration completion payload after commit and push; this
