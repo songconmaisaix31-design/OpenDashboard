@@ -633,6 +633,26 @@ describe('H2 EMS remote response validation', () => {
     }
   })
 
+  it('rejects duplicate event identities in an analysis run', async () => {
+    const run = clone(H2_FIXTURE_ANALYSIS_RUN) as unknown as JsonRecord
+    const events = run.events as JsonRecord[]
+    events[1]!.eventId = events[0]!.eventId
+    await rejectsInvalid(() =>
+      sourceFor(envelope(run)).getOverview(H2_FIXTURE_ANALYSIS_RUN.runId),
+    )
+  })
+
+  it('rejects duplicate event identities in a list response', async () => {
+    const events = clone([
+      H2_GOLDEN_C03_EVENT,
+      H2_GOLDEN_C04_EVENT,
+    ]) as unknown as JsonRecord[]
+    events[1]!.eventId = events[0]!.eventId
+    await rejectsInvalid(() =>
+      sourceFor(envelope(events)).listEvents(H2_FIXTURE_ANALYSIS_RUN.runId),
+    )
+  })
+
   it('rejects provenance contradictions across quality, run, and event data', async () => {
     const foreignProvenance = {
       ...H2_FIXTURE_PROVENANCE,
