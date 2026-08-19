@@ -37,6 +37,29 @@ git diff --check 6d04ee38f39d81801c87190f31eff0a1915862c6..HEAD
 review remains required because this lane intentionally adds no browser
 automation dependency.
 
+## Post-audit verification update (2026-08-19)
+
+- Verification-only dependencies were cherry-picked without QA edits outside its
+  allowlist: analytics `53733ae` as `f929bc3`, H6 `df8fbec` as `21f68b8`,
+  plugin `0e6847e` as `2fd5870`, and series/citation follow-up `1192b6a` as
+  `5d334e5`.
+- The QA runner now invokes all six Local `reports:export` kinds and verifies
+  contract kind, format, media type, safe extension, SHA-256, quality HTML
+  semantics, validation JSON semantics, and exact submission export parity.
+- A separate H6 public-launcher probe starts an unowned loopback sidecar. It
+  rejects minimal, wrong-namespace, wrong-host, and extra-top-level health
+  lookalikes without `READY`; exact canonical health reaches `READY`, cleans
+  only its owned Web child, and leaves the external sidecar alive.
+- `npm run h2:qa` passed with five assembled PASS groups and zero failures after
+  this change. It is independent evidence; it does not call H6 `h2:smoke`.
+- `npm run h2:check` passed with strict type checking, 42 focused H2 tests, the
+  QA runner, seven launcher tests, and a production build. `npm run h2:smoke`
+  separately passed all eight H6 scenarios. The production build retains its
+  known over-500-kB chunk warning, not a failed verification result.
+- `npm test` passed 74 repository tests on the same assembled snapshot.
+- Visual desktop/390 px evidence remains coordinator manual review, not a QA
+  screenshot claim or an automated artifact.
+
 ## Ownership and base
 
 - Branch: `songconmaisaix31-design/h2-qa`

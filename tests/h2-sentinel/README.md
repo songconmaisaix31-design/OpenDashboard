@@ -25,9 +25,11 @@ not a substitute for public-runtime checks.
 The assembled runner uses only the published H6 launcher and HTTP API. It
 allocates loopback ports, parses `READY`, and shuts down via its IPC contract.
 It validates Fixture-no-Python, Local health and bind policy, import/analyze/
-events, deterministic assistant fallback, HTML/hash/filename/CSV artifacts,
-redacted errors, occupied-port and redirect timeout failures, PID exit, and
-port rebind. It writes no generated artifact.
+events, deterministic assistant fallback, all six report kinds and their
+format/media/extension/hash contracts, quality HTML and validation JSON
+semantics, exact CSV, redacted errors, occupied-port and redirect timeout
+failures, external-sidecar health lookalikes, PID exit, and port rebind. It
+writes no generated artifact.
 
 ```bash
 node tests/h2-sentinel/assembled/run-assembled-qa.mjs
@@ -40,11 +42,11 @@ but they are not release evidence because they depend on manually supplied URLs.
 
 No browser-automation dependency is introduced in this QA lane. The automated
 gate verifies only HTTP reachability and source-level entry/navigation facts.
-Manual review remains required for Fixture desktop and 390 px widths: six-page
-navigation, C03/C04 rendering, Fixture/Live provenance, Chinese startup alert,
-overflow, overlap, clipping, and primary-action visibility. Record that result
-separately from automated PASS/FAIL; do not describe it as screenshot regression
-automation.
+Coordinator manual review remains required for Fixture desktop and 390 px
+widths: six-page navigation, C03/C04 rendering, Fixture/Live provenance,
+Chinese startup alert, overflow, overlap, clipping, and primary-action
+visibility. Record that result separately from automated PASS/FAIL; do not
+describe it as screenshot regression automation.
 
 See `ACCEPTANCE_MATRIX.md` for the complete H0/assembly separation and
 `DEFECT_LOG.md` for the mandatory defect record format.

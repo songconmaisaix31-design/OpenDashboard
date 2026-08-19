@@ -14,7 +14,7 @@
 | Owned implementation track | H0 Contracts |
 | Golden-path blocker | yes |
 | Evidence artifact | `packages/h2-contracts/fixtures/tiny-valid-timeseries.csv`, `packages/h2-contracts/fixtures/golden-c04.json`, and the failing `C04` harness row |
-| Status | resolved by integration contract gate `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`; this QA branch remains on archived H0 and has not merged or cherry-picked the correction. |
+| Status | historical defect resolved by integration contract gate `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`; current assembled QA consumes and verifies the corrected value. |
 
 ## Open assembled regression
 
@@ -36,6 +36,34 @@
 The local analytics API, launcher, and Web entry are assembled in this baseline.
 Their results are recorded in `ACCEPTANCE_MATRIX.md`; no assembly row is left as
 a stale `SKIP`.
+
+## Post-audit regression verification
+
+### H2-QA-003
+
+| Field | Value |
+| --- | --- |
+| Severity | high (resolved) |
+| Scope | A05 Local `quality_report` and `validation_metrics` exports |
+| Audit expectation | All six report kinds must have their contract format/media/extension/hash. Quality is inspectable HTML; validation is structured JSON, not a fabricated metric claim. |
+| Current reproduction | `npm run h2:qa` |
+| Verification dependency | Analytics source commit `53733ae` (QA cherry-pick `f929bc3`) and deep artifact validation commit `0e6847e` (QA cherry-pick `2fd5870`). |
+| Current observed result | PASS: all six `reports:export` kinds are fetched through Local public API; quality HTML contains status, report identity, check table, and every quality code; validation parses as JSON with the current run, quality report, and provenance. |
+| Golden-path blocker | no after verification |
+| Status | resolved and regression-gated; the pre-fix snapshot was not rechecked after the audited source was superseded. |
+
+### H2-QA-004
+
+| Field | Value |
+| --- | --- |
+| Severity | high (resolved) |
+| Scope | A04 external-sidecar readiness trust boundary |
+| Audit expectation | `--external-sidecar-url` must not emit `READY` for a minimal, wrong-namespace, wrong-host, or extra-top-level health lookalike. Exact canonical health may start Web; cleanup may not kill the external listener. |
+| Current reproduction | `npm run h2:qa` |
+| Verification dependency | H6 source commit `df8fbec` (QA cherry-pick `21f68b8`). |
+| Current observed result | PASS: each lookalike timed out without `READY`; exact canonical health emitted `READY` with null analytics PID, and the external listener remained available after launcher cleanup. |
+| Golden-path blocker | no after verification |
+| Status | resolved and regression-gated; the pre-fix snapshot was not rechecked after the audited source was superseded. |
 
 ## Defect entry template
 
