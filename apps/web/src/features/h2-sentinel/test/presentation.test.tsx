@@ -2,7 +2,10 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-import type { H2AnomalyEvent } from '../../../../../../packages/h2-contracts/src/index.ts'
+import {
+  H2_FIXTURE_REPORT_DESCRIPTOR,
+  type H2AnomalyEvent,
+} from '../../../../../../packages/h2-contracts/src/index.ts'
 import { H2SentinelView } from '../H2SentinelView.tsx'
 import {
   INITIAL_H2_COMMAND_STATE,
@@ -127,15 +130,33 @@ describe('H2 Sentinel presentation', () => {
       route: 'overview',
     })
   })
+
+  it('shows the complete content hash for the latest artifact', () => {
+    const markup = renderView(
+      readyState,
+      { route: 'reports' },
+      {
+        ...INITIAL_H2_COMMAND_STATE,
+        artifact: {
+          descriptor: H2_FIXTURE_REPORT_DESCRIPTOR,
+          mediaType: 'text/html',
+          content: '<main>Fixture report</main>',
+        },
+      },
+    )
+
+    assert.match(markup, new RegExp(H2_FIXTURE_REPORT_DESCRIPTOR.contentHash))
+  })
 })
 
 function renderView(
   workspaceState: H2WorkspaceState,
   navigation: H2NavigationTarget,
+  commandState = INITIAL_H2_COMMAND_STATE,
 ): string {
   return renderToStaticMarkup(
     <H2SentinelView
-      commandState={INITIAL_H2_COMMAND_STATE}
+      commandState={commandState}
       navigation={navigation}
       onAsk={noop}
       onDownload={noop}

@@ -57,7 +57,7 @@ export function ReportsPage({ artifact, error, event, notice, onDownload, onExpo
       {artifact ? (
         <section className="h2-panel h2-artifact-panel">
           <div className="h2-panel__heading"><div><p className="h2-eyebrow">Latest artifact</p><h2>{artifact.descriptor.filename}</h2></div><StatusBadge tone={artifact.descriptor.status === 'ready' ? 'positive' : 'danger'}>{artifact.descriptor.status}</StatusBadge></div>
-          <dl className="h2-key-values h2-key-values--four"><div><dt>报告类型</dt><dd>{artifact.descriptor.kind}</dd></div><div><dt>生成时间</dt><dd>{formatH2Timestamp(artifact.descriptor.generatedAt)}</dd></div><div><dt>媒体类型</dt><dd>{artifact.mediaType}</dd></div><div><dt>来源</dt><dd>{H2_PROVENANCE_LABELS[artifact.descriptor.provenance.mode]}</dd></div></dl>
+          <dl className="h2-key-values h2-key-values--four"><div><dt>报告类型</dt><dd>{artifact.descriptor.kind}</dd></div><div><dt>生成时间</dt><dd>{formatH2Timestamp(artifact.descriptor.generatedAt)}</dd></div><div><dt>媒体类型</dt><dd>{artifact.mediaType}</dd></div><div><dt>来源</dt><dd>{H2_PROVENANCE_LABELS[artifact.descriptor.provenance.mode]}</dd></div><div><dt>内容哈希</dt><dd><code>{artifact.descriptor.contentHash}</code></dd></div></dl>
           <div className="h2-safety-disclaimer"><strong>安全声明</strong><p>{artifact.descriptor.safetyDisclaimer}</p></div>
           <details className="h2-artifact-preview"><summary>查看内容预览</summary><pre>{artifact.content}</pre></details>
           <button className="h2-button h2-button--primary" disabled={artifact.descriptor.status !== 'ready'} onClick={() => onDownload(artifact)} type="button">下载 {artifact.descriptor.filename}</button>
