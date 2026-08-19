@@ -115,9 +115,10 @@ select different loopback ports.
 - H4 assembled acceptance commit `d6b4538` reports four assembly checks as
   `PASS`, with zero `FAIL` and zero `SKIP`. Visual verification remains manual;
   this handoff does not claim an automated screenshot regression suite.
-- The production bundle is about 884 kB minified (about 292 kB gzip) and Vite
-  reports its standard greater-than-500-kB warning. No speculative split or new
-  dependency was added during composition.
+- The post-assembly final candidate passes 66 generic tests and 34 focused H2
+  tests. Its production bundle is about 887 kB minified (about 293 kB gzip),
+  and Vite reports its standard greater-than-500-kB warning. No speculative
+  split or new dependency was added during composition.
 - No official dataset, official validation metric, organizer score, deployment,
   or production remote-host behavior was tested or claimed.
 - The H2 workflow is committed but a remote GitHub Actions run is not local
