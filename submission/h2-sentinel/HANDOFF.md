@@ -4,6 +4,7 @@
 
 - Worker branch: `songconmaisaix31-design/h2-submission`
 - Immutable Wave 1 gate: `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4`
+- Canonical contract-correction integration SHA: `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`
 - Owned write path: `submission/h2-sentinel/**`
 - Scope: truthful submission documentation only. No product code, contracts, root manifests, tests, CI, start scripts, or main-branch operation changed.
 
@@ -23,6 +24,10 @@
 - [H2 contract handoff](../../packages/h2-contracts/HANDOFF.md)
 
 The package distinguishes contract facts, sanitized Fixture evidence, H6-pending assembly evidence, unavailable official-data metrics, and roadmap statements. It contains no screenshot, score, deployment claim, external approval, official dataset, generated report, or generated submission CSV.
+
+The corrected sanitized C04 Fixture impact is `29.333333333333332 kWh` from
+eight inclusive one-minute rows at `(720 - 500) / 60`; no superseded C04
+expectation or claim remains in this owned package.
 
 ## Verification
 

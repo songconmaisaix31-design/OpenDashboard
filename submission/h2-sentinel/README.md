@@ -2,7 +2,7 @@
 
 ## Status
 
-This is a truthful pre-assembly competition-submission package for H2 Sentinel / 氢哨. It is based on immutable Wave 1 gate `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4`; it is not evidence of a runtime, deployment, official-data result, score, approval, or screenshot.
+This is a truthful pre-assembly competition-submission package for H2 Sentinel / 氢哨. It is based on immutable Wave 1 gate `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4`, with the canonical contract correction frozen on integration SHA `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`; it is not evidence of a runtime, deployment, official-data result, score, approval, or screenshot.
 
 H2 Sentinel is a local-first supervision and diagnosis concept for weak-grid green-hydrogen EMS data. It presents evidence and advisory recommendations for human confirmation; it does not issue equipment commands or replace the EMS.
 
@@ -15,6 +15,13 @@ H2 Sentinel is a local-first supervision and diagnosis concept for weak-grid gre
 | Assembly pending | Requires the future H6 integration candidate and runtime proof. |
 | Metric unavailable | Official-data, validation, organizer, or deployment evidence absent here. |
 | Roadmap | A PRD future option, not a present capability. |
+
+## Contract correction reference
+
+For the sanitized C04 Fixture only, the canonical impact is
+`29.333333333333332 kWh`, derived from eight inclusive one-minute rows at
+`(720 - 500) / 60`. This is a corrected contract/Fixture fact, not an
+official-data metric or a runtime-performance claim.
 
 ## Contents
 
