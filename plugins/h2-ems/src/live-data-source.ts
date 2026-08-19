@@ -1,17 +1,24 @@
 import type {
-  H2AnalysisRun,
-  H2AnomalyEvent,
-  H2AssistantAnswer,
-  H2CsvImportResult,
-  H2DataQualityReport,
-  H2DatasetManifest,
-  H2DatasetMode,
-  H2ReportArtifact,
   H2SentinelDataSource,
-  H2SeriesResponse,
 } from '../../../packages/h2-contracts/src/index.ts'
 
 import { H2EmsAdapterError } from './errors.ts'
+import {
+  isAnalysisRun,
+  isAssistantAnswer,
+  isCsvImportResult,
+  isDatasetArray,
+  isDatasetMode,
+  isEvent,
+  isEventArray,
+  isQualityReport,
+  isReportArtifact,
+  isSeriesResponse,
+  unwrapRemoteEnvelope,
+  verifyReportContentHash,
+  verifyReportIdentity,
+} from './remote-response-validation.ts'
+import { verifyRemoteIdentity } from './remote-validation-primitives.ts'
 
 export interface H2EmsLiveAdapterOptions {
   readonly enabled: true
@@ -20,7 +27,6 @@ export interface H2EmsLiveAdapterOptions {
   readonly signal?: AbortSignal
   readonly fetchFn?: typeof fetch
 }
-
 export const H2_EMS_LIVE_ROUTES = {
   mode: '/api/v1/h2-sentinel/mode',
   datasets: '/api/v1/h2-sentinel/datasets',
@@ -60,15 +66,50 @@ export function createLiveH2EmsDataSource(
     getMode: () => request(H2_EMS_LIVE_ROUTES.mode, undefined, isDatasetMode),
     listDatasets: () => request(H2_EMS_LIVE_ROUTES.datasets, undefined, isDatasetArray),
     importCsv: (input) => request(H2_EMS_LIVE_ROUTES.importCsv, input, isCsvImportResult),
-    getDataQuality: (datasetId) => request(H2_EMS_LIVE_ROUTES.quality, { datasetId }, isQualityReport),
-    runAnalysis: (datasetId) => request(H2_EMS_LIVE_ROUTES.analysis, { datasetId }, isAnalysisRun),
-    getOverview: (runId) => request(H2_EMS_LIVE_ROUTES.overview, { runId }, isAnalysisRun),
+    getDataQuality: async (datasetId) => verifyRemoteIdentity(
+      await request(H2_EMS_LIVE_ROUTES.quality, { datasetId }, isQualityReport),
+      (quality) => quality.datasetId === datasetId,
+    ),
+    runAnalysis: async (datasetId) => verifyRemoteIdentity(
+      await request(H2_EMS_LIVE_ROUTES.analysis, { datasetId }, isAnalysisRun),
+      (run) => run.dataset.datasetId === datasetId,
+    ),
+    getOverview: async (runId) => verifyRemoteIdentity(
+      await request(H2_EMS_LIVE_ROUTES.overview, { runId }, isAnalysisRun),
+      (run) => run.runId === runId,
+    ),
     listEvents: (runId, filter) => request(H2_EMS_LIVE_ROUTES.events, { runId, ...(filter ? { filter } : {}) }, isEventArray),
-    getEvent: (runId, eventId) => request(H2_EMS_LIVE_ROUTES.event, { runId, eventId }, isEvent),
-    getSeries: (input) => request(H2_EMS_LIVE_ROUTES.series, input, isSeriesResponse),
-    ask: (input) => request(H2_EMS_LIVE_ROUTES.assistant, input, isAssistantAnswer),
-    exportReport: (input) => request(H2_EMS_LIVE_ROUTES.report, input, isReportArtifact),
-    exportSubmission: (runId) => request(H2_EMS_LIVE_ROUTES.submission, { runId }, isReportArtifact),
+    getEvent: async (runId, eventId) => verifyRemoteIdentity(
+      await request(H2_EMS_LIVE_ROUTES.event, { runId, eventId }, isEvent),
+      (event) => event.eventId === eventId,
+    ),
+    getSeries: async (input) => verifyRemoteIdentity(
+      await request(H2_EMS_LIVE_ROUTES.series, input, isSeriesResponse),
+      (series) =>
+        series.runId === input.runId &&
+        sameStrings(series.variables, input.variables),
+    ),
+    ask: async (input) => verifyRemoteIdentity(
+      await request(H2_EMS_LIVE_ROUTES.assistant, input, isAssistantAnswer),
+      (answer) =>
+        answer.runId === input.runId &&
+        answer.questionId === input.questionId &&
+        answer.eventId === input.eventId &&
+        answer.refusedControlClaim &&
+        (input.allowLlmRendering || answer.mode !== 'LLM_RENDERED'),
+    ),
+    exportReport: async (input) => verifyReportIdentity(
+      await verifyReportContentHash(
+        await request(H2_EMS_LIVE_ROUTES.report, input, isReportArtifact),
+      ),
+      input,
+    ),
+    exportSubmission: async (runId) => verifyReportIdentity(
+      await verifyReportContentHash(
+        await request(H2_EMS_LIVE_ROUTES.submission, { runId }, isReportArtifact),
+      ),
+      { runId, kind: 'submission_csv' },
+    ),
   }
 }
 
@@ -140,7 +181,7 @@ async function requestEnvelope<T>(
     } catch {
       throw new H2EmsAdapterError('remote_response_invalid', false)
     }
-    return unwrapEnvelope(body, guard)
+    return unwrapRemoteEnvelope(body, guard)
   } catch (error: unknown) {
     if (error instanceof H2EmsAdapterError) throw error
     if (controller.signal.aborted) {
@@ -156,105 +197,6 @@ async function requestEnvelope<T>(
   }
 }
 
-function unwrapEnvelope<T>(
-  value: unknown,
-  guard: (value: unknown) => value is T,
-): T {
-  if (!isRecord(value) || !isProvenance(value.provenance) || !Array.isArray(value.warnings)) {
-    throw new H2EmsAdapterError('remote_response_invalid', false)
-  }
-  if (value.ok === false && value.status === 'error' && isRedactedError(value.error)) {
-    throw new H2EmsAdapterError('remote_error', value.error.retryable)
-  }
-  if ((value.status !== 'success' && value.status !== 'warning') || value.ok !== true || !('data' in value) || !guard(value.data)) {
-    throw new H2EmsAdapterError('remote_response_invalid', false)
-  }
-  return value.data
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function isString(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0
-}
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value)
-}
-
-function isStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.every(isString)
-}
-
-function isProvenance(value: unknown): boolean {
-  return isRecord(value) && isString(value.mode) && isString(value.source) && isString(value.generatedAt) && isStringArray(value.limitations)
-}
-
-function isRedactedError(value: unknown): value is { readonly retryable: boolean } {
-  return isRecord(value) && isString(value.code) && isString(value.message) && typeof value.retryable === 'boolean' && isString(value.incidentId) && isStringArray(value.details)
-}
-
-function isDatasetMode(value: unknown): value is H2DatasetMode {
-  return value === 'FIXTURE' || value === 'LIVE_ANALYSIS'
-}
-
-function isDataset(value: unknown): value is H2DatasetManifest {
-  return isRecord(value) && value.schemaVersion === 1 && isString(value.datasetId) && isString(value.name) && isDatasetMode(value.mode) && isString(value.sourceFilename) && isString(value.fingerprint) && isFiniteNumber(value.rowCount) && isTimeRange(value.timeRange) && isFiniteNumber(value.samplingIntervalMinutes) && Array.isArray(value.fields) && value.fields.every(isRecord) && isProvenance(value.provenance)
-}
-
-function isDatasetArray(value: unknown): value is readonly H2DatasetManifest[] {
-  return Array.isArray(value) && value.every(isDataset)
-}
-
-function isQualityReport(value: unknown): value is H2DataQualityReport {
-  return isRecord(value) && value.schemaVersion === 1 && isString(value.reportId) && isString(value.datasetId) && isString(value.status) && isString(value.generatedAt) && isFiniteNumber(value.rowCount) && isTimeRange(value.timeRange) && Array.isArray(value.checks) && isStringArray(value.warnings) && isStringArray(value.blockingReasons) && isProvenance(value.provenance)
-}
-
-function isEvent(value: unknown): value is H2AnomalyEvent {
-  return isRecord(value) && value.schemaVersion === 1 && isString(value.eventId) && isString(value.code) && isString(value.subtype) && isString(value.title) && isString(value.startTime) && isString(value.endTime) && isString(value.firstDetectionTime) && isString(value.severity) && isFiniteNumber(value.confidence) && Array.isArray(value.evidence) && Array.isArray(value.safetyChecks) && Array.isArray(value.recommendations) && isString(value.rootCause) && isString(value.rootCauseKind) && isString(value.reviewState) && typeof value.requiresHumanConfirmation === 'boolean' && isProvenance(value.provenance)
-}
-
-function isEventArray(value: unknown): value is readonly H2AnomalyEvent[] {
-  return Array.isArray(value) && value.every(isEvent)
-}
-
-function isAnalysisRun(value: unknown): value is H2AnalysisRun {
-  return isRecord(value) && value.schemaVersion === 1 && isString(value.runId) && isDataset(value.dataset) && isQualityReport(value.quality) && isString(value.status) && isString(value.startedAt) && isRecord(value.eventCountsByCode) && isRecord(value.eventCountsBySeverity) && isEventArray(value.events) && isStringArray(value.warnings) && isProvenance(value.provenance)
-}
-
-function isTimeRange(value: unknown): boolean {
-  return isRecord(value) && isString(value.startTime) && isString(value.endTime)
-}
-
-function isSeriesResponse(value: unknown): value is H2SeriesResponse {
-  return isRecord(value) && isString(value.runId) && isStringArray(value.variables) && Array.isArray(value.points) && value.points.every((point) => isRecord(point) && isString(point.timestamp) && isRecord(point.values))
-}
-
-function isAssistantAnswer(value: unknown): value is H2AssistantAnswer {
-  return isRecord(value) && value.schemaVersion === 1 && isString(value.answerId) && isString(value.runId) && isString(value.questionId) && isString(value.mode) && isString(value.generatedAt) && Array.isArray(value.sections) && Array.isArray(value.citations) && typeof value.refusedControlClaim === 'boolean' && isProvenance(value.provenance)
-}
-
-function isCsvImportResult(value: unknown): value is H2CsvImportResult {
-  return isRecord(value) && isDataset(value.dataset) && isQualityReport(value.quality)
-}
-
-function isReportArtifact(value: unknown): value is H2ReportArtifact {
-  if (!isRecord(value) || !isRecord(value.descriptor) || !isString(value.content) || value.content.length > 2_000_000) return false
-  const descriptor = value.descriptor
-  const mediaType = value.mediaType
-  return descriptor.schemaVersion === 1 && isString(descriptor.reportId) && isString(descriptor.runId) && isString(descriptor.kind) && isString(descriptor.format) && isString(descriptor.status) && isString(descriptor.generatedAt) && isSafeFilename(descriptor.filename) && isHash(descriptor.contentHash) && isStringArray(descriptor.warnings) && isString(descriptor.safetyDisclaimer) && isProvenance(descriptor.provenance) && isReportMediaType(mediaType, descriptor.format)
-}
-
-function isSafeFilename(value: unknown): boolean {
-  return isString(value) && !/[\\/:]/.test(value) && !value.includes('..')
-}
-
-function isHash(value: unknown): boolean {
-  return isString(value) && /^sha256:[a-f0-9]{64}$/.test(value)
-}
-
-function isReportMediaType(value: unknown, format: unknown): boolean {
-  return (format === 'html' && value === 'text/html') || (format === 'json' && value === 'application/json') || (format === 'csv' && value === 'text/csv')
+function sameStrings(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index])
 }
