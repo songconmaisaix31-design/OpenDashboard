@@ -739,6 +739,7 @@
 .h2-table-scroll { overflow-x: auto; }
 .h2-table { width: 100%; border-collapse: collapse; }
 .h2-table th {
+  position: relative;
   padding: 0.75rem;
   color: var(--h2-muted);
   background: rgb(3 10 17 / 45%);
