@@ -4,8 +4,8 @@
 
 H6 composes the accepted H0-H5 modules without changing worker-owned source.
 The generic Fixture Demo remains the default application. H2 Sentinel is
-available only from the explicit `/h2-sentinel/` entry with a closed
-`mode=fixture|local` query value.
+available only from the two explicit, equivalent `/h2-sentinel` and
+`/h2-sentinel/` path literals with a closed `mode=fixture|local` query value.
 
 ## Acceptance criteria
 
