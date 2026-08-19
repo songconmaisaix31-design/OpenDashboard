@@ -92,6 +92,10 @@ in the worker completion report after push succeeds.
   SHA-256 digest of the exact UTF-8 request text. The browser helper emits the
   same lowercase `sha256:<hex>` value as analytics ingestion; mismatches and
   digest failures use the stable redacted `remote_response_invalid` error.
+- Every Live request disables automatic redirects. Real fetch responses that
+  report a redirect or a nonempty final URL on another origin fail closed, so
+  a 307 response cannot forward an import body to another loopback service.
+  Empty response URLs remain supported only for injected test seams.
 - Quality summaries reproduce the analytics aggregation contract: check status
   and severity must correlate, top-level status uses blocked-before-warning
   precedence, and warnings/blocking reasons are exact ordered projections of
@@ -103,10 +107,15 @@ in the worker completion report after push succeeds.
   recommendation provenance must retain the same mode and dataset fingerprint.
   These semantic checks mirror the current analytics construction path while
   preserving H0's closed structural validation.
+- Assistant section and citation IDs are unique; each section has a nonempty,
+  unique, fully resolved citation list, every citation is used, and explicitly
+  event-scoped sources remain on the answer event. H0 permits mixed citation
+  claim kinds within one section, so the Live guard intentionally does not
+  infer a claim-kind correlation that the canonical fixture does not define.
 - Validators are separated into endpoint, anomaly, report, and primitive
   modules. No validation dependency or Node runtime import was added.
-- Final branch verification passed `npm run h2:test` (47 tests), `npm run
-  check` (79 tests plus the 684-module production build), and `npm run
+- Final branch verification passed `npm run h2:test` (54 tests), `npm run
+  check` (86 tests plus the 684-module production build), and `npm run
   h2:smoke` (eight launcher and real analytics compatibility scenarios). The
   build retains the existing chunk-size warning; it has no validation failure.
 

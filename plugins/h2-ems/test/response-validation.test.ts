@@ -9,6 +9,7 @@ import {
   H2_FIXTURE_PROVENANCE,
   H2_FIXTURE_QUALITY_REPORT,
   H2_GOLDEN_C03_EVENT,
+  H2_GOLDEN_C04_EVENT,
 } from '../../../packages/h2-contracts/src/index.ts'
 import {
   createFixtureH2EmsDataSource,
@@ -41,6 +42,17 @@ const sourceFor = (body: unknown) =>
   })
 
 const clone = <T>(value: T): T => structuredClone(value)
+
+const fixtureAssistantRequest = {
+  runId: H2_FIXTURE_ASSISTANT_ANSWER.runId,
+  questionId: H2_FIXTURE_ASSISTANT_ANSWER.questionId,
+  eventId: H2_FIXTURE_ASSISTANT_ANSWER.eventId,
+  allowLlmRendering: false,
+} as const
+
+function validLiveAssistantAnswer(): JsonRecord {
+  return clone(H2_FIXTURE_ASSISTANT_ANSWER) as unknown as JsonRecord
+}
 
 async function rejectsInvalid(action: () => Promise<unknown>): Promise<void> {
   await assert.rejects(
@@ -368,34 +380,29 @@ describe('H2 EMS remote response validation', () => {
       sourceFor(envelope(replayedSeries)).getSeries(seriesRequest),
     )
 
-    const assistantRequest = {
-      runId: H2_FIXTURE_ASSISTANT_ANSWER.runId,
-      questionId: H2_FIXTURE_ASSISTANT_ANSWER.questionId,
-      eventId: H2_FIXTURE_ASSISTANT_ANSWER.eventId,
-      allowLlmRendering: false,
-    }
+    const assistantBase = validLiveAssistantAnswer()
     const replayedAnswer = {
-      ...H2_FIXTURE_ASSISTANT_ANSWER,
+      ...assistantBase,
       runId: 'another-run',
     }
     await rejectsInvalid(() =>
-      sourceFor(envelope(replayedAnswer)).ask(assistantRequest),
+      sourceFor(envelope(replayedAnswer)).ask(fixtureAssistantRequest),
     )
 
     const forbiddenLlmAnswer = {
-      ...H2_FIXTURE_ASSISTANT_ANSWER,
+      ...assistantBase,
       mode: 'LLM_RENDERED',
     }
     await rejectsInvalid(() =>
-      sourceFor(envelope(forbiddenLlmAnswer)).ask(assistantRequest),
+      sourceFor(envelope(forbiddenLlmAnswer)).ask(fixtureAssistantRequest),
     )
 
     const falseControlBoundary = {
-      ...H2_FIXTURE_ASSISTANT_ANSWER,
+      ...assistantBase,
       refusedControlClaim: false,
     }
     await rejectsInvalid(() =>
-      sourceFor(envelope(falseControlBoundary)).ask(assistantRequest),
+      sourceFor(envelope(falseControlBoundary)).ask(fixtureAssistantRequest),
     )
   })
 
@@ -513,22 +520,58 @@ describe('H2 EMS remote response validation', () => {
   })
 
   it('rejects dangling and duplicate assistant citations', async () => {
-    const request = {
-      runId: H2_FIXTURE_ASSISTANT_ANSWER.runId,
-      questionId: H2_FIXTURE_ASSISTANT_ANSWER.questionId,
-      ...(H2_FIXTURE_ASSISTANT_ANSWER.eventId
-        ? { eventId: H2_FIXTURE_ASSISTANT_ANSWER.eventId }
-        : {}),
-      allowLlmRendering: false,
-    }
-    const dangling = clone(H2_FIXTURE_ASSISTANT_ANSWER) as unknown as JsonRecord
+    const dangling = validLiveAssistantAnswer()
     ;((dangling.sections as JsonRecord[])[0] as JsonRecord).citationIds = ['missing-citation']
-    await rejectsInvalid(() => sourceFor(envelope(dangling)).ask(request))
+    await rejectsInvalid(() => sourceFor(envelope(dangling)).ask(fixtureAssistantRequest))
 
-    const duplicate = clone(H2_FIXTURE_ASSISTANT_ANSWER) as unknown as JsonRecord
+    const duplicate = validLiveAssistantAnswer()
     const firstCitation = (duplicate.citations as JsonRecord[])[0] as JsonRecord
     ;(duplicate.citations as JsonRecord[]).push(clone(firstCitation))
-    await rejectsInvalid(() => sourceFor(envelope(duplicate)).ask(request))
+    await rejectsInvalid(() => sourceFor(envelope(duplicate)).ask(fixtureAssistantRequest))
+  })
+
+  it('accepts the canonical mixed-claim assistant citation chain', async () => {
+    const answer = await sourceFor(
+      envelope(validLiveAssistantAnswer()),
+    ).ask(fixtureAssistantRequest)
+    assert.equal(answer.answerId, H2_FIXTURE_ASSISTANT_ANSWER.answerId)
+  })
+
+  it('requires unique assistant section identifiers', async () => {
+    const answer = validLiveAssistantAnswer()
+    const sections = answer.sections as JsonRecord[]
+    sections.push(clone(sections[0]!))
+    await rejectsInvalid(() => sourceFor(envelope(answer)).ask(fixtureAssistantRequest))
+  })
+
+  it('requires each assistant section to cite a nonempty unique set', async () => {
+    for (const citationIds of [[], ['citation-C03-EV-003', 'citation-C03-EV-003']]) {
+      const answer = validLiveAssistantAnswer()
+      ;((answer.sections as JsonRecord[])[0] as JsonRecord).citationIds = citationIds
+      await rejectsInvalid(() => sourceFor(envelope(answer)).ask(fixtureAssistantRequest))
+    }
+  })
+
+  it('keeps event-scoped assistant citations on the requested event', async () => {
+    const mismatched = validLiveAssistantAnswer()
+    ;((mismatched.citations as JsonRecord[])[0] as JsonRecord).eventId =
+      H2_GOLDEN_C04_EVENT.eventId
+    await rejectsInvalid(() => sourceFor(envelope(mismatched)).ask(fixtureAssistantRequest))
+
+    for (const sourceType of ['event', 'evidence', 'constraint']) {
+      const missing = validLiveAssistantAnswer()
+      const citation = (missing.citations as JsonRecord[])[0] as JsonRecord
+      citation.sourceType = sourceType
+      delete citation.eventId
+      await rejectsInvalid(() => sourceFor(envelope(missing)).ask(fixtureAssistantRequest))
+    }
+  })
+
+  it('rejects assistant citations that no section uses', async () => {
+    const answer = validLiveAssistantAnswer()
+    const citations = answer.citations as JsonRecord[]
+    citations.push({ ...clone(citations[0]!), citationId: 'unused-citation' })
+    await rejectsInvalid(() => sourceFor(envelope(answer)).ask(fixtureAssistantRequest))
   })
 
   it('rejects duplicate and dangling event evidence and safety references', async () => {
