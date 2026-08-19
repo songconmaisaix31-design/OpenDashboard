@@ -80,6 +80,16 @@ export function isProvenance(value: unknown): value is H2Provenance {
   )
 }
 
+export function hasMatchingDatasetProvenance(
+  candidate: H2Provenance,
+  expected: H2Provenance,
+): boolean {
+  return (
+    candidate.mode === expected.mode &&
+    candidate.datasetFingerprint === expected.datasetFingerprint
+  )
+}
+
 export function isTimeRange(value: unknown): boolean {
   return (
     isClosedRecord(value, ['startTime', 'endTime']) &&
