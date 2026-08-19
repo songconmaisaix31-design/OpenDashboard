@@ -24,9 +24,9 @@ The production bundle also contains these locked transitive packages:
 
 ### Apache ECharts upstream NOTICE
 
-> Apache ECharts  
-> Copyright 2017-2026 The Apache Software Foundation  
-> This product includes software developed at  
+> Apache ECharts<br>
+> Copyright 2017-2026 The Apache Software Foundation<br>
+> This product includes software developed at<br>
 > The Apache Software Foundation (https://www.apache.org/).
 
 Apache ECharts is licensed under the
@@ -36,7 +36,7 @@ following BSD-3-Clause license in `licenses/LICENSE-d3`.
 
 ### Apache ECharts d3-derived subcomponent license
 
-Copyright 2010-2016 Mike Bostock  
+Copyright 2010-2016 Mike Bostock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,

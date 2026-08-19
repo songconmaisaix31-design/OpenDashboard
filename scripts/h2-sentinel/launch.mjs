@@ -147,7 +147,13 @@ function parseExternalSidecarUrl(input) {
     )
   }
   parsePort(url.port, '--external-sidecar-url port')
-  return url.href
+  const canonicalUrl = `http://${LOOPBACK_HOST}:${url.port}/`
+  if (input !== canonicalUrl) {
+    throw new LauncherError(
+      '--external-sidecar-url must use the canonical literal 127.0.0.1 URL.',
+    )
+  }
+  return canonicalUrl
 }
 
 export function isHealthyAnalyticsEnvelope(value) {
@@ -183,7 +189,7 @@ async function assertPortAvailable(port, label) {
   })
 }
 
-function spawnOwnedProcess(label, command, argumentsList, options) {
+function spawnOwnedProcess(label, port, command, argumentsList, options) {
   const child = spawn(command, argumentsList, {
     ...options,
     detached: process.platform !== 'win32',
@@ -191,28 +197,33 @@ function spawnOwnedProcess(label, command, argumentsList, options) {
     stdio: 'inherit',
     windowsHide: true,
   })
-  const record = { label, child, spawnError: null }
+  const record = { label, port, child, spawnError: null }
   child.on('error', (error) => {
     record.spawnError = error
   })
   return record
 }
 
-function childFailure(record, phase) {
+export function childFailure(record, phase) {
+  const endpoint = `${LOOPBACK_HOST}:${record.port}`
   if (record.spawnError) {
     if (record.label === 'Analytics') {
       return new LauncherError(
-        'uv is required for local mode. Install uv and run uv sync --locked --extra dev in services/h2-analytics.',
+        `Analytics could not start on ${endpoint}. uv is required for local mode; install uv and sync the locked dev environment.`,
       )
     }
-    return new LauncherError('The Web process could not start. Run npm ci and retry.')
+    return new LauncherError(
+      `Web could not start on ${endpoint}. Run npm ci and retry with an available --web-port.`,
+    )
   }
   if (record.child.exitCode !== null || record.child.signalCode !== null) {
     const outcome =
       record.child.exitCode === null
         ? `signal ${record.child.signalCode ?? 'unknown'}`
         : `exit code ${record.child.exitCode}`
-    return new LauncherError(`${record.label} process exited ${phase} (${outcome}).`)
+    return new LauncherError(
+      `${record.label} process exited ${phase} on ${endpoint} (${outcome}). Verify the selected ${record.label.toLowerCase()} port is still available.`,
+    )
   }
   return null
 }
@@ -227,7 +238,10 @@ async function waitForAnalyticsHealth(url, timeoutMs, analyticsProcess) {
       if (failure) throw failure
     }
     try {
-      const response = await fetch(healthUrl, { signal: AbortSignal.timeout(1_000) })
+      const response = await fetch(healthUrl, {
+        redirect: 'error',
+        signal: AbortSignal.timeout(1_000),
+      })
       if (response.ok && isHealthyAnalyticsEnvelope(await response.json())) return
     } catch {
       // Readiness retries intentionally expose no remote response details.
@@ -246,7 +260,10 @@ async function waitForWeb(url, timeoutMs, webProcess) {
     const failure = childFailure(webProcess, 'before readiness')
     if (failure) throw failure
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(1_000) })
+      const response = await fetch(url, {
+        redirect: 'error',
+        signal: AbortSignal.timeout(1_000),
+      })
       if (response.ok && (await response.text()).includes('id="root"')) return
     } catch {
       // Vite may need several polling intervals before accepting requests.
@@ -355,7 +372,9 @@ function waitForShutdownOrChildExit(records, shutdown) {
           if (!shutdown.requested) {
             const outcome = code === null ? `signal ${signal ?? 'unknown'}` : `exit code ${code}`
             rejectPromise(
-              new LauncherError(`${record.label} process exited unexpectedly (${outcome}).`),
+              new LauncherError(
+                `${record.label} process exited unexpectedly on ${LOOPBACK_HOST}:${record.port} (${outcome}).`,
+              ),
             )
           }
         })
@@ -405,8 +424,8 @@ export async function runLauncher(options) {
       shutdown.request()
     }
   }
-  process.once('SIGINT', requestShutdown)
-  process.once('SIGTERM', requestShutdown)
+  process.on('SIGINT', requestShutdown)
+  process.on('SIGTERM', requestShutdown)
   process.on('message', requestIpcShutdown)
 
   try {
@@ -418,6 +437,7 @@ export async function runLauncher(options) {
       if (options.externalSidecarUrl === null) {
         analyticsProcess = spawnOwnedProcess(
           'Analytics',
+          options.analyticsPort,
           'uv',
           [
             'run',
@@ -457,6 +477,7 @@ export async function runLauncher(options) {
     )
     const webProcess = spawnOwnedProcess(
       'Web',
+      options.webPort,
       process.execPath,
       [viteEntry, ...viteArguments],
       { cwd: repositoryRoot, env: webEnvironment },

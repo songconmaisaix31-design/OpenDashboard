@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  childFailure,
   isHealthyAnalyticsEnvelope,
   parseLauncherArguments,
 } from './launch.mjs'
@@ -46,6 +47,9 @@ test('rejects arbitrary modes, commands, ports, and sidecar targets', () => {
     ['--mode', 'fixture', '--web-port', '80'],
     ['--mode', 'fixture', '--external-sidecar-url', 'http://127.0.0.1:9001/'],
     ['--mode', 'local', '--external-sidecar-url', 'http://localhost:9001/'],
+    ['--mode', 'local', '--external-sidecar-url', 'http://2130706433:9001/'],
+    ['--mode', 'local', '--external-sidecar-url', 'http://0x7f000001:9001/'],
+    ['--mode', 'local', '--external-sidecar-url', 'http://0177.0.0.1:9001/'],
     ['--mode', 'local', '--external-sidecar-url', 'http://127.0.0.1:9001/api'],
     ['--mode', 'local', '--external-sidecar-url', 'https://127.0.0.1:9001/'],
     [
@@ -62,6 +66,31 @@ test('rejects arbitrary modes, commands, ports, and sidecar targets', () => {
   for (const argumentsList of invalidArguments) {
     assert.throws(() => parseLauncherArguments(argumentsList))
   }
+})
+
+test('maps bind-race child exits to the role and actual loopback port', () => {
+  const failure = childFailure(
+    {
+      label: 'Analytics',
+      port: 18765,
+      spawnError: null,
+      child: { exitCode: 1, signalCode: null },
+    },
+    'before readiness',
+  )
+  assert.match(failure.message, /Analytics process exited before readiness/)
+  assert.match(failure.message, /127\.0\.0\.1:18765/)
+  assert.match(failure.message, /analytics port is still available/)
+})
+
+test('keeps repeated termination signals handled until cleanup completes', async () => {
+  const source = await import('node:fs/promises').then(({ readFile }) =>
+    readFile(new URL('./launch.mjs', import.meta.url), 'utf8'),
+  )
+  assert.match(source, /process\.on\('SIGINT', requestShutdown\)/)
+  assert.match(source, /process\.on\('SIGTERM', requestShutdown\)/)
+  assert.doesNotMatch(source, /process\.once\('SIG(?:INT|TERM)'/)
+  assert.equal((source.match(/redirect: 'error'/g) ?? []).length, 2)
 })
 
 test('requires the exact analytics health success envelope', () => {

@@ -237,9 +237,14 @@ async function runOccupiedPortSmoke() {
 
 async function runHealthTimeoutSmoke() {
   const port = await getFreePort()
-  const unhealthy = createHttpServer((_request, response) => {
+  const unhealthy = createHttpServer((request, response) => {
+    if (request.url === '/health') {
+      response.writeHead(302, { location: '/redirected-healthy' })
+      response.end()
+      return
+    }
     response.writeHead(200, { 'content-type': 'application/json' })
-    response.end(JSON.stringify({ ok: true, status: 'success', data: { status: 'starting' } }))
+    response.end(JSON.stringify({ ok: true, status: 'success', data: { status: 'healthy' } }))
   })
   await new Promise((resolvePromise, rejectPromise) => {
     unhealthy.once('error', rejectPromise)
@@ -260,7 +265,36 @@ async function runHealthTimeoutSmoke() {
   } finally {
     await new Promise((resolvePromise) => unhealthy.close(resolvePromise))
   }
-  console.log('PASS launcher rejects a listening but unhealthy external sidecar')
+  console.log('PASS launcher rejects a redirecting external sidecar health endpoint')
+}
+
+async function runOccupiedAnalyticsPortSmoke() {
+  const webPort = await getFreePort()
+  const analyticsPort = await getFreePort()
+  const blocker = createServer()
+  await new Promise((resolvePromise, rejectPromise) => {
+    blocker.once('error', rejectPromise)
+    blocker.listen({ host: LOOPBACK_HOST, port: analyticsPort }, resolvePromise)
+  })
+  try {
+    const session = spawnForFailure([
+      '--mode',
+      'local',
+      '--web-port',
+      String(webPort),
+      '--analytics-port',
+      String(analyticsPort),
+    ])
+    const result = await waitForExit(session.child, 10_000)
+    assert.equal(result.code, 1)
+    assert.match(
+      session.stderr.join(' '),
+      new RegExp(`Analytics port ${analyticsPort} is already in use`),
+    )
+  } finally {
+    await new Promise((resolvePromise) => blocker.close(resolvePromise))
+  }
+  console.log('PASS launcher rejects an occupied analytics port with its exact role and port')
 }
 
 async function runSubmissionValidator(submissionPath) {
@@ -407,6 +441,7 @@ try {
   await runFixtureSmoke()
   await runOccupiedPortSmoke()
   await runHealthTimeoutSmoke()
+  await runOccupiedAnalyticsPortSmoke()
   await runLocalGoldenSmoke()
   await runLocalPreviewProxySmoke()
 } finally {
