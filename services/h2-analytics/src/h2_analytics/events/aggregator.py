@@ -13,6 +13,7 @@ class AggregationPolicy:
     minimum_rows: int
     confirmation_row: int
     maximum_gap_intervals: int = 1
+    daily: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,13 +30,32 @@ class EventWindow:
 
 
 POLICIES = {
-    "C01": AggregationPolicy(minimum_rows=10, confirmation_row=10, maximum_gap_intervals=2),
+    # Official detection_expectation (05_validation_event_labels.csv): the
+    # "detect within 10 minutes of event start" codes confirm on the row inside
+    # the 10-minute window; C05/C07 require EARLY warning and confirm on the
+    # first candidate row of the segment.
+    # C01: setpoint oscillation recurs every ~12 min, so segments merge across
+    # a 12-interval gap and confirm after 5 rows (5 min <= 10 min).
+    "C01": AggregationPolicy(
+        minimum_rows=5, confirmation_row=5, maximum_gap_intervals=12
+    ),
+    # C02: capacity mismatch is sustained; 5 rows confirm within 10 minutes.
     "C02": AggregationPolicy(minimum_rows=5, confirmation_row=5),
+    # C03: direction reversal is sustained; 5 rows confirm within 10 minutes.
     "C03": AggregationPolicy(minimum_rows=5, confirmation_row=5),
-    "C04": AggregationPolicy(minimum_rows=3, confirmation_row=3),
-    "C05": AggregationPolicy(minimum_rows=3, confirmation_row=3),
-    "C06": AggregationPolicy(minimum_rows=3, confirmation_row=3),
-    "C07": AggregationPolicy(minimum_rows=5, confirmation_row=5),
+    # C04: boundary violation rows are dense during the event; 5 rows form the
+    # event and 3 rows (3 min) confirm detection within 10 minutes.
+    "C04": AggregationPolicy(minimum_rows=5, confirmation_row=3),
+    # C05: early-warning code -- the daily quota plan failure must be flagged
+    # as soon as the anomalous quota appears, so confirmation is the first row.
+    # Events are daily (quota resets at midnight) and split at day boundaries.
+    "C05": AggregationPolicy(minimum_rows=3, confirmation_row=1, daily=True),
+    # C06: load-allocation anomalies are sustained (1.5-3 h events); 30 rows
+    # suppress the short ramp bursts, confirmation at row 10 (10 min).
+    "C06": AggregationPolicy(minimum_rows=30, confirmation_row=10),
+    # C07: early-warning code -- the reserve shortfall is flagged on the first
+    # row where SOC deviates with an elevated reserve target.
+    "C07": AggregationPolicy(minimum_rows=5, confirmation_row=1),
 }
 DEFAULT_POLICY = AggregationPolicy(minimum_rows=3, confirmation_row=3)
 
@@ -64,6 +84,7 @@ class EventAggregator:
                 maximum_gap=timedelta(
                     minutes=sampling_interval_minutes * policy.maximum_gap_intervals
                 ),
+                daily=policy.daily,
             ):
                 if len(segment) < policy.minimum_rows:
                     continue
@@ -104,13 +125,15 @@ def _segments(
     candidates: list[DetectionCandidate],
     *,
     maximum_gap: timedelta,
+    daily: bool = False,
 ) -> tuple[tuple[DetectionCandidate, ...], ...]:
     if not candidates:
         return ()
     segments: list[list[DetectionCandidate]] = [[candidates[0]]]
     for candidate in candidates[1:]:
         previous = segments[-1][-1]
-        if candidate.timestamp - previous.timestamp <= maximum_gap:
+        crosses_day = daily and candidate.timestamp.date() != previous.timestamp.date()
+        if not crosses_day and candidate.timestamp - previous.timestamp <= maximum_gap:
             segments[-1].append(candidate)
         else:
             segments.append([candidate])
