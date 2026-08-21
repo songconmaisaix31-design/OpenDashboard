@@ -20,6 +20,17 @@ _ELZ_ACTUAL_CAPACITY = (
 
 
 class SafetyEvaluator:
+    """Evaluate safety-relevant constraints for an anomaly event window.
+
+    Every anomaly class gets at least one dedicated check plus the shared
+    human-confirmation guarantee. Checks report only `passed`, `warning`, or
+    `failed` -- the evaluator NEVER returns `unknown`; an unsupported anomaly
+    code raises instead of emitting a misleading verdict. All boundaries come
+    from the frozen `09_control_constraints.csv` values (SOC 20-90%, BESS
+    500 kW, electrolyzer 300-1000 kW, ramp 120 kW/min), so no recommendation
+    can suggest crossing them.
+    """
+
     def __init__(self, constraints: H2Constraints = DEFAULT_CONSTRAINTS) -> None:
         self._constraints = constraints
 
@@ -44,13 +55,19 @@ class SafetyEvaluator:
             return self._c05(identity, window, reference_ids, provenance)
         if window.code == "C06":
             return self._c06(identity, window, reference_ids, provenance)
-        return self._c07(identity, window, reference_ids, provenance)
+        if window.code == "C07":
+            return self._c07(identity, window, reference_ids, provenance)
+        raise ValueError(f"SafetyEvaluator has no rule set for anomaly code {window.code!r}.")
 
     def _human_confirmation(
-        self, identity: str, reference_ids: tuple[str, ...], provenance: dict[str, Any]
+        self,
+        identity: str,
+        reference_ids: tuple[str, ...],
+        provenance: dict[str, Any],
+        ordinal: int,
     ) -> dict[str, Any]:
         return _check(
-            f"{identity}-SAFE-003",
+            f"{identity}-SAFE-{ordinal:03d}",
             "建议仅作监督与人工确认",
             "passed",
             "本服务产生检查与建议，不执行自动设定值变更。",
@@ -135,7 +152,8 @@ class SafetyEvaluator:
                 provenance,
             ),
             self._soc(identity, window, reference_ids, provenance),
-            self._human_confirmation(identity, reference_ids, provenance),
+            self._stable_range_check(identity, window, reference_ids, provenance, "SAFE-003"),
+            self._human_confirmation(identity, reference_ids, provenance, ordinal=4),
         ]
 
     def _c02(
@@ -145,25 +163,15 @@ class SafetyEvaluator:
         reference_ids: tuple[str, ...],
         provenance: dict[str, Any],
     ) -> list[dict[str, Any]]:
-        minimum = self._constraints.electrolyzer_min_stable_power_kw
-        maximum = self._constraints.electrolyzer_max_power_kw
-        below_stable = False
         over_committed = False
         for row in window.rows:
-            for state_field, power_field, capacity_field, cmd_field in zip(
-                _ELZ_RUN_STATE,
-                _ELZ_POWER_ACTUAL,
+            for capacity_field, cmd_field in zip(
                 _ELZ_ACTUAL_CAPACITY,
                 _ELZ_POWER_CMD,
                 strict=True,
             ):
-                state = row.value(state_field)
-                power = row.value(power_field)
                 capacity = row.value(capacity_field)
                 command = row.value(cmd_field)
-                if state is not None and state >= 2 and power is not None:
-                    if power < minimum - 1e-6 or power > maximum + 1e-6:
-                        below_stable = True
                 if command is not None and capacity is not None:
                     if command > capacity + 1e-6:
                         over_committed = True
@@ -179,18 +187,8 @@ class SafetyEvaluator:
                 reference_ids,
                 provenance,
             ),
-            _check(
-                f"{identity}-SAFE-002",
-                "电解槽稳定运行范围",
-                "failed" if below_stable else "passed",
-                f"电解槽运行功率离开配置的 {minimum:.0f} 到 {maximum:.0f} kW 稳定范围。"
-                if below_stable
-                else f"电解槽运行功率保持在配置的 {minimum:.0f} 到 {maximum:.0f} kW 稳定范围内。",
-                "electrolyzer-stable-range-v1",
-                reference_ids,
-                provenance,
-            ),
-            self._human_confirmation(identity, reference_ids, provenance),
+            self._stable_range_check(identity, window, reference_ids, provenance, "SAFE-002"),
+            self._human_confirmation(identity, reference_ids, provenance, ordinal=3),
         ]
 
     def _c03(
@@ -200,6 +198,12 @@ class SafetyEvaluator:
         reference_ids: tuple[str, ...],
         provenance: dict[str, Any],
     ) -> list[dict[str, Any]]:
+        power_limit = self._constraints.bess_max_power_kw
+        power_exceeded = any(
+            row.value("bess_power_actual_kw") is not None
+            and abs(row.value("bess_power_actual_kw")) > power_limit + 1e-6
+            for row in window.rows
+        )
         return [
             _check(
                 f"{identity}-SAFE-001",
@@ -211,7 +215,18 @@ class SafetyEvaluator:
                 provenance,
             ),
             self._soc(identity, window, reference_ids, provenance),
-            self._human_confirmation(identity, reference_ids, provenance),
+            _check(
+                f"{identity}-SAFE-003",
+                "BESS 功率限值约束",
+                "failed" if power_exceeded else "passed",
+                f"储能实际功率绝对值超过配置的 {power_limit:.0f} kW 限值。"
+                if power_exceeded
+                else f"储能实际功率绝对值保持在配置的 {power_limit:.0f} kW 限值内。",
+                "bess-power-limit-v1",
+                reference_ids,
+                provenance,
+            ),
+            self._human_confirmation(identity, reference_ids, provenance, ordinal=4),
         ]
 
     def _c04(
@@ -253,7 +268,18 @@ class SafetyEvaluator:
                 reference_ids,
                 provenance,
             ),
-            self._human_confirmation(identity, reference_ids, provenance),
+            _check(
+                f"{identity}-SAFE-003",
+                "日电量配额约束",
+                "failed" if _quota_exhausted(window) else "passed",
+                "剩余电量配额已耗尽或存在超限，后续计划可能不可执行。"
+                if _quota_exhausted(window)
+                else "剩余电量配额未耗尽。",
+                "grid-energy-quota-v1",
+                reference_ids,
+                provenance,
+            ),
+            self._human_confirmation(identity, reference_ids, provenance, ordinal=4),
         ]
 
     def _c05(
@@ -263,27 +289,19 @@ class SafetyEvaluator:
         reference_ids: tuple[str, ...],
         provenance: dict[str, Any],
     ) -> list[dict[str, Any]]:
-        exhausted = False
-        for row in window.rows:
-            export_remaining = row.value("grid_export_energy_remaining_kwh")
-            import_remaining = row.value("grid_import_energy_remaining_kwh")
-            if export_remaining is not None and export_remaining <= 0:
-                exhausted = True
-            if import_remaining is not None and import_remaining <= 0:
-                exhausted = True
         return [
             _check(
                 f"{identity}-SAFE-001",
                 "日电量配额约束",
-                "failed" if exhausted else "passed",
+                "failed" if _quota_exhausted(window) else "passed",
                 "剩余电量配额已耗尽，后续计划可能不可执行。"
-                if exhausted
+                if _quota_exhausted(window)
                 else "剩余电量配额尚未耗尽。",
                 "grid-energy-quota-v1",
                 reference_ids,
                 provenance,
             ),
-            self._human_confirmation(identity, reference_ids, provenance),
+            self._human_confirmation(identity, reference_ids, provenance, ordinal=2),
         ]
 
     def _c06(
@@ -293,6 +311,19 @@ class SafetyEvaluator:
         reference_ids: tuple[str, ...],
         provenance: dict[str, Any],
     ) -> list[dict[str, Any]]:
+        return [
+            self._stable_range_check(identity, window, reference_ids, provenance, "SAFE-001"),
+            self._human_confirmation(identity, reference_ids, provenance, ordinal=2),
+        ]
+
+    def _stable_range_check(
+        self,
+        identity: str,
+        window: EventWindow,
+        reference_ids: tuple[str, ...],
+        provenance: dict[str, Any],
+        ordinal: str,
+    ) -> dict[str, Any]:
         minimum = self._constraints.electrolyzer_min_stable_power_kw
         maximum = self._constraints.electrolyzer_max_power_kw
         outside = False
@@ -305,20 +336,20 @@ class SafetyEvaluator:
                 if state is not None and state >= 2 and power is not None:
                     if power < minimum - 1e-6 or power > maximum + 1e-6:
                         outside = True
-        return [
-            _check(
-                f"{identity}-SAFE-001",
-                "电解槽稳定运行范围",
-                "failed" if outside else "passed",
-                "运行中的电解槽功率离开配置的稳定范围，需人工复核分配。"
+        return _check(
+            f"{identity}-SAFE-{ordinal}",
+            "电解槽稳定运行范围",
+            "failed" if outside else "passed",
+            (
+                f"运行中的电解槽功率离开配置的 {minimum:.0f} 到 {maximum:.0f} kW 稳定范围，"
+                "需人工复核分配。"
                 if outside
-                else "运行中的电解槽功率保持在配置的稳定范围内。",
-                "electrolyzer-stable-range-v1",
-                reference_ids,
-                provenance,
+                else f"运行中的电解槽功率保持在配置的 {minimum:.0f} 到 {maximum:.0f} kW 稳定范围内。"
             ),
-            self._human_confirmation(identity, reference_ids, provenance),
-        ]
+            "electrolyzer-stable-range-v1",
+            reference_ids,
+            provenance,
+        )
 
     def _c07(
         self,
@@ -353,7 +384,7 @@ class SafetyEvaluator:
                 provenance,
             ),
             self._soc(identity, window, reference_ids, provenance),
-            self._human_confirmation(identity, reference_ids, provenance),
+            self._human_confirmation(identity, reference_ids, provenance, ordinal=3),
         ]
 
 
@@ -363,6 +394,20 @@ def _window_value(window: EventWindow, field: str) -> float | None:
         if value is not None:
             return value
     return None
+
+
+def _quota_exhausted(window: EventWindow) -> bool:
+    """True when any remaining daily energy quota hit or crossed zero.
+
+    Applies the cumulative daily quota constraint from the official table:
+    both the export and the import quota are checked.
+    """
+    for row in window.rows:
+        for field in ("grid_export_energy_remaining_kwh", "grid_import_energy_remaining_kwh"):
+            remaining = row.value(field)
+            if remaining is not None and remaining <= 0:
+                return True
+    return False
 
 
 def _check(

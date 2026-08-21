@@ -6,70 +6,111 @@ from h2_analytics import vocabulary
 from h2_analytics.contracts import ASSISTANT_QUESTION_IDS, build_provenance
 from h2_analytics.errors import AnalyticsError
 
+# Official Q01-Q10 Chinese question texts, taken verbatim from the frozen
+# `16_assistant_questions.csv` via the vocabulary package. The registry below
+# is keyed by the same IDs the API accepts; answers never rewrite a question.
+_QUESTIONS = {entry["questionId"]: entry["question"] for entry in vocabulary.assistant_questions()}
+
+# Each answer is (claim_kind, text, citation_source_type, citation_source_id).
+# claim_kind distinguishes FACT (直接事实), CALCULATION (计算结论) and ADVICE
+# (建议类回答). Citation source ids reference only official vocabulary entries
+# or official field names; no measurement point is ever invented.
 _ANSWERS: dict[str, tuple[str, str, str, str]] = {
     "Q01": (
         "fact",
-        "PCC功率正值表示向电网上网，负值表示从电网下网；储能功率正值表示放电，负值表示充电。",
+        (
+            "PCC 功率为正值表示向电网上网，为负值表示从电网下网。"
+            "这是系统统一符号约定，PCC 实际功率直接按该约定解读。"
+        ),
         "variable",
         "pcc_power_actual_kw",
     ),
     "Q02": (
         "fact",
-        "动态上下网功率限值属于瞬时功率约束，按分钟判定是否越限；上下网日电量配额属于累计电量约束，按自然日累计核算。二者分别对应C04与C05类异常。",
+        (
+            "动态上下网功率限值属于瞬时功率约束，按分钟判定是否越限，对应 C04 类异常；"
+            "上下网日电量配额属于累计电量约束，按自然日累计核算，对应 C05 类异常。"
+            "同一分钟既可能越限又可能触碰配额，需分别核对各自字段。"
+        ),
         "knowledge_base",
         "h2-anomaly-taxonomy-v1",
     ),
     "Q03": (
         "calculation",
-        "储能方向异常会使储能实际充放电方向与EMS指令相反，导致并网点实际功率偏离目标，形成异常电网交换电量。",
+        (
+            "储能方向异常会使储能实际充放电方向与 EMS 指令相反，"
+            "导致并网点实际功率偏离目标，形成异常电网交换电量。"
+        ),
         "event",
         "C03",
     ),
     "Q04": (
         "calculation",
-        "当可用充电能量或可用放电能量低于调节备用目标时，SOC调节裕度不足，无法覆盖未来功率波动与PCC约束。",
+        (
+            "当可用充电能量或可用放电能量低于调节备用目标时，SOC 调节裕度不足，"
+            "无法覆盖未来功率波动与 PCC 约束。"
+        ),
         "knowledge_base",
         "c07-reserve-rule-v1",
     ),
     "Q05": (
         "recommendation",
-        "对比EMS报告可用容量与设备实际可用容量，核查PLC状态映射与刷新周期；若指令持续大于实际执行功率，需在人工确认后刷新容量。",
+        (
+            "对比 EMS 报告可用容量与设备实际可用容量，核查 PLC 状态映射与刷新周期；"
+            "若指令持续大于实际执行功率，需在人工确认后刷新容量。"
+        ),
         "knowledge_base",
         "c02-capacity-check-v1",
     ),
     "Q06": (
         "recommendation",
-        "若电解槽功率指令在光伏与PCC实际功率相对稳定的时段高频振荡，则为控制指令振荡；若光伏与PCC同时大幅波动，则应首先考虑外部扰动。",
+        (
+            "若电解槽功率指令在光伏与 PCC 实际功率相对稳定的时段高频振荡，则为控制指令振荡；"
+            "若光伏与 PCC 同时大幅波动，则应首先考虑云团等外部扰动。"
+        ),
         "constraint",
         "electrolyzer-ramp-limit-v1",
     ),
     "Q07": (
         "calculation",
-        "应综合设备可用性、实际效率曲线、最小稳定功率与运行状态评价负荷分配；高单位电耗设备承担过多负荷或发生可避免启停即为分配异常。",
+        (
+            "应综合设备可用性、实际效率曲线、最小稳定功率与运行状态评价负荷分配；"
+            "高单位电耗设备承担过多负荷或发生可避免启停即为分配异常。"
+        ),
         "knowledge_base",
         "c06-allocation-rule-v1",
     ),
     "Q08": (
         "fact",
-        "所有操作建议均需人工确认。本服务只执行监督、诊断、解释、量化和建议，不直接向真实设备闭环下发控制指令。",
+        (
+            "所有操作建议均需人工确认。本服务只执行监督、诊断、解释、量化和建议，"
+            "不直接向真实设备闭环下发控制指令。"
+        ),
         "constraint",
         "human-confirmation-v1",
     ),
     "Q09": (
         "recommendation",
-        "使用单事件诊断报告，其中包含证据链、计算影响、推断原因、安全检查与咨询建议。",
+        (
+            "测试集异常诊断报告通过报告导出生成：对每个检测事件导出单事件诊断"
+            "（含证据链、量化影响、推断原因、安全检查与建议），"
+            "并可用 period_summary 汇总 PCC 合规日报；全部内容来自本地确定性分析。"
+        ),
         "report",
         "single_event_diagnosis",
     ),
     "Q10": (
         "recommendation",
-        "PCC合规日报应包含功率边界区间、越限时长与越限电量、符号约定、数据集指纹、生效约束与未决事件。",
+        (
+            "PCC 合规日报应包含功率边界区间、越限时长与越限电量、符号约定、"
+            "数据集指纹、生效约束与未决事件六项内容。"
+        ),
         "report",
         "period_summary",
     ),
 }
 
-_EVENT_DEPENDENT = {"Q03", "Q09"}
+_EVENT_DEPENDENT = {"Q03"}
 
 
 class AssistantService:
@@ -86,6 +127,7 @@ class AssistantService:
             raise AnalyticsError("assistant.invalid_question", "Question ID is not supported.")
         event = _select_event(run, event_id, question_id)
         claim_kind, text, source_type, source_id = _ANSWERS[question_id]
+        question = _QUESTIONS[question_id]
         if event is not None and question_id in _EVENT_DEPENDENT:
             source_id = event["eventId"]
             text = (
@@ -114,11 +156,17 @@ class AssistantService:
             "generatedAt": generated_at,
             "sections": [
                 {
+                    "sectionId": "question",
+                    "claimKind": "fact",
+                    "text": question,
+                    "citationIds": [citation_id],
+                },
+                {
                     "sectionId": "answer",
                     "claimKind": claim_kind,
                     "text": text,
                     "citationIds": [citation_id],
-                }
+                },
             ],
             "citations": [
                 {
