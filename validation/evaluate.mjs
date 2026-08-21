@@ -63,6 +63,21 @@ function loadGroundTruthLocal(officialData) {
   }))
 }
 
+/**
+ * Restrict labels to the imported UTC day window.
+ *
+ * `--limit-days` imports only the first N calendar days, so scoring those
+ * predictions against every label in the file counts un-imported days as false
+ * negatives and makes the fast loop report a meaningless recall.
+ */
+function filterGroundTruthToDays(groundTruth, days) {
+  if (days.length === 0) return groundTruth
+  const window = new Set(days)
+  return groundTruth.filter(
+    (event) => window.has(event.startTime.slice(0, 10)) || window.has(event.endTime.slice(0, 10)),
+  )
+}
+
 function loadGroundTruthFixture() {
   const read = (name) => JSON.parse(
     readFileSync(resolve(repositoryRoot, `packages/h2-contracts/fixtures/${name}`), 'utf8'),
@@ -151,13 +166,19 @@ async function main() {
     ? resolve(options.officialData ?? DEFAULT_OFFICIAL_DIR)
     : null
 
-  const groundTruth =
+  const allGroundTruth =
     options.mode === 'fixture' ? loadGroundTruthFixture() : loadGroundTruthLocal(officialData)
 
   const { predictions, importedChunks, detectorVersion } = await collectPredictions({
     ...options,
     officialData,
   })
+
+  const importedDays =
+    options.mode === 'fixture' || options.limitDays <= 0
+      ? []
+      : importedChunks.map((chunk) => chunk.day)
+  const groundTruth = filterGroundTruthToDays(allGroundTruth, importedDays)
   const merged = mergePredictions(
     predictions.map((event) => ({
       id: event.eventId,
@@ -201,6 +222,10 @@ async function main() {
         },
     groundTruth: {
       count: groundTruth.length,
+      totalCount: allGroundTruth.length,
+      dayWindow: importedDays.length === 0
+        ? 'all days'
+        : `${importedDays[0]}..${importedDays[importedDays.length - 1]} (${importedDays.length} days)`,
       byCode: Object.fromEntries(
         [...new Set(groundTruth.map((event) => event.code))].map((code) => [
           code,
@@ -240,6 +265,7 @@ async function main() {
         'Event-level evaluation contract, not the organizer score.',
         'Rule detection covers the official C01-C07 field mappings.',
         'Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged.',
+        'With --limit-days, labels are restricted to the imported UTC day window; a truncated run is not comparable to a full-window run.',
       ],
     },
   }
