@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
+from h2_analytics import vocabulary
 from h2_analytics.contracts import build_provenance
 from h2_analytics.errors import AnalyticsError
 
@@ -81,12 +83,14 @@ class ReportRenderer:
                 f"{run['runId']}-validation-metrics.json",
             )
         else:
+            period = _period_summary(run) if kind == "period_summary" else None
             content = self._environment.get_template("event_report.html").render(
                 run=run,
                 event=event,
                 events=run["events"],
                 kind=kind,
                 time_range=time_range,
+                period=period,
                 disclaimer=SAFETY_DISCLAIMER,
             )
             media_type, report_format = "text/html", "html"
@@ -130,3 +134,62 @@ def _event(run: dict[str, Any], event_id: str) -> dict[str, Any]:
         if event["eventId"] == event_id:
             return event
     raise AnalyticsError("event.not_found", "Anomaly event was not found.")
+
+
+def _period_summary(run: dict[str, Any]) -> dict[str, Any]:
+    boundary_events = [event for event in run["events"] if event["code"] == "C04"]
+    intervals = [
+        {
+            "startTime": event["startTime"],
+            "endTime": event["endTime"],
+            "subtype": event["subtype"],
+        }
+        for event in boundary_events
+    ]
+    violation_duration_minutes = sum(
+        (_instant(event["endTime"]) - _instant(event["startTime"])).total_seconds()
+        / 60
+        for event in boundary_events
+    )
+    violation_energy_kwh = sum(
+        float(event["impact"]["value"]) for event in boundary_events
+    )
+    constraints = vocabulary.load_constraints()
+    sign_conventions = [
+        {
+            "objectId": row["object_id"],
+            "parameter": row["parameter"],
+            "value": row["value"],
+            "unit": row.get("unit", ""),
+        }
+        for row in constraints
+        if row["parameter"].endswith("_sign_convention")
+    ]
+    return {
+        "signConventions": sign_conventions,
+        "constraints": [
+            {
+                "objectId": row["object_id"],
+                "parameter": row["parameter"],
+                "value": row["value"],
+                "unit": row.get("unit", ""),
+            }
+            for row in constraints
+        ],
+        "boundaryIntervals": intervals,
+        "violationDurationMinutes": violation_duration_minutes,
+        "violationEnergyKwh": violation_energy_kwh,
+        "unresolvedEventIds": [
+            event["eventId"]
+            for event in run["events"]
+            if event.get("reviewState") == "open"
+        ],
+        "datasetFingerprint": run["dataset"]["fingerprint"],
+    }
+
+
+def _instant(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
