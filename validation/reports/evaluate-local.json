@@ -1,0 +1,793 @@
+{
+  "contract": "h2-sentinel-official-validation-evaluation-v1",
+  "mode": "local",
+  "parameters": {
+    "graceMinutes": 10,
+    "limitDays": 0,
+    "mergeGapMinutes": 2,
+    "matching": "greedy event-level: same anomaly_code and interval overlap with a 10-minute grace window",
+    "preprocessing": {
+      "local": [
+        "official timeseries chunked by UTC calendar day",
+        "official fields mapped to canonical backend fields per packages/h2-vocabulary/data/deprecated-field-map.json",
+        "total_electrolyzer_power_kw = elz1+elz2+elz3 power_actual_kw",
+        "naive \"YYYY-MM-DD HH:MM:SS\" timestamps normalized to ISO-8601 UTC (Z)"
+      ],
+      "fixture": [
+        "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv"
+      ]
+    }
+  },
+  "dataset": {
+    "source": "02_validation_timeseries.csv",
+    "labelsSource": "05_validation_event_labels.csv",
+    "fingerprintSha256": "sha256:182728b3a4c5326503a90a04325adcf97fddc290c59ed1e319fa7e8be97d9666",
+    "labelsFingerprintSha256": "sha256:47989467020fad5499168179716ce93da4585e8204dad80b71cfd803231d0cf4",
+    "chunks": [
+      {
+        "day": "2026-01-01",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-02",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-03",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-04",
+        "rows": 1440,
+        "events": 3
+      },
+      {
+        "day": "2026-01-05",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-01-06",
+        "rows": 1440,
+        "events": 3
+      },
+      {
+        "day": "2026-01-07",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-08",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-01-09",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-10",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-11",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-12",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-13",
+        "rows": 1440,
+        "events": 6
+      },
+      {
+        "day": "2026-01-14",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-15",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-16",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-17",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-18",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-19",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-20",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-21",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-01-22",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-23",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-24",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-25",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-01-26",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-27",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-28",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-01-29",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-30",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-31",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-01",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-02-02",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-03",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-04",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-02-05",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-06",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-07",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-08",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-09",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-10",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-02-11",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-02-12",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-13",
+        "rows": 1440,
+        "events": 3
+      },
+      {
+        "day": "2026-02-14",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-15",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-16",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-17",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-18",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-02-19",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-20",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-21",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-22",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-02-23",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-24",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-25",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-26",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-27",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-28",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-01",
+        "rows": 1440,
+        "events": 3
+      },
+      {
+        "day": "2026-03-02",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-03",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-04",
+        "rows": 1440,
+        "events": 3
+      },
+      {
+        "day": "2026-03-05",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-06",
+        "rows": 1440,
+        "events": 3
+      },
+      {
+        "day": "2026-03-07",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-08",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-09",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-10",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-11",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-12",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-13",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-14",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-15",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-16",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-17",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-18",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-19",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-20",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-21",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-22",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-23",
+        "rows": 1440,
+        "events": 3
+      },
+      {
+        "day": "2026-03-24",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-25",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-26",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-27",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-28",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-29",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-30",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-31",
+        "rows": 1440,
+        "events": 0
+      }
+    ]
+  },
+  "groundTruth": {
+    "count": 70,
+    "byCode": {
+      "C06": 10,
+      "C02": 10,
+      "C07": 10,
+      "C05": 10,
+      "C03": 10,
+      "C01": 10,
+      "C04": 10
+    }
+  },
+  "predictions": {
+    "rawCount": 84,
+    "mergedCount": 71,
+    "detectorVersion": "deterministic-c03-c04-v1",
+    "byCode": {
+      "C04": 71
+    }
+  },
+  "metrics": {
+    "overall": {
+      "tp": 7,
+      "fp": 64,
+      "fn": 63,
+      "precision": 0.09859154929577464,
+      "recall": 0.1,
+      "f1": 0.09929078014184398
+    },
+    "byCode": {
+      "C01": {
+        "code": "C01",
+        "groundTruth": 10,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 10,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C02": {
+        "code": "C02",
+        "groundTruth": 10,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 10,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C03": {
+        "code": "C03",
+        "groundTruth": 10,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 10,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C04": {
+        "code": "C04",
+        "groundTruth": 10,
+        "predictions": 71,
+        "tp": 7,
+        "fp": 64,
+        "fn": 3,
+        "precision": 0.09859154929577464,
+        "recall": 0.7,
+        "f1": 0.1728395061728395
+      },
+      "C05": {
+        "code": "C05",
+        "groundTruth": 10,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 10,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C06": {
+        "code": "C06",
+        "groundTruth": 10,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 10,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C07": {
+        "code": "C07",
+        "groundTruth": 10,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 10,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      }
+    }
+  },
+  "matches": [
+    {
+      "groundTruthId": "VA0033",
+      "predictionId": "C04-20260201-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-01 11:08:00",
+      "groundTruthEnd": "2026-02-01 12:55:00",
+      "predictionStart": "2026-02-01T11:08:00Z",
+      "predictionEnd": "2026-02-01T12:55:00Z"
+    },
+    {
+      "groundTruthId": "VA0039",
+      "predictionId": "C04-20260211-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-11 10:18:00",
+      "groundTruthEnd": "2026-02-11 12:16:00",
+      "predictionStart": "2026-02-11T10:18:00Z",
+      "predictionEnd": "2026-02-11T12:16:00Z"
+    },
+    {
+      "groundTruthId": "VA0032",
+      "predictionId": "C04-20260223-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-23 18:06:00",
+      "groundTruthEnd": "2026-02-23 19:48:00",
+      "predictionStart": "2026-02-23T18:06:00Z",
+      "predictionEnd": "2026-02-23T19:48:00Z"
+    },
+    {
+      "groundTruthId": "VA0037",
+      "predictionId": "C04-20260227-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-27 10:29:00",
+      "groundTruthEnd": "2026-02-27 11:15:00",
+      "predictionStart": "2026-02-27T10:29:00Z",
+      "predictionEnd": "2026-02-27T11:15:00Z"
+    },
+    {
+      "groundTruthId": "VA0035",
+      "predictionId": "C04-20260303-001",
+      "code": "C04",
+      "groundTruthStart": "2026-03-03 17:05:00",
+      "groundTruthEnd": "2026-03-03 17:50:00",
+      "predictionStart": "2026-03-03T17:05:00Z",
+      "predictionEnd": "2026-03-03T17:50:00Z"
+    },
+    {
+      "groundTruthId": "VA0038",
+      "predictionId": "C04-20260308-001",
+      "code": "C04",
+      "groundTruthStart": "2026-03-08 17:01:00",
+      "groundTruthEnd": "2026-03-08 18:53:00",
+      "predictionStart": "2026-03-08T17:01:00Z",
+      "predictionEnd": "2026-03-08T18:53:00Z"
+    },
+    {
+      "groundTruthId": "VA0031",
+      "predictionId": "C04-20260311-001",
+      "code": "C04",
+      "groundTruthStart": "2026-03-11 11:18:00",
+      "groundTruthEnd": "2026-03-11 12:42:00",
+      "predictionStart": "2026-03-11T11:18:00Z",
+      "predictionEnd": "2026-03-11T12:42:00Z"
+    }
+  ],
+  "unmatchedGroundTruth": [
+    "VA0051",
+    "VA0014",
+    "VA0053",
+    "VA0066",
+    "VA0048",
+    "VA0042",
+    "VA0024",
+    "VA0013",
+    "VA0011",
+    "VA0049",
+    "VA0058",
+    "VA0019",
+    "VA0010",
+    "VA0025",
+    "VA0052",
+    "VA0063",
+    "VA0068",
+    "VA0034",
+    "VA0044",
+    "VA0012",
+    "VA0008",
+    "VA0062",
+    "VA0029",
+    "VA0056",
+    "VA0003",
+    "VA0057",
+    "VA0002",
+    "VA0064",
+    "VA0001",
+    "VA0004",
+    "VA0020",
+    "VA0047",
+    "VA0028",
+    "VA0007",
+    "VA0069",
+    "VA0036",
+    "VA0009",
+    "VA0016",
+    "VA0017",
+    "VA0040",
+    "VA0027",
+    "VA0046",
+    "VA0026",
+    "VA0055",
+    "VA0005",
+    "VA0041",
+    "VA0050",
+    "VA0023",
+    "VA0065",
+    "VA0015",
+    "VA0070",
+    "VA0043",
+    "VA0030",
+    "VA0060",
+    "VA0067",
+    "VA0006",
+    "VA0021",
+    "VA0054",
+    "VA0022",
+    "VA0045",
+    "VA0061",
+    "VA0018",
+    "VA0059"
+  ],
+  "unmatchedPredictions": [
+    "C04-20260102-001",
+    "C04-20260104-001",
+    "C04-20260104-002",
+    "C04-20260105-001",
+    "C04-20260105-002",
+    "C04-20260106-001",
+    "C04-20260106-003",
+    "C04-20260108-001",
+    "C04-20260108-002",
+    "C04-20260110-001",
+    "C04-20260113-001",
+    "C04-20260113-002",
+    "C04-20260113-003",
+    "C04-20260113-005",
+    "C04-20260113-006",
+    "C04-20260114-001",
+    "C04-20260118-001",
+    "C04-20260119-001",
+    "C04-20260121-001",
+    "C04-20260121-002",
+    "C04-20260123-001",
+    "C04-20260125-001",
+    "C04-20260125-002",
+    "C04-20260126-001",
+    "C04-20260128-001",
+    "C04-20260130-001",
+    "C04-20260131-001",
+    "C04-20260201-002",
+    "C04-20260204-001",
+    "C04-20260204-002",
+    "C04-20260210-001",
+    "C04-20260211-002",
+    "C04-20260212-001",
+    "C04-20260213-001",
+    "C04-20260213-002",
+    "C04-20260213-003",
+    "C04-20260218-001",
+    "C04-20260220-001",
+    "C04-20260221-001",
+    "C04-20260222-001",
+    "C04-20260222-002",
+    "C04-20260226-001",
+    "C04-20260301-001",
+    "C04-20260301-002",
+    "C04-20260302-001",
+    "C04-20260304-001",
+    "C04-20260305-001",
+    "C04-20260306-001",
+    "C04-20260306-002",
+    "C04-20260310-001",
+    "C04-20260310-002",
+    "C04-20260312-001",
+    "C04-20260313-001",
+    "C04-20260314-001",
+    "C04-20260316-001",
+    "C04-20260316-002",
+    "C04-20260317-001",
+    "C04-20260319-001",
+    "C04-20260321-001",
+    "C04-20260323-001",
+    "C04-20260323-002",
+    "C04-20260323-003",
+    "C04-20260324-001",
+    "C04-20260326-001"
+  ],
+  "provenance": {
+    "generatedAt": "2026-08-21T05:05:57.092Z",
+    "tool": "validation/evaluate.mjs",
+    "limitations": [
+      "Event-level evaluation contract, not the organizer score.",
+      "The deterministic backend fallback detects C03/C04 only.",
+      "Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged."
+    ]
+  }
+}

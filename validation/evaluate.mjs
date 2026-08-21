@@ -194,7 +194,8 @@ async function main() {
     dataset: options.mode === 'fixture'
       ? { source: 'packages/h2-contracts/fixtures/tiny-valid-timeseries.csv', chunks: importedChunks }
       : {
-          source: resolve(officialData, '02_validation_timeseries.csv'),
+          source: '02_validation_timeseries.csv',
+          labelsSource: '05_validation_event_labels.csv',
           fingerprintSha256: sha256(readFileSync(resolve(officialData, '02_validation_timeseries.csv'))),
           labelsFingerprintSha256: sha256(readFileSync(resolve(officialData, '05_validation_event_labels.csv'))),
           chunks: importedChunks,

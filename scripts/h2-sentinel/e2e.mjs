@@ -105,7 +105,6 @@ async function main() {
   console.log(`READY webPid=${session.ready.webPid} analyticsPid=${session.ready.analyticsPid}`)
 
   const collectedEvents = []
-  let dataset = null
   let sourceFingerprint = null
   let sourceRows = 0
   try {
@@ -115,7 +114,6 @@ async function main() {
         resolve(repositoryRoot, 'packages/h2-contracts/fixtures/tiny-valid-timeseries.csv'),
         'utf8',
       )
-      dataset = { source: 'packages/h2-contracts/fixtures/tiny-valid-timeseries.csv' }
       sourceFingerprint = `sha256:${createHash('sha256').update(text).digest('hex')}`
       const imported = await requestEnvelope(apiBase, '/api/v1/h2-sentinel/datasets:import', {
         filename: 'tiny-valid-timeseries.csv',
@@ -133,7 +131,6 @@ async function main() {
         throw new Error(`Official test timeseries not found: ${path}`)
       }
       const raw = readFileSync(path, 'utf8')
-      dataset = { source: path }
       sourceFingerprint = sha256(readFileSync(path))
       const lines = raw.replace(/\r\n/g, '\n').split('\n')
       const headerLine = lines[0]
