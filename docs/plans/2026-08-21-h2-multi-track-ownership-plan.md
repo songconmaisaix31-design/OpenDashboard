@@ -51,6 +51,69 @@ C06 390–410 kW 两处阈值疑似验证集过拟合。该分支是 A 轨的输
 **Wave 0 完成标准**：`pytest` 全绿、`npm run h2:check` 全绿、`node validation/evaluate.mjs --limit-days 3`
 的真值数量随窗口缩小而下降、仓库内 `grep -r "112\.4"` 只剩注释或报告快照。
 
+### Wave 0 执行结果（已完成，2026-08-21）
+
+主干 `competition/h2-sentinel` 上四个提交，四轨从 `09ed2a3` 切出：
+
+| 提交 | 内容 |
+|---|---|
+| `d9ef9cd` 合入 | 基线并入主干（按用户决策：先合再切） |
+| `857dadb` | W0-2 + W0-3，另修两个被掩盖的历史缺陷（见下） |
+| `24bb7a4` | W0-4 拆测试文件 + W0-5 检测器工厂缝 |
+| `09ed2a3` | W0-3 收尾：C03 的 `112.4` 改为可复算的 `17.333333333333332` |
+
+W0-1 在基线合入时已随 `d9ef9cd` 落地，实测 `--limit-days 3` 真值降到 3（原为全量 70）。
+
+**Wave 0 期间发现的两个既有缺陷**（不在原计划内，但必须记录，因为它们说明了「测试通过」不等于「功能可用」）：
+
+1. `run-contract-qa.mjs` 仍读迁移前的字段名（`bess_dispatch_command_kw` 等），`Number(undefined)`
+   得到 `NaN`，断言永假。而该套件是 assembled 套件的前置闸门 —— 所以 assembled 五项检查
+   **从未真正执行过**。一个会 gate 别人的失败套件，会把下游全部藏起来。
+2. 助手问题 ID 跨层分叉：官方口径与 Python 侧是 `Q01`–`Q10`，而 TS 契约 / schema / 前端 /
+   fixture 用的是本地加前缀的 `H2Q01`–`H2Q10`；Live 适配器原样转发，因此 Local 模式下
+   **每一次 `assistant:ask` 都失败**（`assistant.invalid_question`）。它被双重掩盖：上面第 1 条
+   挡住了 assembled 套件，而 `test_contract_validation.py` 的 `_relax_official_values()`
+   在校验前把 schema 的 `questionId` 枚举改写成官方值。已统一到官方 ID 并删掉该项放宽。
+
+C03 的 `112.4` 同样不是笔误而是**编造值**：`impact-c03-v1` 的口径是「窗内 PCC 中位数为基线、
+积分绝对偏差」，contracts fixture 的 C03 窗口（10:20–10:41，22 采样）中位数 590 kW、
+偏差和 1040 kW·min，故为 `1040/60 = 17.333333333333332 kWh`。`112.4` 只来自 `857dadb`
+删掉的指纹分支。它能长期存活的原因是覆盖缺口：`golden-fixtures.test.ts` 只对 C04 做了
+CSV 反算、没有 C03 的对应项，而 `assertGoldenEvidenceMatchesCsv` 对非 `measurement`
+证据直接 early-return，承载影响值的 `derived_metric` 证据从不参与比对。现已补上 C03 反算测试。
+
+**M0 判据实测**：pytest 42 passed；`h2:check` 全绿（typecheck / h2:test 68 / h2:qa 5+5 /
+h2:launcher:test 9 / h2:build）；`--limit-days 3` 真值 = 3；`112.4` 在代码路径中归零。
+四个 worktree 各自跑通本轨自测命令（A/B pytest、C typecheck + h2:test、D h2:qa）。
+视觉验收仍为 `MANUAL_REQUIRED`（未引入浏览器自动化依赖）。
+
+### 各轨 worktree 与分支（W0-6 已完成）
+
+| 轨 | 分支 | worktree 路径 |
+|---|---|---|
+| A | `h2/track-a-detect` | `C:\Users\DW\orca\workspaces\OpenDashboard\h2-track-a-detect` |
+| B | `h2/track-b-evidence` | `C:\Users\DW\orca\workspaces\OpenDashboard\h2-track-b-evidence` |
+| C | `h2/track-c-web` | `C:\Users\DW\orca\workspaces\OpenDashboard\h2-track-c-web` |
+| D | `h2/track-d-qa` | `C:\Users\DW\orca\workspaces\OpenDashboard\h2-track-d-qa` |
+
+四者均已 `npm ci`（31 包）与 `uv sync --extra dev --frozen`，开箱可跑自测。
+
+**`$PACK` 路径更正**：官方 CSV **不在**资料包根目录，而在其 `数据与材料` 子目录下。
+根目录只有说明文档（`00_需求书.docx`、`02_应用交付与验收要求.md`、SHA256 清单等）。A / D 轨
+读数据时须用：
+
+```
+$PACK/数据与材料/01_train_timeseries.csv          525600 行
+$PACK/数据与材料/02_validation_timeseries.csv     129600 行
+$PACK/数据与材料/03_test_timeseries.csv           172800 行
+$PACK/数据与材料/04_train_event_labels.csv           280 事件
+$PACK/数据与材料/05_validation_event_labels.csv       70 事件
+$PACK/数据与材料/06_train_row_labels.csv          525600 行
+$PACK/数据与材料/13_train_validation_normal_context.csv  77 条
+```
+
+行数已实测，与需求书一致（上表为去表头后的数据行数）。
+
 ---
 
 ## 2. 目录所有权表（冲突面为零）
@@ -62,7 +125,11 @@ C06 390–410 kW 两处阈值疑似验证集过拟合。该分支是 A 轨的输
 | A | 检测与影响 | `h2/track-a-detect` | 强（推理密度最高） | `services/h2-analytics/src/h2_analytics/detection/**`<br>`services/h2-analytics/src/h2_analytics/impact/**`<br>`services/h2-analytics/src/h2_analytics/events/**`<br>`services/h2-analytics/tests/test_detection_pipeline.py`<br>`services/h2-analytics/tests/test_impact.py`<br>`services/h2-analytics/training/**`（新建） |
 | B | 证据与叙事 | `h2/track-b-evidence` | 中 | `services/h2-analytics/src/h2_analytics/diagnosis/**`<br>`services/h2-analytics/src/h2_analytics/safety/**`<br>`services/h2-analytics/src/h2_analytics/assistant/**`<br>`services/h2-analytics/src/h2_analytics/reports/**`<br>`services/h2-analytics/src/h2_analytics/evidence.py`<br>`services/h2-analytics/tests/test_assistant_reports.py`<br>`services/h2-analytics/tests/test_safety.py` |
 | C | 前端与契约 | `h2/track-c-web` | 基础 | `apps/web/src/features/h2-sentinel/**`<br>`packages/h2-contracts/src/**`<br>`packages/h2-contracts/test/**`<br>`plugins/h2-ems/**` |
-| D | 校验与交付 | `h2/track-d-qa` | 基础 | `validation/**`<br>`tests/h2-sentinel/**`<br>`scripts/h2-sentinel/**`<br>`submission/h2-sentinel/**`<br>`docs/**` |
+| D | 校验与交付 | `h2/track-d-qa` | 基础 | `validation/**`<br>`tests/h2-sentinel/**`<br>`scripts/h2-sentinel/**`<br>`submission/h2-sentinel/**`<br>`docs/competition/**`（交付对照表） |
+
+`docs/plans/**` 归协调方，不归 D 轨：本文件是分工事实源，若 D 轨可改，就等于 D 轨能单方面
+改写别轨的边界。D 轨的 D5 只写 `submission/h2-sentinel/**` 与 `docs/competition/**`。
+`services/h2-analytics/HANDOFF.md` 同理归协调方（它描述四轨合并后的整体状态）。
 
 ### 全员冻结区（任何轨不得改，需改动先提 issue 给协调方）
 
@@ -197,7 +264,7 @@ node validation/evaluate.mjs                    # 事件级 F1，含 D2 过拟�
 
 | 里程碑 | 内容 | 判据 |
 |---|---|---|
-| M0 | Wave 0 完成，四轨开工 | pytest + h2:check 全绿；`--limit-days` 真值随窗过滤；无 `112.4` 硬编码 |
+| M0 ✅ | Wave 0 完成，四轨开工 | pytest + h2:check 全绿；`--limit-days` 真值随窗过滤；无 `112.4` 硬编码 —— 已于 `09ed2a3` 达成，实测见第 1 节 |
 | M1 | A4 完成 | 验证集 F1 ≥ 0.60 且 precision ≥ 0.45，由 D 轨复核 |
 | M2 | B3 + B5 完成 | 7 类安全建议无 `unknown`；PCC 合规日报六项齐 |
 | M3 | C4 + D4 完成 | 六页面中文口径 + 390×844 无溢出；官方测试集一键跑通导出 |
