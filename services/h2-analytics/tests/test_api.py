@@ -66,7 +66,7 @@ def test_complete_api_golden_flow(valid_csv: str) -> None:
         f"{API_NAMESPACE}/runs/series",
         json={
             "runId": run_id,
-            "variables": ["pcc_power_kw", "pcc_export_limit_kw"],
+            "variables": ["pcc_power_actual_kw", "grid_export_power_limit_kw"],
             "startTime": "2026-01-05T10:32:00Z",
             "endTime": "2026-01-05T10:39:00Z",
         },
@@ -77,7 +77,7 @@ def test_complete_api_golden_flow(valid_csv: str) -> None:
         f"{API_NAMESPACE}/assistant:ask",
         json={
             "runId": run_id,
-            "questionId": "H2Q03",
+            "questionId": "Q03",
             "eventId": "C03-20260105-001",
             "allowLlmRendering": False,
         },
@@ -132,7 +132,7 @@ def test_api_rejects_paths_commands_and_non_loopback_boundaries(valid_csv: str) 
     oversized = client.post(
         f"{API_NAMESPACE}/datasets:import",
         content=b"{}",
-        headers={"content-length": str(6 * 1024 * 1024)},
+        headers={"content-length": str(301 * 1024 * 1024)},
     )
     assert oversized.status_code == 413
     assert oversized.json()["error"]["code"] == "request.too_large"

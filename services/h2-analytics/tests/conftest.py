@@ -11,13 +11,15 @@ def repository_root() -> Path:
 
 
 @pytest.fixture(scope="session")
-def valid_csv(repository_root: Path) -> str:
-    return (
-        repository_root / "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv"
-    ).read_text(encoding="utf-8")
+def fixtures_dir() -> Path:
+    return Path(__file__).resolve().parent / "fixtures"
+
 
 @pytest.fixture(scope="session")
-def invalid_csv(repository_root: Path) -> str:
-    return (
-        repository_root / "packages/h2-contracts/fixtures/tiny-invalid-timeseries.csv"
-    ).read_text(encoding="utf-8")
+def valid_csv(fixtures_dir: Path) -> str:
+    return (fixtures_dir / "tiny-valid-timeseries.csv").read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="session")
+def invalid_csv(fixtures_dir: Path) -> str:
+    return (fixtures_dir / "tiny-invalid-timeseries.csv").read_text(encoding="utf-8")

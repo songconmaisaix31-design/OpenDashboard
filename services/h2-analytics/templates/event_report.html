@@ -53,6 +53,50 @@
   {% if run.quality.warnings %}<h3>Warnings</h3><ul>{% for warning in run.quality.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>{% endif %}
   {% if run.quality.blockingReasons %}<h3>Blocking reasons</h3><ul>{% for reason in run.quality.blockingReasons %}<li>{{ reason }}</li>{% endfor %}</ul>{% endif %}
   <h3>Limitations</h3><ul>{% for limitation in run.provenance.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+  {% elif kind == "period_summary" %}
+  <h2>PCC 合规日报</h2>
+  <dl>
+    <dt>数据集指纹</dt><dd>{{ period.datasetFingerprint }}</dd>
+    <dt>事件数量</dt><dd>{{ events|length }}</dd>
+  </dl>
+  <h3>符号约定</h3>
+  <table>
+    <thead><tr><th>对象</th><th>参数</th><th>约定</th></tr></thead>
+    <tbody>
+    {% for item in period.signConventions %}
+      <tr><td>{{ item.objectId }}</td><td>{{ item.parameter }}</td><td>{{ item.value }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h3>功率边界区间</h3>
+  {% if period.boundaryIntervals %}
+  <table>
+    <thead><tr><th>起始</th><th>结束</th><th>子类型</th></tr></thead>
+    <tbody>
+    {% for item in period.boundaryIntervals %}
+      <tr><td>{{ item.startTime }}</td><td>{{ item.endTime }}</td><td>{{ item.subtype }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p>越限时长：{{ period.violationDurationMinutes }} 分钟；越限电量：{{ period.violationEnergyKwh }} kWh。</p>
+  {% else %}
+  <p>本次周期未检测到 PCC 功率越限事件。</p>
+  {% endif %}
+  <h3>生效约束</h3>
+  <table>
+    <thead><tr><th>对象</th><th>参数</th><th>值</th><th>单位</th></tr></thead>
+    <tbody>
+    {% for item in period.constraints %}
+      <tr><td>{{ item.objectId }}</td><td>{{ item.parameter }}</td><td>{{ item.value }}</td><td>{{ item.unit }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h3>未决事件</h3>
+  {% if period.unresolvedEventIds %}
+  <ul>{% for event_id in period.unresolvedEventIds %}<li>{{ event_id }}</li>{% endfor %}</ul>
+  {% else %}
+  <p>无未决事件。</p>
+  {% endif %}
   {% else %}
   <p>Events in this deterministic summary: {{ events|length }}.</p>
   {% if time_range %}<p>Requested time range: {{ time_range.startTime }} to {{ time_range.endTime }}.</p>{% endif %}

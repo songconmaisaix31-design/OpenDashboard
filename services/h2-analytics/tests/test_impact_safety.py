@@ -8,7 +8,7 @@ from h2_analytics.ingestion import DatasetLoader
 from h2_analytics.safety import SafetyEvaluator
 
 
-def test_safety_reports_passed_failed_and_unknown(valid_csv: str) -> None:
+def test_safety_reports_passed_failed_and_warning(valid_csv: str) -> None:
     imported = DatasetLoader().import_csv(
         filename="tiny-valid-timeseries.csv", text=valid_csv
     )
@@ -29,7 +29,7 @@ def test_safety_reports_passed_failed_and_unknown(valid_csv: str) -> None:
     assert passed[1]["status"] == "passed"
 
     failed_rows = tuple(
-        replace(row, values={**row.values, "bess_soc_percent": 95.0})
+        replace(row, values={**row.values, "bess_soc_pct": 95.0})
         for row in window.rows
     )
     failed = evaluator.evaluate(
@@ -39,13 +39,14 @@ def test_safety_reports_passed_failed_and_unknown(valid_csv: str) -> None:
     )
     assert failed[1]["status"] == "failed"
 
-    unknown_rows = tuple(
-        replace(row, values={**row.values, "bess_soc_percent": None})
+    missing_rows = tuple(
+        replace(row, values={**row.values, "bess_soc_pct": None})
         for row in window.rows
     )
-    unknown = evaluator.evaluate(
-        window=replace(window, rows=unknown_rows),
+    missing = evaluator.evaluate(
+        window=replace(window, rows=missing_rows),
         evidence_ids=("C03-EV-001", "C03-EV-002"),
         provenance=provenance,
     )
-    assert unknown[1]["status"] == "unknown"
+    assert missing[1]["status"] == "warning"
+    assert all(check["status"] != "unknown" for check in missing)
