@@ -4,12 +4,11 @@ import { fileURLToPath } from 'node:url'
 
 import { decodeUtf8Strict } from './lib/csv.mjs'
 import {
-  AFFECTED_EQUIPMENT_BY_CODE,
   ANOMALY_CODES,
-  EQUIPMENT_NAME_BY_ID,
   PRIMARY_CONTROL_OBJECT_BY_CODE,
   PRIMARY_IMPACT_METRIC_BY_CODE,
   SUBTYPES_BY_CODE,
+  validateEquipmentTokenSet,
 } from './lib/fields.mjs'
 import { toInstant } from './lib/metrics.mjs'
 import {
@@ -20,6 +19,23 @@ import {
 
 const MAX_SUBMISSION_BYTES = 64 * 1024 * 1024
 const MOJIBAKE_PATTERN = /[\uFFFD�]|锟斤拷|烫烫烫|屯屯屯|鈥/
+
+/**
+ * Validate the official `affected_equipment` format: comma-separated tokens
+ * without spaces (`BESS,PCC`, `ELZ1,ELZ2,ELZ3`, ...). The official label files
+ * use this exact shape and `equipment_master` ids (`BESS01:...`) never appear.
+ */
+function validateAffectedEquipment(code, field, issues, label) {
+  if (/\s/.test(field)) {
+    issues.push(`${label} affected_equipment "${field}" must not contain spaces`)
+    return
+  }
+  const tokens = field.split(',')
+  const problem = validateEquipmentTokenSet(code, tokens)
+  if (problem !== null) {
+    issues.push(`${label} affected_equipment "${field}" ${problem}`)
+  }
+}
 
 export function validateSubmissionText(text, { strictHeader = true } = {}) {
   const issues = []
@@ -103,42 +119,8 @@ export function validateSubmissionText(text, { strictHeader = true } = {}) {
     const affectedEquipment = row.affected_equipment?.trim()
     if (affectedEquipment === '') {
       rowIssues.push(`${label} has an empty affected_equipment`)
-    } else {
-      const segments = affectedEquipment.split(';')
-      const seenEquipment = new Set()
-      for (const segment of segments) {
-        const match = /^([A-Za-z0-9_-]+):(.+)$/.exec(segment)
-        if (match === null) {
-          rowIssues.push(`${label} affected_equipment segment "${segment}" is not id:name`)
-          continue
-        }
-        const [, equipmentId, equipmentName] = match
-        const officialName = EQUIPMENT_NAME_BY_ID.get(equipmentId)
-        if (officialName === undefined) {
-          rowIssues.push(`${label} affected_equipment id "${equipmentId}" is not in the equipment master`)
-        } else if (equipmentName !== officialName) {
-          rowIssues.push(
-            `${label} affected_equipment "${equipmentId}:${equipmentName}" does not match the master name "${officialName}"`,
-          )
-        }
-        if (seenEquipment.has(equipmentId)) {
-          rowIssues.push(`${label} repeats affected_equipment id "${equipmentId}"`)
-        }
-        seenEquipment.add(equipmentId)
-      }
-      if (code !== undefined && seenEquipment.size > 0) {
-        const allowed = new Set(
-          (AFFECTED_EQUIPMENT_BY_CODE.get(code) ?? []).map(
-            (entry) => entry.equipmentId,
-          ),
-        )
-        const unexpected = [...seenEquipment].filter((id) => !allowed.has(id))
-        if (unexpected.length > 0) {
-          warnings.push(
-            `${label} lists equipment outside the official ${code} scope: ${unexpected.join(', ')}`,
-          )
-        }
-      }
+    } else if (code !== undefined && ANOMALY_CODES.includes(code)) {
+      validateAffectedEquipment(code, affectedEquipment, rowIssues, label)
     }
 
     const confidence = Number(row.confidence)
