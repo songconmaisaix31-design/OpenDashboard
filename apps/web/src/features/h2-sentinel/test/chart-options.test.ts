@@ -28,7 +28,8 @@ const seriesNames = (option: EChartsCoreOption): readonly string[] =>
 
 describe('H2 chart options', () => {
   it('uses official field labels for the golden power evidence chart', async () => {
-    const c03Event = H2_WEB_FIXTURE_RUN.events[0]
+    const c03Event = H2_WEB_FIXTURE_RUN.events.find(({ code }) => code === 'C03')
+    assert(c03Event)
     const series = await seriesFor([
       'bess_power_cmd_kw',
       'bess_power_actual_kw',

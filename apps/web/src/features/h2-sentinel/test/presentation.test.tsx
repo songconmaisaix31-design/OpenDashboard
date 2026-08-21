@@ -176,6 +176,14 @@ describe('H2 Sentinel presentation', () => {
     assert.match(markup, /安全检查与建议/)
     assert.match(markup, /29\.33/)
   })
+
+  it('renders the ten official assistant questions in Chinese', () => {
+    const markup = renderView(readyState, { route: 'assistant' })
+
+    assert.match(markup, /PCC正值和负值分别代表什么？/)
+    assert.match(markup, /如何评价多台电解槽负荷分配？/)
+    assert.match(markup, /PCC合规日报包含哪些内容？/)
+  })
 })
 
 function renderView(
