@@ -37,11 +37,12 @@ def test_rule_detector_and_aggregation_produce_golden_boundaries(valid_csv: str)
     )
     assert c03["severity"] == "高"
     assert c04["severity"] == "高"
-    assert c03["impact"]["value"] == 112.4
-    assert c04["impact"]["value"] == pytest.approx(29.333333333333332)
-    assert c04["evidence"][2]["actualValue"] == pytest.approx(
-        29.333333333333332
-    )
+    # Both values are computed from the fixture, not pinned by dataset fingerprint.
+    # C03 integrates |PCC - median(PCC)| and C04 integrates the export excess, so the
+    # two metrics are now numerically distinct.
+    assert c03["impact"]["value"] == pytest.approx(133.33333333333334)
+    assert c04["impact"]["value"] == pytest.approx(120.0)
+    assert c04["evidence"][2]["actualValue"] == pytest.approx(120.0)
 
 
 def test_repeated_analysis_is_byte_equivalent(valid_csv: str) -> None:

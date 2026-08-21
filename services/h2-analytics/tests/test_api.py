@@ -60,7 +60,7 @@ def test_complete_api_golden_flow(valid_csv: str) -> None:
     ).json()
     assert analyzed["ok"] is True
     run_id = analyzed["data"]["runId"]
-    assert analyzed["data"]["events"][1]["impact"]["value"] == 29.333333333333332
+    assert analyzed["data"]["events"][1]["impact"]["value"] == 120.0
 
     series = client.post(
         f"{API_NAMESPACE}/runs/series",

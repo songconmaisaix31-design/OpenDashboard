@@ -22,7 +22,7 @@ export interface AssistantPageProps {
 }
 
 export function AssistantPage({ answer, error, event, onAsk, pending }: AssistantPageProps) {
-  const [selectedQuestion, setSelectedQuestion] = useState<H2AssistantQuestionId>('H2Q03')
+  const [selectedQuestion, setSelectedQuestion] = useState<H2AssistantQuestionId>('Q03')
   const selectedQuestionZh =
     H2_ASSISTANT_QUESTIONS_ZH.find(({ questionId }) => questionId === selectedQuestion)
       ?.question ?? selectedQuestion

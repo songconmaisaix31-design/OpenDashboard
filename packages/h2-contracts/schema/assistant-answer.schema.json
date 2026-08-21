@@ -22,16 +22,16 @@
     "runId": { "type": "string", "minLength": 1 },
     "questionId": {
       "enum": [
-        "H2Q01",
-        "H2Q02",
-        "H2Q03",
-        "H2Q04",
-        "H2Q05",
-        "H2Q06",
-        "H2Q07",
-        "H2Q08",
-        "H2Q09",
-        "H2Q10"
+        "Q01",
+        "Q02",
+        "Q03",
+        "Q04",
+        "Q05",
+        "Q06",
+        "Q07",
+        "Q08",
+        "Q09",
+        "Q10"
       ]
     },
     "mode": { "enum": ["DETERMINISTIC_TEMPLATE", "LLM_RENDERED"] },

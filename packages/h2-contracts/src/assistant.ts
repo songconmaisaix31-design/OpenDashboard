@@ -1,47 +1,53 @@
 import type { H2AnomalyEvent } from './anomaly.ts'
 import type { H2ClaimKind, H2Provenance } from './provenance.ts'
 
+/**
+ * The ten official operations questions. The identifiers are the official
+ * `Q01`-`Q10` values from the frozen vocabulary, not a locally prefixed variant:
+ * the analytics sidecar accepts exactly these, so any other spelling makes every
+ * Local-mode `assistant:ask` fail with `assistant.invalid_question`.
+ */
 export const H2_ASSISTANT_QUESTIONS = [
   {
-    questionId: 'H2Q01',
+    questionId: 'Q01',
     prompt: 'What do positive and negative PCC power mean?',
   },
   {
-    questionId: 'H2Q02',
+    questionId: 'Q02',
     prompt:
       'How is a PCC power-limit anomaly different from an energy-quota anomaly?',
   },
   {
-    questionId: 'H2Q03',
+    questionId: 'Q03',
     prompt: 'How does a BESS direction anomaly affect PCC power?',
   },
   {
-    questionId: 'H2Q04',
+    questionId: 'Q04',
     prompt: 'How is an SOC regulation-reserve shortfall identified?',
   },
   {
-    questionId: 'H2Q05',
+    questionId: 'Q05',
     prompt: 'How can a capacity downgrade that was not synchronized be located?',
   },
   {
-    questionId: 'H2Q06',
+    questionId: 'Q06',
     prompt:
       'How can cloud-induced PV fluctuation be distinguished from setpoint oscillation?',
   },
   {
-    questionId: 'H2Q07',
+    questionId: 'Q07',
     prompt: 'How is multi-electrolyzer load allocation evaluated?',
   },
   {
-    questionId: 'H2Q08',
+    questionId: 'Q08',
     prompt: 'Which recommendations require human confirmation?',
   },
   {
-    questionId: 'H2Q09',
+    questionId: 'Q09',
     prompt: 'Generate a diagnosis report for the selected test anomaly.',
   },
   {
-    questionId: 'H2Q10',
+    questionId: 'Q10',
     prompt: 'What should a daily PCC compliance report contain?',
   },
 ] as const

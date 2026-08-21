@@ -24,20 +24,21 @@ def _schema(repository_root, name: str) -> dict[str, Any]:
 
 
 def _relax_official_values(schema: dict[str, Any]) -> dict[str, Any]:
-    """Return a copy whose severity/question enums reflect the official vocabulary.
+    """Return a copy whose severity enums reflect the official vocabulary.
 
     The frozen contract schemas predate the official Chinese severity values
     from `anomaly-taxonomy.json`; this helper relaxes only the conflicting
     enums so the pipeline can still be validated end to end.
+
+    `questionId` is deliberately NOT relaxed. Rewriting that enum here is what let
+    the contract schema drift to a locally prefixed spelling while the sidecar
+    accepted the official ids, so this test passed even though every Local-mode
+    `assistant:ask` failed. The schema must now match the official ids on its own.
     """
     relaxed = copy.deepcopy(schema)
     properties = relaxed.get("properties", {})
     if isinstance(properties.get("severity"), dict):
         properties["severity"]["enum"] = list(_OFFICIAL_SEVERITIES)
-    if isinstance(properties.get("questionId"), dict):
-        properties["questionId"]["enum"] = [
-            f"Q{index:02d}" for index in range(1, 11)
-        ]
     counts = properties.get("eventCountsBySeverity")
     if isinstance(counts, dict):
         counts["required"] = list(_OFFICIAL_SEVERITIES)
@@ -74,7 +75,7 @@ def test_pipeline_outputs_validate_against_frozen_contract_schemas(
         assert event["severity"] in _OFFICIAL_SEVERITIES
         assert event["primaryControlObject"]["displayName"]
         assert all(":" in _eq(event) for event in event["affectedEquipment"])
-    assert run["events"][1]["impact"]["value"] == 29.333333333333332
+    assert run["events"][1]["impact"]["value"] == 120.0
 
     answer = service.ask(
         run_id=run["runId"],

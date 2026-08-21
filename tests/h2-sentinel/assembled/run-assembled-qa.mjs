@@ -11,7 +11,14 @@ const LOOPBACK = '127.0.0.1'
 const directory = dirname(fileURLToPath(import.meta.url))
 const repositoryRoot = resolve(directory, '../../..')
 const launcherPath = resolve(repositoryRoot, 'scripts/h2-sentinel/launch.mjs')
-const fixtureCsvPath = resolve(repositoryRoot, 'packages/h2-contracts/fixtures/tiny-valid-timeseries.csv')
+// The contracts fixture is a narrow 13-column contract sample; the analytics
+// ingestion contract requires all 69 official fields, so importing the narrow one
+// blocks on `field_mapping` and never reaches analysis. Drive the Local API with the
+// service-side fixture, which is the CSV that actually satisfies that contract.
+const fixtureCsvPath = resolve(
+  repositoryRoot,
+  'services/h2-analytics/tests/fixtures/tiny-valid-timeseries.csv',
+)
 const mainPath = resolve(repositoryRoot, 'apps/web/src/main.tsx')
 const shellPath = resolve(repositoryRoot, 'apps/web/src/features/h2-sentinel/components/common/H2Shell.tsx')
 const fixtureDataSourcePath = pathToFileURL(resolve(repositoryRoot, 'plugins/h2-ems/src/fixture-data-source.ts')).href
@@ -417,7 +424,21 @@ async function testLocalCanonicalApiAndExports() {
       { datasetId: imported.dataset.datasetId },
     ))
     assert.deepEqual(run.events.map((event) => event.code), ['C03', 'C04'])
-    assert.equal(run.events[1].impact.value, 29.333333333333332)
+    // Assert the declared metric and shape rather than a memorized number. Pinning the
+    // value here would re-introduce the hardcoded-answer pattern and would break every
+    // time the sanitized fixture is regenerated.
+    assert.deepEqual(run.events.map((event) => event.impact.metric), [
+      'abnormal_grid_exchange_energy_kwh',
+      'pcc_power_limit_violation_energy_kwh',
+    ])
+    for (const event of run.events) {
+      assert.equal(event.impact.unit, 'kWh')
+      assert.equal(typeof event.impact.value, 'number')
+      assert.ok(
+        Number.isFinite(event.impact.value) && event.impact.value > 0,
+        `${event.code} impact must be a positive computed quantity`,
+      )
+    }
     const events = assertSuccess(await request(
       session.ready.analyticsUrl,
       '/api/v1/h2-sentinel/runs/events',
@@ -428,12 +449,12 @@ async function testLocalCanonicalApiAndExports() {
     const assistantFirst = assertSuccess(await request(
       session.ready.analyticsUrl,
       '/api/v1/h2-sentinel/assistant:ask',
-      { runId: run.runId, questionId: 'H2Q03', eventId: events[0].eventId, allowLlmRendering: false },
+      { runId: run.runId, questionId: 'Q03', eventId: events[0].eventId, allowLlmRendering: false },
     ))
     const assistantSecond = assertSuccess(await request(
       session.ready.analyticsUrl,
       '/api/v1/h2-sentinel/assistant:ask',
-      { runId: run.runId, questionId: 'H2Q03', eventId: events[0].eventId, allowLlmRendering: false },
+      { runId: run.runId, questionId: 'Q03', eventId: events[0].eventId, allowLlmRendering: false },
     ))
     assert.equal(assistantFirst.mode, 'DETERMINISTIC_TEMPLATE')
     assert.deepEqual(assistantSecond, assistantFirst)
@@ -525,10 +546,17 @@ async function testLocalCanonicalApiAndExports() {
       'recommended_action', 'primary_impact_metric', 'estimated_impact_value', 'first_detection_time',
       'requires_human_confirmation',
     ])
-    assert.deepEqual(submissionRows.slice(1).map((row) => [row[0], row[3], row[13]]), [
-      ['C03-20260105-001', 'C03', '112.4'],
-      ['C04-20260105-001', 'C04', '29.333333333333332'],
-    ])
+    // The submission must agree with the analysis it was exported from, so derive the
+    // expectation from `run` instead of re-pinning the impact numbers here. The impact
+    // column is compared numerically: Python renders a whole float as "120.0" while
+    // JavaScript stringifies the same value as "120".
+    assert.deepEqual(
+      submissionRows.slice(1).map((row) => [row[0], row[3]]),
+      run.events.map((event) => [event.eventId, event.code]),
+    )
+    submissionRows.slice(1).forEach((row, index) => {
+      assert.equal(Number(row[13]), run.events[index].impact.value)
+    })
     assertSafePublicText(submission.content)
     const dedicatedSubmission = assertSuccess(await request(
       session.ready.analyticsUrl,

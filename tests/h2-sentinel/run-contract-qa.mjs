@@ -11,7 +11,6 @@ const contractsDirectory = resolve(repositoryRoot, 'packages/h2-contracts')
 const passed = []
 const skipped = []
 const failed = []
-const canonicalC04ImpactKwh = 29.333333333333332
 
 function run(name, test) {
   try {
@@ -128,8 +127,11 @@ run('C02 golden C03 fixture preserves evidence, provenance, and advisory boundar
   })
   const row = rowsByTimestamp.get('2026-01-05T10:24:00Z')
   assert.ok(row, 'C03 evidence timestamp must exist in the fixture CSV')
-  assert.equal(Number(row.bess_dispatch_command_kw), -240)
-  assert.equal(Number(row.bess_power_kw), 230)
+  // Official vocabulary field names. The pre-migration aliases
+  // (bess_dispatch_command_kw / bess_power_kw) no longer exist in the fixture,
+  // so reading them yielded NaN and silently broke this assertion.
+  assert.equal(Number(row.bess_power_cmd_kw), -240)
+  assert.equal(Number(row.bess_power_actual_kw), 230)
 })
 
 run('C02a golden C03/C04 fixtures conform to the published anomaly JSON Schema', () => {
@@ -144,18 +146,27 @@ run('C04 golden impact is reproducible from the sanitized minute fixture', () =>
     subtype: 'EXPORT_POWER_LIMIT_NOT_TRACKED',
     metric: 'pcc_power_limit_violation_energy_kwh',
   })
-  const impact = rows
-    .filter((row) => row.timestamp >= c04.startTime && row.timestamp <= c04.endTime)
-    .reduce(
-      (total, row) =>
-        total +
-        Math.max(Number(row.pcc_power_kw) - Number(row.pcc_export_limit_kw), 0) / 60,
-      0,
-    )
-  assert.equal(c04.impact.value, canonicalC04ImpactKwh)
+  // Reproduce the published impact from the CSV instead of comparing both against a
+  // memorized constant. The expectation is the golden artifact itself, so the check
+  // stays meaningful if the sanitized fixture is ever regenerated.
+  const windowRows = rows.filter(
+    (row) => row.timestamp >= c04.startTime && row.timestamp <= c04.endTime,
+  )
+  assert.ok(windowRows.length > 0, 'C04 window must select at least one fixture row')
+  const impact = windowRows.reduce(
+    (total, row) =>
+      total +
+      Math.max(
+        Number(row.pcc_power_actual_kw) - Number(row.grid_export_power_limit_kw),
+        0,
+      ) /
+        60,
+    0,
+  )
+  assert.ok(c04.impact.value > 0, 'published C04 impact must be a positive quantity')
   assert.ok(
-    Math.abs(impact - canonicalC04ImpactKwh) < 1e-10,
-    `CSV-derived C04 impact must equal ${canonicalC04ImpactKwh} kWh`,
+    Math.abs(impact - c04.impact.value) < 1e-9,
+    `CSV-derived C04 impact ${impact} kWh must reproduce the published ${c04.impact.value} kWh`,
   )
 })
 

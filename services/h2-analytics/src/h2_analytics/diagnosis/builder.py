@@ -277,7 +277,6 @@ class DiagnosisBuilder:
         calculation = self._impact.calculate(
             window=window,
             sampling_interval_minutes=float(manifest["samplingIntervalMinutes"]),
-            dataset_fingerprint=manifest["fingerprint"],
         )
         evidence, impact_evidence_id = self._evidence(
             window, calculation.value, provenance

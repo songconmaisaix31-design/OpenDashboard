@@ -453,9 +453,9 @@ export const H2_FIXTURE_ANALYSIS_RUN = {
 
 export const H2_FIXTURE_ASSISTANT_ANSWER = {
   schemaVersion: 1,
-  answerId: 'answer-H2Q03-C03-20260105-001',
+  answerId: 'answer-Q03-C03-20260105-001',
   runId: H2_FIXTURE_ANALYSIS_RUN.runId,
-  questionId: 'H2Q03',
+  questionId: 'Q03',
   mode: 'DETERMINISTIC_TEMPLATE',
   generatedAt: fixtureGeneratedAt,
   eventId: H2_GOLDEN_C03_EVENT.eventId,

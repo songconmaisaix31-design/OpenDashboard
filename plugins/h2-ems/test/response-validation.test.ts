@@ -275,7 +275,8 @@ describe('H2 EMS remote response validation', () => {
     )
 
     const assistantMutations: Array<(answer: JsonRecord) => void> = [
-      (answer) => { answer.questionId = 'H2Q99' },
+      // Intentionally outside the official Q01-Q10 enum.
+      (answer) => { answer.questionId = 'Q99' },
       (answer) => { answer.mode = 'UNTRUSTED_LLM' },
       (answer) => { answer.generatedAt = 'yesterday' },
       (answer) => { answer.sections = [] },
@@ -291,7 +292,7 @@ describe('H2 EMS remote response validation', () => {
       mutate(answer)
       await rejectsInvalid(() => sourceFor(envelope(answer)).ask({
         runId: 'run-1',
-        questionId: 'H2Q01',
+        questionId: 'Q01',
         allowLlmRendering: false,
       }))
     }

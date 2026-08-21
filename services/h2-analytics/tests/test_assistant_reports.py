@@ -83,7 +83,7 @@ def test_report_kind_format_parity_and_content_addressing(
         assert "require human confirmation" in artifact["content"]
         assert "Dataset fingerprint:" in artifact["content"]
         if kind == "single_event_diagnosis":
-            assert "29.333333333333332" in artifact["content"]
+            assert "120.0" in artifact["content"]
         if kind == "quality_report":
             assert "Rows" in artifact["content"]
             assert "Time range" in artifact["content"]

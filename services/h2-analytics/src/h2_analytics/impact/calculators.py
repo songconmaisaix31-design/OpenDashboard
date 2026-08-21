@@ -3,7 +3,6 @@ from __future__ import annotations
 import statistics
 from dataclasses import dataclass
 
-from h2_analytics.contracts import FIXTURE_FINGERPRINT
 from h2_analytics.events import EventWindow
 from h2_analytics.models import DataRow
 from h2_analytics.vocabulary import efficiency_curve_by_equipment
@@ -49,18 +48,13 @@ class ImpactCalculator:
         *,
         window: EventWindow,
         sampling_interval_minutes: float,
-        dataset_fingerprint: str,
     ) -> ImpactCalculation:
         if window.code == "C01":
             return self._calculate_c01(window, sampling_interval_minutes)
         if window.code == "C02":
             return self._calculate_c02(window, sampling_interval_minutes)
         if window.code == "C03":
-            return self._calculate_c03(
-                window,
-                sampling_interval_minutes=sampling_interval_minutes,
-                dataset_fingerprint=dataset_fingerprint,
-            )
+            return self._calculate_c03(window, sampling_interval_minutes)
         if window.code == "C04":
             return self._calculate_c04(window, sampling_interval_minutes)
         if window.code == "C05":
@@ -121,21 +115,8 @@ class ImpactCalculator:
     @staticmethod
     def _calculate_c03(
         window: EventWindow,
-        *,
         sampling_interval_minutes: float,
-        dataset_fingerprint: str,
     ) -> ImpactCalculation:
-        if dataset_fingerprint == FIXTURE_FINGERPRINT:
-            return ImpactCalculation(
-                "abnormal_grid_exchange_energy_kwh",
-                112.4,
-                "kWh",
-                "impact-c03-v1",
-                (
-                    "The value is the canonical sanitized Fixture result.",
-                    "It is not an official competition dataset metric.",
-                ),
-            )
         values = [
             value
             for row in window.rows

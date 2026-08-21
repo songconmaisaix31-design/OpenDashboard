@@ -117,9 +117,9 @@ export function equipmentById(id: string): H2EquipmentEntry | undefined {
 }
 
 function assistantQuestionZh(questionId: H2AssistantQuestionId): string | undefined {
-  const officialId = questionId.replace(/^H2Q/, 'Q')
+  // Contract ids are the official ids, so no prefix translation is needed.
   return (assistantQuestionsData as readonly { readonly questionId: string; readonly question: string }[]).find(
-    (item) => item.questionId === officialId,
+    (item) => item.questionId === questionId,
   )?.question
 }
 
