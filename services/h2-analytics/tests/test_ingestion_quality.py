@@ -20,6 +20,8 @@ def test_valid_fixture_import_is_in_memory_and_explicitly_fixture(valid_csv: str
         "startTime": "2026-01-05T10:20:00Z",
         "endTime": "2026-01-05T10:41:00Z",
     }
+    assert result.manifest["fields"][0]["name"] == "timestamp"
+    assert len(result.manifest["fields"]) == 69
     assert result.quality["status"] == "warning"
     assert result.quality["blockingReasons"] == []
 
@@ -52,7 +54,7 @@ def test_import_rejects_malformed_csv() -> None:
     with pytest.raises(CsvImportError, match="malformed"):
         DatasetLoader().import_csv(
             filename="broken.csv",
-            text='timestamp,pcc_power_kw\n"unterminated,1',
+            text='timestamp,bess_power_actual_kw\n"unterminated,1',
         )
 
 
@@ -61,6 +63,16 @@ def test_timestamp_offsets_are_normalized_to_utc(valid_csv: str) -> None:
         "2026-01-05T10:20:00Z", "2026-01-05T18:20:00+08:00", 1
     )
     result = DatasetLoader().import_csv(filename="offset.csv", text=offset_csv)
+
+    assert result.rows[0].timestamp_text == "2026-01-05T10:20:00Z"
+    assert result.manifest["timeRange"]["startTime"] == "2026-01-05T10:20:00Z"
+
+
+def test_official_naive_timestamps_are_treated_as_utc(valid_csv: str) -> None:
+    naive_csv = valid_csv.replace(
+        "2026-01-05T10:20:00Z", "2026-01-05 10:20:00", 1
+    )
+    result = DatasetLoader().import_csv(filename="naive.csv", text=naive_csv)
 
     assert result.rows[0].timestamp_text == "2026-01-05T10:20:00Z"
     assert result.manifest["timeRange"]["startTime"] == "2026-01-05T10:20:00Z"
