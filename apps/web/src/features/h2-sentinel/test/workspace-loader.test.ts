@@ -136,7 +136,7 @@ describe('H2 CSV workspace loading', () => {
       },
       async importCsv(request: H2CsvImportRequest) {
         assert.equal(request.filename, 'first-live-run.csv')
-        assert.match(request.text, /^timestamp,pcc_power_kw/m)
+        assert.match(request.text, /^timestamp,pv_actual_kw/m)
         imported = true
         return {
           dataset: liveDataset,
@@ -156,7 +156,7 @@ describe('H2 CSV workspace loading', () => {
       name: 'first-live-run.csv',
       size: 42,
       async text() {
-        return 'timestamp,pcc_power_kw\n2026-01-05T10:20:00Z,590\n'
+        return 'timestamp,pv_actual_kw\n2026-01-05T10:20:00Z,820\n'
       },
     })
 

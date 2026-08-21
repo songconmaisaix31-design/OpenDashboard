@@ -23,8 +23,8 @@ export interface OverviewPageProps {
 
 export function OverviewPage({ onNavigate, workspace }: OverviewPageProps) {
   const metrics = createOverviewMetrics(workspace.run)
-  const latestPcc = getLatestSeriesValue(workspace.series, 'pcc_power_kw')
-  const latestSoc = getLatestSeriesValue(workspace.series, 'bess_soc_percent')
+  const latestPcc = getLatestSeriesValue(workspace.series, 'pcc_power_actual_kw')
+  const latestSoc = getLatestSeriesValue(workspace.series, 'bess_soc_pct')
 
   return (
     <div className="h2-page h2-overview-page">

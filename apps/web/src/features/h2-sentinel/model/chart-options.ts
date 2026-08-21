@@ -19,18 +19,18 @@ interface SeriesDefinition {
 const powerSeriesByCode = {
   C03: [
     {
-      variable: 'bess_dispatch_command_kw',
+      variable: 'bess_power_cmd_kw',
       label: '储能调度指令',
       color: COLORS[1],
       dashed: true,
     },
-    { variable: 'bess_power_kw', label: '储能实际功率', color: COLORS[0] },
-    { variable: 'pcc_power_kw', label: '并网点功率', color: COLORS[2] },
+    { variable: 'bess_power_actual_kw', label: '储能实际功率', color: COLORS[0] },
+    { variable: 'pcc_power_actual_kw', label: '并网点功率', color: COLORS[2] },
   ],
   C04: [
-    { variable: 'pcc_power_kw', label: '并网点实际功率', color: COLORS[3] },
+    { variable: 'pcc_power_actual_kw', label: '并网点实际功率', color: COLORS[3] },
     {
-      variable: 'pcc_export_limit_kw',
+      variable: 'grid_export_power_limit_kw',
       label: '送出边界',
       color: COLORS[1],
       dashed: true,
@@ -80,15 +80,15 @@ export function createPccChartOption(response: H2SeriesResponse): EChartsCoreOpt
   return createLineOption(
     response,
     [
-      { variable: 'pcc_power_kw', label: '并网点实际功率', color: COLORS[0] },
+      { variable: 'pcc_power_actual_kw', label: '并网点实际功率', color: COLORS[0] },
       {
-        variable: 'pcc_export_limit_kw',
+        variable: 'grid_export_power_limit_kw',
         label: '送出边界',
         color: COLORS[1],
         dashed: true,
       },
       {
-        variable: 'pcc_import_limit_kw',
+        variable: 'grid_import_power_limit_kw',
         label: '受电边界',
         color: COLORS[2],
         dashed: true,
@@ -101,7 +101,7 @@ export function createPccChartOption(response: H2SeriesResponse): EChartsCoreOpt
 export function createSocChartOption(response: H2SeriesResponse): EChartsCoreOption {
   return createLineOption(
     response,
-    [{ variable: 'bess_soc_percent', label: '储能 SOC', color: COLORS[4] }],
+    [{ variable: 'bess_soc_pct', label: '储能 SOC', color: COLORS[4] }],
     '%',
   )
 }

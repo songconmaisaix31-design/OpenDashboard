@@ -113,3 +113,16 @@ export {
   toH2SubmissionCells,
   toH2SubmissionRow,
 } from './submission.ts'
+export {
+  H2_ASSISTANT_QUESTIONS_ZH,
+  anomalyTaxonomyByCode,
+  deprecatedFieldName,
+  equipmentById,
+  equipmentNameForRef,
+  fieldByName,
+  type H2AnomalyTaxonomyEntry,
+  type H2AssistantQuestionZh,
+  type H2DeprecatedFieldMapping,
+  type H2EquipmentEntry,
+  type H2FieldDefinition,
+} from './vocabulary.ts'
