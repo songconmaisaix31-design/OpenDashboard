@@ -107,12 +107,41 @@ deterministic repeatability.
 - Import calls accept `{filename, text}`. No endpoint accepts arbitrary file
   paths, commands, expressions, model paths, plugins, remote hosts, or network
   retrieval instructions.
-- The deterministic fallback intentionally implements only the frozen C03 and
-  C04 field mappings. Other declared C01-C07 impact identities return unknown
-  until their official mappings are frozen; this avoids fabricated metrics.
 - LightGBM remains an optional `ml` extra and is not needed for acceptance or
   deterministic repeatability.
 - Generated smoke artifacts live under ignored `services/h2-analytics/artifacts/`.
 - Root `MEMORY.md` was read but not updated because the H1 write allowlist
   permits changes only under `services/h2-analytics/**`; this handoff preserves
   the durable, non-secret H1 decisions inside the owned directory.
+
+## Track B update (official vocabulary, C01-C07, PCC compliance)
+
+- `vocabulary.py` resolves `packages/h2-vocabulary/data` from the repository
+  root (or `H2_VOCABULARY_DIR`); all 69 official fields and the official
+  Chinese taxonomy values are loaded from the frozen JSON.
+- Import now accepts naive official timestamps (treated as UTC), streams rows
+  instead of materializing the full string matrix, and allows up to 600,000
+  rows / 300 MiB. The golden fixture and its fingerprint were regenerated under
+  `tests/fixtures/` with all 69 official columns.
+- Detection covers all seven classes (`deterministic-c01-c07-v2`) with the
+  official field names; aggregation policies exist for every code.
+- Events and submissions use the official Chinese severity (`高`/`中`), the
+  official `primary_control_object`, and `equipment_id:equipment_name`
+  affected-equipment values, while keeping the frozen 16 submission columns.
+- Impacts are computed for all seven classes from the official field formulas;
+  the C03 fixture value (112.4) remains an explicitly Fixture-provided artifact.
+- Optional `H2_OFFICIAL_DATA_DIR` enables lightweight evidence tables
+  (equipment, constraints, efficiency curves, alarm/operation logs, normal
+  context, maintenance history) that the diagnosis chain cites when present.
+- Safety evaluation returns per-class checks (SOC range, PCC boundary,
+  capacity/ramp, human confirmation) and never reports `unknown`.
+- The assistant answers the official Q01-Q10 questions from
+  `assistant-questions.json` with Chinese text grounded in `knowledge-base.md`.
+- The `period_summary` report is a PCC compliance daily report covering power
+  boundary intervals, violation duration and energy, sign conventions, dataset
+  fingerprint, constraints, and unresolved events.
+- The frozen `packages/h2-contracts/schema/*.json` still enumerate English
+  severity and `H2Qxx` question IDs; the contracts track must update them to
+  the official Chinese values. Tests relax only those conflicting enums locally
+  and otherwise validate against the frozen schemas.
+
