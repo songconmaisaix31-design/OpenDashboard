@@ -130,6 +130,21 @@ $PACK/数据与材料/13_train_validation_normal_context.csv  77 条
 `docs/plans/**` 归协调方，不归 D 轨：本文件是分工事实源，若 D 轨可改，就等于 D 轨能单方面
 改写别轨的边界。D 轨的 D5 只写 `submission/h2-sentinel/**` 与 `docs/competition/**`。
 `services/h2-analytics/HANDOFF.md` 同理归协调方（它描述四轨合并后的整体状态）。
+`tools/coordination/**` 亦归协调方（闸口脚本，见下）。
+
+### 所有权闸口（机械校验，不靠自觉）
+
+上表原先只是文字约定，违规要等到集成才暴露——那是最贵的发现时机。现在有脚本：
+
+```bash
+node tools/coordination/check-track-ownership.mjs                      # 四轨全查
+node tools/coordination/check-track-ownership.mjs --branch h2/track-a-detect
+```
+
+它对每条轨分支列出相对 Wave 0 基线（`09ed2a3`）的改动文件，逐个比对该轨的独占路径，
+越界即非零退出；同时拒绝任何情况下都不得入库的路径（`$PACK` 官方 CSV、模型产物、
+`.env`、凭据文件）。已做反向验证：把基线换成 `857dadb` 后能正确报出协调方那批越界改动，
+且对仓库现有 286 个已跟踪文件零误报——一个从未拒绝过任何东西的闸口等于没有闸口。
 
 ### 全员冻结区（任何轨不得改，需改动先提 issue 给协调方）
 
