@@ -6,7 +6,7 @@ from typing import Any
 
 from h2_analytics.contracts import ANOMALY_CODES, SEVERITIES, build_provenance
 from h2_analytics.assistant import AssistantService
-from h2_analytics.detection import RowDetector, RuleRowDetector
+from h2_analytics.detection import RowDetector, default_row_detector
 from h2_analytics.diagnosis import DiagnosisBuilder
 from h2_analytics.errors import AnalyticsError
 from h2_analytics.events import EventAggregator
@@ -18,7 +18,9 @@ from h2_analytics.reports import ReportRenderer
 class AnalyticsService:
     def __init__(self, detector: RowDetector | None = None) -> None:
         self._loader = DatasetLoader()
-        self._detector = detector or RuleRowDetector()
+        # Resolved through the detection-owned factory so changing the default
+        # detector never requires editing this shared service.
+        self._detector = detector or default_row_detector()
         self._aggregator = EventAggregator()
         self._diagnosis = DiagnosisBuilder()
         self._assistant = AssistantService()
