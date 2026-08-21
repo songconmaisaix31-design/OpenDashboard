@@ -8,8 +8,8 @@ from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
 
+from h2_analytics import vocabulary
 from h2_analytics.contracts import (
-    FIELD_DEFINITIONS,
     FIXTURE_FINGERPRINT,
     FIXTURE_GENERATED_AT,
     NUMERIC_FIELDS,
@@ -19,6 +19,12 @@ from h2_analytics.contracts import (
 from h2_analytics.models import DataRow, ImportedDataset, ParseDiagnostics
 from h2_analytics.quality.checker import QualityChecker
 from h2_analytics.settings import MAX_CSV_BYTES, MAX_CSV_ROWS
+
+_ELZ_POWER_FIELDS = (
+    "elz1_power_actual_kw",
+    "elz2_power_actual_kw",
+    "elz3_power_actual_kw",
+)
 
 
 class CsvImportError(ValueError):
@@ -102,7 +108,7 @@ class DatasetLoader:
             "rowCount": len(parsed_rows),
             "timeRange": {"startTime": start_time, "endTime": end_time},
             "samplingIntervalMinutes": interval_minutes,
-            "fields": [_field_descriptor(name) for name in headers],
+            "fields": [vocabulary.field_descriptor(name) for name in headers],
             "provenance": provenance,
         }
         diagnostics = _build_diagnostics(
@@ -195,7 +201,7 @@ def _parse_timestamp(value: str) -> datetime | None:
     except ValueError:
         return None
     if parsed.tzinfo is None:
-        return None
+        parsed = parsed.replace(tzinfo=UTC)
     return parsed.astimezone(UTC)
 
 
@@ -217,18 +223,6 @@ def _sampling_interval_minutes(timestamps: list[datetime]) -> float:
         if current > previous
     ]
     return float(statistics.median(intervals)) if intervals else 1.0
-
-
-def _field_descriptor(name: str) -> dict[str, Any]:
-    definition = FIELD_DEFINITIONS.get(name)
-    if definition is None:
-        return {
-            "name": name,
-            "displayNameZh": name,
-            "role": "metadata",
-            "required": False,
-        }
-    return {"name": name, **definition}
 
 
 def _build_diagnostics(
@@ -253,28 +247,16 @@ def _build_diagnostics(
     invalid_ranges: Counter[str] = Counter()
     residuals: list[float] = []
     for row in rows:
-        soc = row.value("bess_soc_percent")
+        soc = row.value("bess_soc_pct")
         if soc is not None and not 0 <= soc <= 100:
-            invalid_ranges["bess_soc_percent"] += 1
-        for field in ("pcc_export_limit_kw", "pcc_import_limit_kw"):
+            invalid_ranges["bess_soc_pct"] += 1
+        for field in ("grid_export_power_limit_kw", "grid_import_power_limit_kw"):
             value = row.value(field)
             if value is not None and value < 0:
                 invalid_ranges[field] += 1
-        balance_values = [
-            row.value("pv_actual_kw"),
-            row.value("bess_power_kw"),
-            row.value("pcc_power_kw"),
-            row.value("total_electrolyzer_power_kw"),
-            row.value("auxiliary_load_kw"),
-        ]
-        if all(value is not None for value in balance_values):
-            pv, bess, pcc, electrolyzer, auxiliary = balance_values
-            assert pv is not None
-            assert bess is not None
-            assert pcc is not None
-            assert electrolyzer is not None
-            assert auxiliary is not None
-            residuals.append(abs(pv + bess - pcc - electrolyzer - auxiliary))
+        residual = _power_balance_residual_kw(row)
+        if residual is not None:
+            residuals.append(residual)
     invalid_timestamps = int(parse_counts["invalid_timestamps"])
     if parse_counts["malformed_rows"]:
         invalid_timestamps += int(parse_counts["malformed_rows"])
@@ -289,3 +271,19 @@ def _build_diagnostics(
         invalid_ranges=dict(invalid_ranges),
         maximum_power_balance_residual_kw=max(residuals) if residuals else None,
     )
+
+
+def _power_balance_residual_kw(row: DataRow) -> float | None:
+    pv = row.value("pv_actual_kw")
+    bess = row.value("bess_power_actual_kw")
+    pcc = row.value("pcc_power_actual_kw")
+    aux = row.value("aux_load_kw")
+    elz_values = [row.value(field) for field in _ELZ_POWER_FIELDS]
+    if any(value is None for value in (pv, bess, pcc, aux, *elz_values)):
+        return None
+    elz_total = sum(value for value in elz_values if value is not None)
+    assert pv is not None
+    assert bess is not None
+    assert pcc is not None
+    assert aux is not None
+    return abs(pv + bess - pcc - elz_total - aux)
