@@ -111,7 +111,7 @@ def test_rule_detector_covers_all_seven_codes(valid_csv: str) -> None:
             elz1_power_actual_kw=300.0,
         ),
         "C03": single(bess_power_cmd_kw=-240.0, bess_power_actual_kw=230.0),
-        "C04": single(pcc_export_power_violation_kw=120.0),
+        "C04": single(pcc_export_power_violation_kw=700.0),
         "C05": single(grid_export_energy_quota_excess_kwh=15.0),
         "C06": single(
             elz1_power_actual_kw=500.0,

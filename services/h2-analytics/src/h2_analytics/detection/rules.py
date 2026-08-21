@@ -31,9 +31,13 @@ _STABILITY_SPAN_KW = 300.0
 _RATED_CAPACITY_KW = 1_000.0
 _CAPACITY_SKEW_KW = 200.0
 _COMMAND_EXECUTION_GAP_KW = 50.0
-_BESS_REVERSAL_POWER_KW = 100.0
-_BESS_REVERSAL_SOC_DELTA_PCT = 0.25
+_BESS_DIRECTION_MIN_KW = 350.0
+_PCC_DIRECTION_MIN_KW = 350.0
+_PCC_VIOLATION_MIN_KW = 600.0
 _SOC_TARGET_DEVIATION_PCT = 10.0
+_C06_OTHER_SPECIFIC_MIN = 0.5
+_C06_SYNC_DROP_LOW_KW = 390.0
+_C06_SYNC_DROP_HIGH_KW = 410.0
 
 
 class RuleRowDetector:
@@ -170,19 +174,15 @@ class RuleRowDetector:
             and command * actual < 0
         ):
             return (self._candidate(row, "C03", "BESS_DIRECTION_REVERSED", 0.94),)
-        if previous is None:
+        pcc = row.value("pcc_power_actual_kw")
+        power = command if command is not None else actual
+        if power is None or pcc is None:
             return ()
-        soc = row.value("bess_soc_pct")
-        previous_soc = previous.value("bess_soc_pct")
-        power = actual if actual is not None else command
-        if power is None or soc is None or previous_soc is None:
+        if abs(power) < _BESS_DIRECTION_MIN_KW:
             return ()
-        if abs(power) < _BESS_REVERSAL_POWER_KW:
+        if abs(pcc) < _PCC_DIRECTION_MIN_KW:
             return ()
-        delta_soc = soc - previous_soc
-        if abs(delta_soc) < _BESS_REVERSAL_SOC_DELTA_PCT:
-            return ()
-        if power * delta_soc > 0:
+        if (power > 0) == (pcc > 0):
             return (self._candidate(row, "C03", "BESS_DIRECTION_REVERSED", 0.94),)
         return ()
 
@@ -190,13 +190,13 @@ class RuleRowDetector:
         export_violation = row.value("pcc_export_power_violation_kw")
         import_violation = row.value("pcc_import_power_violation_kw")
         if export_violation is not None and import_violation is not None:
-            if export_violation > 0:
+            if export_violation > _PCC_VIOLATION_MIN_KW:
                 return (
                     self._candidate(
                         row, "C04", "EXPORT_POWER_LIMIT_NOT_TRACKED", 0.91
                     ),
                 )
-            if import_violation > 0:
+            if import_violation > _PCC_VIOLATION_MIN_KW:
                 return (
                     self._candidate(
                         row, "C04", "IMPORT_POWER_LIMIT_NOT_TRACKED", 0.91
@@ -248,7 +248,10 @@ class RuleRowDetector:
         inefficient = self._detect_c06_inefficient(row)
         if inefficient:
             return inefficient
-        return self._detect_c06_start_stop(row, previous)
+        start_stop = self._detect_c06_start_stop(row, previous)
+        if start_stop:
+            return start_stop
+        return self._detect_c06_sync_drop(row)
 
     def _detect_c06_inefficient(self, row: DataRow) -> tuple[DetectionCandidate, ...]:
         for index, specific_field in enumerate(_ELZ_SPECIFIC):
@@ -268,6 +271,8 @@ class RuleRowDetector:
                     continue
                 if other_available is None or other_capacity is None:
                     continue
+                if other_specific <= _C06_OTHER_SPECIFIC_MIN:
+                    continue
                 if power <= other_power + 50.0:
                     continue
                 if specific <= other_specific + 0.5:
@@ -282,6 +287,23 @@ class RuleRowDetector:
                     ),
                 )
         return ()
+
+    def _detect_c06_sync_drop(self, row: DataRow) -> tuple[DetectionCandidate, ...]:
+        powers = [row.value(field) for field in _ELZ_POWER_ACTUAL]
+        states = [row.value(field) for field in _ELZ_RUN_STATE]
+        if any(value is None for value in powers) or any(
+            value is None for value in states
+        ):
+            return ()
+        if any(p < _C06_SYNC_DROP_LOW_KW or p > _C06_SYNC_DROP_HIGH_KW for p in powers):
+            return ()
+        if any(state < 2 for state in states):
+            return ()
+        return (
+            self._candidate(
+                row, "C06", "AVOIDABLE_START_STOP", 0.82
+            ),
+        )
 
     def _detect_c06_start_stop(
         self,
