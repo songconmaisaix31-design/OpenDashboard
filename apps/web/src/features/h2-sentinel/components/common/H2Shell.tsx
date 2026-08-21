@@ -12,10 +12,10 @@ import { StatusBadge } from './StatusBadge.tsx'
 
 const navigation = [
   { route: 'overview', label: '系统总览', icon: '⌁' },
-  { route: 'events', label: '异常事件', icon: '!' },
-  { route: 'diagnosis', label: '诊断详情', icon: '◎' },
+  { route: 'events', label: '异常事件中心', icon: '!' },
+  { route: 'diagnosis', label: '异常诊断详情', icon: '◎' },
   { route: 'analysis', label: '数据分析', icon: '⌇' },
-  { route: 'assistant', label: '运行助手', icon: '◇' },
+  { route: 'assistant', label: '运维助手', icon: '◇' },
   { route: 'reports', label: '报告中心', icon: '↗' },
 ] as const satisfies readonly {
   readonly route: H2SentinelRoute

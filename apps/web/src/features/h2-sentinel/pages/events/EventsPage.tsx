@@ -13,6 +13,7 @@ import {
   formatH2Confidence,
   formatH2ControlObject,
   formatH2Duration,
+  formatH2ImpactMetric,
   formatH2Number,
   formatH2Severity,
   formatH2Timestamp,
@@ -111,7 +112,7 @@ export function EventsPage({ onNavigate, workspace }: EventsPageProps) {
                     <td><div className="h2-table__event"><span className="h2-code">{event.code}</span><span><strong>{H2_CODE_LABELS[event.code]}</strong><small>{event.eventId} · {formatH2Severity(event)}风险 · {H2_REVIEW_LABELS[event.reviewState]}</small></span></div></td>
                     <td><strong>{formatH2Timestamp(event.startTime)}</strong><small>{formatH2Duration(event.startTime, event.endTime)} · 首次发现 {formatH2Timestamp(event.firstDetectionTime)}</small></td>
                     <td><strong>{formatH2ControlObject(event)}</strong><small>{formatH2AffectedEquipment(event)}</small></td>
-                    <td><strong>{formatH2Number(event.impact.value, event.impact.unit)}</strong><small>{event.impact.metric}</small></td>
+                    <td><strong>{formatH2Number(event.impact.value, event.impact.unit)}</strong><small>{formatH2ImpactMetric(event)}</small></td>
                     <td><strong>{formatH2Confidence(event.confidence)}</strong></td>
                     <td><StatusBadge tone={event.provenance.mode === 'FIXTURE' ? 'fixture' : 'live'}>{H2_PROVENANCE_LABELS[event.provenance.mode]}</StatusBadge></td>
                     <td><button aria-label={`打开 ${event.eventId} 诊断`} className="h2-icon-button" onClick={() => onNavigate({ route: 'diagnosis', eventId: event.eventId })} type="button">→</button></td>
