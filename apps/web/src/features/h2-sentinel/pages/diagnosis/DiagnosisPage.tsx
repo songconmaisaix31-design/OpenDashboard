@@ -14,10 +14,12 @@ import {
   H2_CODE_LABELS,
   H2_PROVENANCE_LABELS,
   H2_REVIEW_LABELS,
+  H2_SIGN_CONVENTIONS,
 } from '../../model/presentation.ts'
 import { createEventChartOption } from '../../model/chart-options.ts'
 import { EChartsCanvas } from '../../components/charts/EChartsCanvas.tsx'
 import { PageHeader } from '../../components/common/PageHeader.tsx'
+import { SignConventionNote } from '../../components/common/SignConventionNote.tsx'
 import { StatusBadge } from '../../components/common/StatusBadge.tsx'
 import { EvidencePanel } from '../../components/evidence/EvidencePanel.tsx'
 import { ImpactPanel } from '../../components/impact/ImpactPanel.tsx'
@@ -95,6 +97,7 @@ export function DiagnosisPage({ event, events, onNavigate, series, seriesError }
             <div><dt>首次发现</dt><dd>{formatH2Timestamp(event.firstDetectionTime)}</dd></div>
             <div><dt>主要控制对象</dt><dd>{formatH2ControlObject(event)}</dd></div>
             <div><dt>受影响设备</dt><dd>{formatH2AffectedEquipment(event)}</dd></div>
+            <div><dt>符号约定</dt><dd>{H2_SIGN_CONVENTIONS.map(({ label, copy }) => `${label}：${copy}`).join('；')}</dd></div>
           </dl>
         </div>
       </section>
@@ -108,6 +111,7 @@ export function DiagnosisPage({ event, events, onNavigate, series, seriesError }
             <span>单位 kW · 阴影为事件区间</span>
           )}
         </div>
+        <SignConventionNote compact />
         {series ? (
           <EChartsCanvas ariaLabel={`${event.code} 事件时间对齐证据图，含约束线与事件区间`} option={createEventChartOption(series, event, focusWindow)} />
         ) : (
@@ -115,7 +119,11 @@ export function DiagnosisPage({ event, events, onNavigate, series, seriesError }
         )}
       </section>
 
-      <EvidencePanel evidence={event.evidence} onLocate={(evidence) => setFocusEvidence(evidence)} />
+      <EvidencePanel
+        {...(focusEvidence ? { activeEvidenceId: focusEvidence.evidenceId } : {})}
+        evidence={event.evidence}
+        onLocate={(evidence) => setFocusEvidence(evidence)}
+      />
 
       <div className="h2-diagnosis-grid">
         <section className="h2-panel h2-cause-panel">

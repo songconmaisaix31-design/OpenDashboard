@@ -149,6 +149,64 @@ export function createVariableChartOption(
   )
 }
 
+const quotaSeriesByDirection = {
+  export: {
+    used: 'grid_export_energy_used_kwh_day',
+    quota: 'grid_export_energy_quota_kwh_day',
+  },
+  import: {
+    used: 'grid_import_energy_used_kwh_day',
+    quota: 'grid_import_energy_quota_kwh_day',
+  },
+} as const satisfies Readonly<
+  Record<
+    'export' | 'import',
+    { readonly used: string; readonly quota: string }
+  >
+>
+
+export const H2_QUOTA_VARIABLES = [
+  quotaSeriesByDirection.export.used,
+  quotaSeriesByDirection.export.quota,
+  quotaSeriesByDirection.import.used,
+  quotaSeriesByDirection.import.quota,
+] as const
+
+/**
+ * Dedicated energy-quota view: daily cumulative export/import energy against
+ * the daily quota lines. Series that are absent from the response are skipped
+ * so a partial dataset degrades instead of drawing phantom curves.
+ */
+export function createQuotaChartOption(response: H2SeriesResponse): EChartsCoreOption {
+  const definitions: SeriesDefinition[] = []
+  for (const direction of ['export', 'import'] as const) {
+    const { used, quota } = quotaSeriesByDirection[direction]
+    if (hasSeriesVariable(response, used)) {
+      definitions.push({
+        variable: used,
+        label: formatH2FieldLabel(used),
+        color: COLORS[0],
+      })
+    }
+    if (hasSeriesVariable(response, quota)) {
+      definitions.push({
+        variable: quota,
+        label: formatH2FieldLabel(quota),
+        color: COLORS[1],
+        dashed: true,
+      })
+    }
+  }
+  return createLineOption(response, definitions, 'kWh')
+}
+
+export function hasSeriesVariable(
+  response: H2SeriesResponse,
+  variable: string,
+): boolean {
+  return response.variables.includes(variable)
+}
+
 function createLineOption(
   response: H2SeriesResponse,
   definitions: readonly SeriesDefinition[],
@@ -183,29 +241,10 @@ function createLineOption(
       borderColor: '#2d4258',
       textStyle: { color: '#ecf4f6' },
     },
-    dataZoom: [
-      { type: 'inside', filterMode: 'none' },
-      {
-        type: 'slider',
-        height: 16,
-        bottom: 4,
-        borderColor: '#26384b',
-        fillerColor: 'rgba(73, 214, 189, 0.12)',
-        handleStyle: { color: '#49d6bd' },
-        textStyle: { color: '#77899c' },
-        ...(zoomRange ? { start: zoomRange.start, end: zoomRange.end } : {}),
-      },
-    ],
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: response.points.map(({ timestamp }) => timestamp),
-      axisLabel: {
-        color: '#7f91a4',
-        formatter: (value: string) => formatH2Timestamp(value),
-      },
-      axisLine: { lineStyle: { color: '#304458' } },
-    },
+    // Every chart shares the same time-axis configuration so all views stay
+    // aligned on one filterable, zoomable time scale.
+    dataZoom: createTimeZoom(zoomRange),
+    xAxis: createTimeAxis(response),
     yAxis: {
       type: 'value',
       name: unit,
@@ -237,6 +276,39 @@ function createLineOption(
           : undefined,
     })),
   }
+}
+
+/** One shared category time axis for every H2 chart view. */
+function createTimeAxis(response: H2SeriesResponse): EChartsCoreOption['xAxis'] {
+  return {
+    type: 'category',
+    boundaryGap: false,
+    data: response.points.map(({ timestamp }) => timestamp),
+    axisLabel: {
+      color: '#7f91a4',
+      formatter: (value: string) => formatH2Timestamp(value),
+    },
+    axisLine: { lineStyle: { color: '#304458' } },
+  }
+}
+
+/** One shared inside+slider zoom configuration for every H2 chart view. */
+function createTimeZoom(
+  zoomRange: { readonly start: number; readonly end: number } | null,
+): EChartsCoreOption['dataZoom'] {
+  return [
+    { type: 'inside', filterMode: 'none' },
+    {
+      type: 'slider',
+      height: 16,
+      bottom: 4,
+      borderColor: '#26384b',
+      fillerColor: 'rgba(73, 214, 189, 0.12)',
+      handleStyle: { color: '#49d6bd' },
+      textStyle: { color: '#77899c' },
+      ...(zoomRange ? { start: zoomRange.start, end: zoomRange.end } : {}),
+    },
+  ]
 }
 
 function createFocusZoomRange(

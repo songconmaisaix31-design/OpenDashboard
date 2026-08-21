@@ -66,7 +66,7 @@ export function ReportsPage({ artifact, error, event, notice, onDownload, onExpo
         <section className="h2-panel h2-empty-panel"><strong>尚未生成报告</strong><p>选择一个导出类型。生成结果将显示文件名、哈希、来源和安全声明。</p></section>
       )}
 
-      <aside className="h2-report-boundary"><StatusBadge tone="fixture">来源可见</StatusBadge><p>重复导出同一运行应保持内容确定性；时间戳差异必须由数据源明确说明。Fixture 报告不代表官方得分。</p></aside>
+      <aside className="h2-report-boundary"><StatusBadge tone="fixture">来源可见</StatusBadge><p>重复导出同一运行应保持内容确定性；时间戳差异必须由数据源明确说明。Fixture 报告不代表官方得分。报告中的任何建议均需人工确认；应用不闭环下发，不自动执行设备控制或修改设定值。</p></aside>
     </div>
   )
 }
