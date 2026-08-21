@@ -38,6 +38,14 @@ node tests/h2-sentinel/assembled/run-assembled-qa.mjs
 The older `api/` and `golden-path/` probes remain useful targeted diagnostics,
 but they are not release evidence because they depend on manually supplied URLs.
 
+## Contract add-ons
+
+`tests/h2-sentinel/contract/evaluate-metrics.test.mjs`,
+`check-submission.test.mjs`, and `vocabulary-contract.test.mjs` exercise the
+Track Q verification base (`validation/`) and the official 69-field / seven-class
+/ 16-column submission vocabulary without needing official data on disk. See
+`validation/README.md` for the evaluator and submission checker entry points.
+
 ## Visual boundary
 
 No browser-automation dependency is introduced in this QA lane. The automated
