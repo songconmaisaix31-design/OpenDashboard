@@ -66,6 +66,21 @@ export const H2_SAFETY_LABELS = {
   not_applicable: '不适用',
 } as const satisfies Readonly<Record<H2SafetyStatus, string>>
 
+/**
+ * Official sign conventions from the frozen vocabulary: PCC power counts
+ * positive as export to the grid and negative as import; BESS power counts
+ * positive as discharge and negative as charge. The same wording is rendered
+ * near charts and inside diagnosis details.
+ */
+export const H2_SIGN_CONVENTIONS = [
+  { id: 'pcc', label: 'PCC', copy: '正值上网（送出），负值下网（受电）' },
+  { id: 'bess', label: '储能', copy: '正值放电，负值充电' },
+] as const
+
+export function formatH2FieldSign(name: string): string {
+  return fieldByName(name)?.sign ?? ''
+}
+
 export const H2_QUALITY_LABELS = {
   passed: '质量检查通过',
   warning: '存在质量警告',
@@ -229,6 +244,7 @@ export interface H2FieldDictionaryRow {
   readonly chineseName: string
   readonly role: string
   readonly unit: string
+  readonly sign: string
   readonly required: boolean
 }
 
@@ -242,6 +258,7 @@ export function toH2FieldDictionaryRows(
       chineseName: official?.chineseName ?? field.displayNameZh,
       role: field.role,
       unit: official?.unit ?? field.unit ?? '',
+      sign: official?.sign ?? '',
       required: field.required,
     }
   })

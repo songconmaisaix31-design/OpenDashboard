@@ -14,6 +14,7 @@ import {
 import { createPccChartOption, createSocChartOption } from '../../model/chart-options.ts'
 import { EChartsCanvas } from '../../components/charts/EChartsCanvas.tsx'
 import { PageHeader } from '../../components/common/PageHeader.tsx'
+import { SignConventionNote } from '../../components/common/SignConventionNote.tsx'
 import { StatusBadge } from '../../components/common/StatusBadge.tsx'
 
 export interface OverviewPageProps {
@@ -85,6 +86,7 @@ export function OverviewPage({ onNavigate, workspace }: OverviewPageProps) {
             </div>
             <strong>{latestPcc === null ? '当前值未知' : formatH2Number(latestPcc, 'kW')}</strong>
           </div>
+          <SignConventionNote />
           {workspace.series ? (
             <EChartsCanvas
               ariaLabel="并网点实际功率、送出边界和受电边界时间序列图"
@@ -103,6 +105,7 @@ export function OverviewPage({ onNavigate, workspace }: OverviewPageProps) {
             </div>
             <strong>{latestSoc === null ? '当前值未知' : formatH2Number(latestSoc, '%')}</strong>
           </div>
+          <SignConventionNote compact />
           {workspace.series ? (
             <EChartsCanvas
               ariaLabel="储能荷电状态时间序列图"

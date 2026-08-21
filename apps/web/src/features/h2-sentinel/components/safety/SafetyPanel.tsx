@@ -44,13 +44,20 @@ export function SafetyPanel({ event }: SafetyPanelProps) {
           <article key={recommendation.recommendationId}>
             <div>
               <StatusBadge tone="warning">建议</StatusBadge>
+              {recommendation.requiresHumanConfirmation ? (
+                <StatusBadge tone="danger">需人工确认</StatusBadge>
+              ) : null}
               <code>{recommendation.recommendationId}</code>
             </div>
             <h3>{recommendation.summary}</h3>
             <p>{recommendation.rationale}</p>
-            <strong>仅提供检查路径，不执行设备或设定值操作。</strong>
+            <strong>需人工确认后执行；应用不闭环下发，不自动调整设备或设定值。</strong>
           </article>
         ))}
+      </div>
+      <div className="h2-safety-boundary-callout">
+        <strong>安全边界（T14）</strong>
+        <span>本应用只做监督诊断与建议，任何建议都需人工确认；它不闭环下发控制指令，不会自动改变调度、设定值或设备状态。</span>
       </div>
     </section>
   )

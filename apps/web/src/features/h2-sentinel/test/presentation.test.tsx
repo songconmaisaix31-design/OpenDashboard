@@ -185,6 +185,47 @@ describe('H2 Sentinel presentation', () => {
     assert.match(markup, /如何评价多台电解槽负荷分配？/)
     assert.match(markup, /PCC合规日报包含哪些内容？/)
   })
+
+  it('forces the official sign conventions on charts and diagnosis details', () => {
+    const diagnosisMarkup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_EVENTS[0].eventId,
+    })
+    assert.match(diagnosisMarkup, /正值上网（送出），负值下网（受电）/)
+    assert.match(diagnosisMarkup, /正值放电，负值充电/)
+    assert.match(diagnosisMarkup, /符号约定/)
+
+    const overviewMarkup = renderView(readyState, { route: 'overview' })
+    assert.match(overviewMarkup, /正值上网（送出），负值下网（受电）/)
+    assert.match(overviewMarkup, /正值放电，负值充电/)
+
+    const analysisMarkup = renderView(readyState, { route: 'analysis' })
+    assert.match(analysisMarkup, /正值上网（送出），负值下网（受电）/)
+    assert.match(analysisMarkup, /正值放电，负值充电/)
+  })
+
+  it('offers the three dedicated views on the analysis page', () => {
+    const markup = renderView(readyState, { route: 'analysis' })
+
+    assert.match(markup, /专用视图/)
+    assert.match(markup, /PCC 功率边界线/)
+    assert.match(markup, /SOC 目标轨迹/)
+    assert.match(markup, /电量配额/)
+  })
+
+  it('marks every recommendation as needing human confirmation without closing the loop', () => {
+    const diagnosisMarkup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_EVENTS[0].eventId,
+    })
+    assert.match(diagnosisMarkup, /需人工确认/)
+    assert.match(diagnosisMarkup, /不闭环下发/)
+    assert.match(diagnosisMarkup, /任何建议都需人工确认/)
+
+    const reportsMarkup = renderView(readyState, { route: 'reports' })
+    assert.match(reportsMarkup, /均需人工确认/)
+    assert.match(reportsMarkup, /不闭环下发/)
+  })
 })
 
 function renderView(
