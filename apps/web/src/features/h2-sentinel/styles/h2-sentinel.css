@@ -815,6 +815,7 @@
 .h2-impact-panel__value { display: flex; gap: 0.55rem; align-items: baseline; padding: 0.7rem 0 1rem; }
 .h2-impact-panel__value strong { font-size: clamp(2rem, 4vw, 3.1rem); font-weight: 660; letter-spacing: -0.06em; }
 .h2-impact-panel__value span { color: var(--h2-amber); font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.72rem; }
+.h2-impact-metric-key { display: block; margin-top: 0.2rem; color: var(--h2-muted); font-size: 0.55rem; overflow-wrap: anywhere; }
 .h2-impact-panel h3 { margin-top: 1rem; font-size: 0.7rem; }
 .h2-key-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
 .h2-key-values--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }

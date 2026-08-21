@@ -5,11 +5,11 @@ import {
   createOverviewMetrics,
   formatH2Confidence,
   formatH2Number,
+  formatH2Severity,
   formatH2Timestamp,
   getLatestSeriesValue,
   H2_CODE_LABELS,
   H2_REVIEW_LABELS,
-  H2_SEVERITY_LABELS,
 } from '../../model/presentation.ts'
 import { createPccChartOption, createSocChartOption } from '../../model/chart-options.ts'
 import { EChartsCanvas } from '../../components/charts/EChartsCanvas.tsx'
@@ -136,7 +136,7 @@ export function OverviewPage({ onNavigate, workspace }: OverviewPageProps) {
                   <strong>{H2_CODE_LABELS[event.code]}</strong>
                   <small>{formatH2Timestamp(event.startTime)} · {H2_REVIEW_LABELS[event.reviewState]}</small>
                 </span>
-                <StatusBadge tone="warning">{H2_SEVERITY_LABELS[event.severity]}风险</StatusBadge>
+                <StatusBadge tone="warning">{formatH2Severity(event)}风险</StatusBadge>
               </button>
             ))}
           </div>

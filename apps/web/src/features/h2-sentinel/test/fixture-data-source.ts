@@ -180,6 +180,7 @@ function createFixtureSeries(): H2SeriesResponse {
         elz2_power_actual_kw: 180,
         elz3_power_actual_kw: 120,
         aux_load_kw: 140 - index * 1.6,
+        soc_target_pct: 57 + index * 0.1,
         bess_soc_pct: 55 + index * 0.2,
         grid_export_power_limit_kw: 500,
         grid_import_power_limit_kw: 450,

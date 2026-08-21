@@ -5,13 +5,17 @@ import type {
   H2DatasetField,
   H2SeriesResponse,
 } from '../../../../../../packages/h2-contracts/src/index.ts'
-import { formatH2Timestamp } from './presentation.ts'
+import {
+  formatH2FieldLabel,
+  formatH2FieldUnit,
+  formatH2Timestamp,
+} from './presentation.ts'
 
 const COLORS = ['#49d6bd', '#ffb45d', '#8ea9ff', '#f3778f', '#b393ff'] as const
 
 interface SeriesDefinition {
   readonly variable: string
-  readonly label: string
+  readonly label?: string
   readonly color: string
   readonly dashed?: boolean
 }
@@ -20,18 +24,16 @@ const powerSeriesByCode = {
   C03: [
     {
       variable: 'bess_power_cmd_kw',
-      label: '储能调度指令',
       color: COLORS[1],
       dashed: true,
     },
-    { variable: 'bess_power_actual_kw', label: '储能实际功率', color: COLORS[0] },
-    { variable: 'pcc_power_actual_kw', label: '并网点功率', color: COLORS[2] },
+    { variable: 'bess_power_actual_kw', color: COLORS[0] },
+    { variable: 'pcc_power_actual_kw', color: COLORS[2] },
   ],
   C04: [
-    { variable: 'pcc_power_actual_kw', label: '并网点实际功率', color: COLORS[3] },
+    { variable: 'pcc_power_actual_kw', color: COLORS[3] },
     {
       variable: 'grid_export_power_limit_kw',
-      label: '送出边界',
       color: COLORS[1],
       dashed: true,
     },
@@ -70,7 +72,7 @@ function createEvidenceSeries(event: H2AnomalyEvent): readonly SeriesDefinition[
 
   return variables.map(({ kind, variable }, index) => ({
     variable,
-    label: variable,
+    label: formatH2FieldLabel(variable),
     color: COLORS[index] ?? COLORS[0],
     dashed: kind === 'constraint',
   }))
@@ -80,16 +82,20 @@ export function createPccChartOption(response: H2SeriesResponse): EChartsCoreOpt
   return createLineOption(
     response,
     [
-      { variable: 'pcc_power_actual_kw', label: '并网点实际功率', color: COLORS[0] },
+      {
+        variable: 'pcc_power_actual_kw',
+        label: formatH2FieldLabel('pcc_power_actual_kw'),
+        color: COLORS[0],
+      },
       {
         variable: 'grid_export_power_limit_kw',
-        label: '送出边界',
+        label: formatH2FieldLabel('grid_export_power_limit_kw'),
         color: COLORS[1],
         dashed: true,
       },
       {
         variable: 'grid_import_power_limit_kw',
-        label: '受电边界',
+        label: formatH2FieldLabel('grid_import_power_limit_kw'),
         color: COLORS[2],
         dashed: true,
       },
@@ -101,7 +107,19 @@ export function createPccChartOption(response: H2SeriesResponse): EChartsCoreOpt
 export function createSocChartOption(response: H2SeriesResponse): EChartsCoreOption {
   return createLineOption(
     response,
-    [{ variable: 'bess_soc_pct', label: '储能 SOC', color: COLORS[4] }],
+    [
+      {
+        variable: 'soc_target_pct',
+        label: formatH2FieldLabel('soc_target_pct'),
+        color: COLORS[1],
+        dashed: true,
+      },
+      {
+        variable: 'bess_soc_pct',
+        label: formatH2FieldLabel('bess_soc_pct'),
+        color: COLORS[4],
+      },
+    ],
     '%',
   )
 }
@@ -112,8 +130,14 @@ export function createVariableChartOption(
 ): EChartsCoreOption {
   return createLineOption(
     response,
-    [{ variable: field.name, label: field.displayNameZh, color: COLORS[0] }],
-    field.unit === 'percent' ? '%' : (field.unit ?? ''),
+    [
+      {
+        variable: field.name,
+        label: formatH2FieldLabel(field.name),
+        color: COLORS[0],
+      },
+    ],
+    formatH2FieldUnit(field.name) || field.unit || '',
   )
 }
 
@@ -128,10 +152,14 @@ function createLineOption(
   },
 ): EChartsCoreOption {
   const timestamps = response.points.map(({ timestamp }) => timestamp)
+  const resolvedDefinitions = definitions.map((definition) => ({
+    ...definition,
+    label: definition.label ?? formatH2FieldLabel(definition.variable),
+  }))
 
   return {
     aria: { enabled: true, decal: { show: true } },
-    color: definitions.map(({ color }) => color),
+    color: resolvedDefinitions.map(({ color }) => color),
     grid: { left: 54, right: 24, top: 54, bottom: 48, containLabel: false },
     legend: {
       top: 4,
@@ -174,7 +202,7 @@ function createLineOption(
       axisLabel: { color: '#7f91a4' },
       splitLine: { lineStyle: { color: 'rgba(126, 148, 170, 0.14)' } },
     },
-    series: definitions.map((definition, index) => ({
+    series: resolvedDefinitions.map((definition, index) => ({
       name: definition.label,
       type: 'line',
       data: response.points.map(({ values }) => values[definition.variable] ?? null),

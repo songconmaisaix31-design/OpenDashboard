@@ -1,14 +1,16 @@
 import type { H2AnomalyEvent, H2SeriesResponse } from '../../../../../../../packages/h2-contracts/src/index.ts'
 import type { H2NavigationTarget } from '../../routes.ts'
 import {
+  formatH2AffectedEquipment,
   formatH2Confidence,
+  formatH2ControlObject,
   formatH2Duration,
+  formatH2Severity,
   formatH2Timestamp,
   H2_CLAIM_LABELS,
   H2_CODE_LABELS,
   H2_PROVENANCE_LABELS,
   H2_REVIEW_LABELS,
-  H2_SEVERITY_LABELS,
 } from '../../model/presentation.ts'
 import { createEventChartOption } from '../../model/chart-options.ts'
 import { EChartsCanvas } from '../../components/charts/EChartsCanvas.tsx'
@@ -71,7 +73,7 @@ export function DiagnosisPage({ event, events, onNavigate, series, seriesError }
         <div className="h2-event-hero__signal"><span>{event.code}</span><small>异常代码</small></div>
         <div className="h2-event-hero__body">
           <div className="h2-badge-row">
-            <StatusBadge tone="danger">{H2_SEVERITY_LABELS[event.severity]}风险</StatusBadge>
+            <StatusBadge tone="danger">{formatH2Severity(event)}风险</StatusBadge>
             <StatusBadge tone="warning">置信度 {formatH2Confidence(event.confidence)}</StatusBadge>
             <StatusBadge tone="neutral">{H2_REVIEW_LABELS[event.reviewState]}</StatusBadge>
             <StatusBadge tone={event.provenance.mode === 'FIXTURE' ? 'fixture' : 'live'}>{H2_PROVENANCE_LABELS[event.provenance.mode]}</StatusBadge>
@@ -80,8 +82,8 @@ export function DiagnosisPage({ event, events, onNavigate, series, seriesError }
             <div><dt>事件区间</dt><dd>{formatH2Timestamp(event.startTime)}–{formatH2Timestamp(event.endTime)}</dd></div>
             <div><dt>持续时间</dt><dd>{formatH2Duration(event.startTime, event.endTime)}</dd></div>
             <div><dt>首次发现</dt><dd>{formatH2Timestamp(event.firstDetectionTime)}</dd></div>
-            <div><dt>主要控制对象</dt><dd>{event.primaryControlObject.displayName}</dd></div>
-            <div><dt>受影响设备</dt><dd>{event.affectedEquipment.map(({ displayName }) => displayName).join('、')}</dd></div>
+            <div><dt>主要控制对象</dt><dd>{formatH2ControlObject(event)}</dd></div>
+            <div><dt>受影响设备</dt><dd>{formatH2AffectedEquipment(event)}</dd></div>
           </dl>
         </div>
       </section>

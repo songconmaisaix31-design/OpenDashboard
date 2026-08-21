@@ -13,7 +13,7 @@ export const H2_FIXTURE_PROVENANCE = {
   source: 'sanitized-golden-fixture',
   generatedAt: fixtureGeneratedAt,
   datasetFingerprint:
-    'sha256:6232981f0fc46a3d14dc9312577f553f1f9fb1b02fc0db2eb9051665ba41426f',
+    'sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51',
   ruleVersion: 'h2-rules-v1',
   configurationVersion: 'official-constraints-v1',
   limitations: [
@@ -29,7 +29,7 @@ export const H2_FIXTURE_DATASET = {
   mode: 'FIXTURE',
   sourceFilename: 'tiny-valid-timeseries.csv',
   fingerprint:
-    'sha256:6232981f0fc46a3d14dc9312577f553f1f9fb1b02fc0db2eb9051665ba41426f',
+    'sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51',
   rowCount: 22,
   timeRange: {
     startTime: '2026-01-05T10:20:00Z',
@@ -91,6 +91,13 @@ export const H2_FIXTURE_DATASET = {
       role: 'measurement',
       required: true,
       unit: 'kW',
+    },
+    {
+      name: 'soc_target_pct',
+      displayNameZh: '储能目标SOC',
+      role: 'measurement',
+      required: true,
+      unit: '%',
     },
     {
       name: 'bess_soc_pct',

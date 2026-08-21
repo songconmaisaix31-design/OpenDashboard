@@ -2,6 +2,7 @@ import type { H2EvidenceItem } from '../../../../../../../packages/h2-contracts/
 import {
   H2_CLAIM_LABELS,
   formatEvidenceValue,
+  formatH2FieldLabel,
   formatH2Timestamp,
 } from '../../model/presentation.ts'
 import { StatusBadge } from '../common/StatusBadge.tsx'
@@ -45,7 +46,7 @@ export function EvidencePanel({ evidence }: EvidencePanelProps) {
                 <dl className="h2-evidence-card__values">
                   <div>
                     <dt>变量</dt>
-                    <dd>{item.variable ?? '未指定'}</dd>
+                    <dd>{item.variable ? formatH2FieldLabel(item.variable) : '未指定'}</dd>
                   </div>
                   <div>
                     <dt>实际值</dt>

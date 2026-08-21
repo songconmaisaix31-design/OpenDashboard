@@ -1,7 +1,14 @@
+import {
+  H2_ANOMALY_CODES,
+  anomalyTaxonomyByCode,
+  equipmentNameForRef,
+  fieldByName,
+  type H2AnomalyEvent,
+  type H2DatasetField,
+} from '../../../../../../packages/h2-contracts/src/index.ts'
 import type {
   H2AnalysisRun,
   H2AnomalyCode,
-  H2AnomalyEvent,
   H2ClaimKind,
   H2DataQualityStatus,
   H2DatasetMode,
@@ -13,15 +20,12 @@ import type {
   H2Severity,
 } from '../../../../../../packages/h2-contracts/src/index.ts'
 
-export const H2_CODE_LABELS = {
-  C01: '电解槽设定值振荡',
-  C02: '可用容量未同步',
-  C03: '储能充放电方向异常',
-  C04: '并网点功率边界跟踪异常',
-  C05: '电网能量配额风险',
-  C06: '多电解槽负荷分配异常',
-  C07: 'SOC 与调节裕度异常',
-} as const satisfies Readonly<Record<H2AnomalyCode, string>>
+export const H2_CODE_LABELS = Object.fromEntries(
+  H2_ANOMALY_CODES.map((code) => [
+    code,
+    anomalyTaxonomyByCode(code)?.nameZh ?? code,
+  ]),
+) as Readonly<Record<H2AnomalyCode, string>>
 
 export const H2_SEVERITY_LABELS = {
   low: '低',
@@ -142,6 +146,60 @@ export function formatH2Number(value: number, unit?: string): string {
 
 export function formatH2Confidence(value: number): string {
   return `${Math.round(value * 100)}%`
+}
+
+export function formatH2FieldLabel(name: string): string {
+  return fieldByName(name)?.chineseName ?? name
+}
+
+export function formatH2FieldUnit(name: string): string {
+  return fieldByName(name)?.unit ?? ''
+}
+
+export function formatH2Severity(event: H2AnomalyEvent): string {
+  return (
+    anomalyTaxonomyByCode(event.code)?.severity ?? H2_SEVERITY_LABELS[event.severity]
+  )
+}
+
+export function formatH2ControlObject(event: H2AnomalyEvent): string {
+  return (
+    anomalyTaxonomyByCode(event.code)?.primaryControlObject ??
+    event.primaryControlObject.displayName
+  )
+}
+
+export function formatH2AffectedEquipment(event: H2AnomalyEvent): string {
+  return event.affectedEquipment.map(equipmentNameForRef).join('、')
+}
+
+export function formatH2ImpactMetric(event: H2AnomalyEvent): string {
+  return (
+    anomalyTaxonomyByCode(event.code)?.primaryImpactMetricZh ?? event.impact.metric
+  )
+}
+
+export interface H2FieldDictionaryRow {
+  readonly name: string
+  readonly chineseName: string
+  readonly role: string
+  readonly unit: string
+  readonly required: boolean
+}
+
+export function toH2FieldDictionaryRows(
+  fields: readonly H2DatasetField[],
+): readonly H2FieldDictionaryRow[] {
+  return fields.map((field) => {
+    const official = fieldByName(field.name)
+    return {
+      name: field.name,
+      chineseName: official?.chineseName ?? field.displayNameZh,
+      role: field.role,
+      unit: official?.unit ?? field.unit ?? '',
+      required: field.required,
+    }
+  })
 }
 
 export function formatEvidenceValue(
