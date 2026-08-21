@@ -25,7 +25,10 @@ function row(overrides = {}) {
     root_cause: 'Sign mapping mismatch.',
     recommended_action: 'Verify the sign mapping before dispatch.',
     primary_impact_metric: 'abnormal_grid_exchange_energy_kwh',
-    estimated_impact_value: '112.4',
+    // These checks only validate submission *format*, so any well-formed number
+    // works here. The golden C03 impact is used anyway so the repository holds a
+    // single C03 figure, and that figure is one the CSV can reproduce.
+    estimated_impact_value: '17.333333333333332',
     first_detection_time: '2026-01-05T10:25:00Z',
     requires_human_confirmation: 'true',
     ...overrides,
@@ -169,9 +172,11 @@ describe('H2 Sentinel submission format checks', () => {
       endTime: '2026-01-05T10:30:00Z',
       firstDetectionTime: '2026-01-05T10:25:00Z',
       confidence: 0.94,
-      impact: { metric: 'abnormal_grid_exchange_energy_kwh', value: 112.4 },
+      impact: { metric: 'abnormal_grid_exchange_energy_kwh', value: 17.333333333333332 },
       evidence: [
-        { evidenceId: 'C03-EV-001', kind: 'measurement', claimKind: 'fact', timestamp: '2026-01-05T10:25:00Z', variable: 'bess_power_kw', actualValue: 230, referenceValue: -240, unit: 'kW', conclusion: 'ok' },
+        // `bess_power_actual_kw` is the official field name; the pre-migration
+        // `bess_power_kw` alias no longer exists in the vocabulary.
+        { evidenceId: 'C03-EV-001', kind: 'measurement', claimKind: 'fact', timestamp: '2026-01-05T10:25:00Z', variable: 'bess_power_actual_kw', actualValue: 230, referenceValue: -240, unit: 'kW', conclusion: 'ok' },
       ],
       rootCause: 'Sign mapping mismatch.',
       recommendations: [{ summary: 'Verify the sign mapping before dispatch.' }],

@@ -89,7 +89,7 @@
         "endTime": "2026-01-05T10:41:00Z"
       },
       "variable": "abnormal_grid_exchange_energy_kwh",
-      "actualValue": 112.4,
+      "actualValue": 17.333333333333332,
       "referenceValue": 0,
       "unit": "kWh",
       "comparator": ">",
@@ -111,7 +111,7 @@
   ],
   "impact": {
     "metric": "abnormal_grid_exchange_energy_kwh",
-    "value": 112.4,
+    "value": 17.333333333333332,
     "unit": "kWh",
     "formulaVersion": "impact-c03-v1",
     "assumptions": [

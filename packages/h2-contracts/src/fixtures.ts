@@ -226,7 +226,10 @@ export const H2_GOLDEN_C03_EVENT = {
         endTime: '2026-01-05T10:41:00Z',
       },
       variable: 'abnormal_grid_exchange_energy_kwh',
-      actualValue: 112.4,
+      // Integrated absolute PCC deviation from the window median (590 kW), i.e.
+      // 1040 kW-min / 60. Reproducible from the fixture CSV; see the C03
+      // derivation test in test/golden-fixtures.test.ts.
+      actualValue: 17.333333333333332,
       referenceValue: 0,
       unit: 'kWh',
       comparator: '>',
@@ -238,7 +241,7 @@ export const H2_GOLDEN_C03_EVENT = {
   ],
   impact: {
     metric: 'abnormal_grid_exchange_energy_kwh',
-    value: 112.4,
+    value: 17.333333333333332,
     unit: 'kWh',
     formulaVersion: 'impact-c03-v1',
     assumptions: [

@@ -69,7 +69,7 @@ describe('H2 Sentinel QA submission conformance', () => {
         anomaly_code: 'C03',
         anomaly_subtype: 'BESS_DIRECTION_REVERSED',
         primary_impact_metric: 'abnormal_grid_exchange_energy_kwh',
-        estimated_impact_value: 112.4,
+        estimated_impact_value: 17.333333333333332,
         requires_human_confirmation: true,
       },
     )

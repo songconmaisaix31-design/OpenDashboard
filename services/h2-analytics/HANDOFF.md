@@ -48,8 +48,17 @@ cherry-pick order, are:
 The C04 golden event includes eight one-minute violation rows at 720 kW against
 the 500 kW limit. Its impact is calculated as
 `8 * (720 - 500) / 60 = 29.333333333333332 kWh`; neither code nor tests use the
-superseded 86.5 value. C03's 112.4 impact is explicitly Fixture-provided and is
-not presented as a metric derived from an official hidden dataset.
+superseded 86.5 value.
+
+C03's impact is likewise computed, not asserted. `impact-c03-v1` baselines on the
+median PCC power inside the event window and integrates the absolute deviation
+from it: over the 22 samples of the contracts fixture the median is 590 kW and
+the deviation sums to 1040 kW-min, giving `1040 / 60 = 17.333333333333332 kWh`.
+The previously published 112.4 was produced by a fingerprint-keyed constant in
+`impact/calculators.py` and was not reproducible from the CSV; that branch is
+removed, the goldens carry the computed value, and
+`packages/h2-contracts/test/golden-fixtures.test.ts` now re-derives C03 from the
+CSV the same way it already did for C04.
 
 ## Reproducibility and verification
 
@@ -128,8 +137,9 @@ deterministic repeatability.
 - Events and submissions use the official Chinese severity (`高`/`中`), the
   official `primary_control_object`, and `equipment_id:equipment_name`
   affected-equipment values, while keeping the frozen 16 submission columns.
-- Impacts are computed for all seven classes from the official field formulas;
-  the C03 fixture value (112.4) remains an explicitly Fixture-provided artifact.
+- Impacts are computed for all seven classes from the official field formulas,
+  with no fingerprint-keyed constants: every golden impact value, C03 included,
+  is reproducible from the fixture CSV by the declared formula.
 - Optional `H2_OFFICIAL_DATA_DIR` enables lightweight evidence tables
   (equipment, constraints, efficiency curves, alarm/operation logs, normal
   context, maintenance history) that the diagnosis chain cites when present.

@@ -92,6 +92,60 @@ describe('H2 golden fixtures', () => {
     )
   })
 
+  it('derives the C03 abnormal exchange energy from every inclusive event sample', () => {
+    // C04 had this coverage and C03 did not, which is why a fabricated 112.4
+    // survived here for so long: nothing recomputed the C03 impact, and
+    // `assertGoldenEvidenceMatchesCsv` skips `derived_metric` evidence.
+    const rows = parseCsv(csvFixture('tiny-valid-timeseries.csv')).rows
+    const intervalRows = rows.filter((row) => {
+      const timestamp = row.timestamp
+      return (
+        timestamp !== undefined &&
+        timestamp >= H2_GOLDEN_C03_EVENT.startTime &&
+        timestamp <= H2_GOLDEN_C03_EVENT.endTime
+      )
+    })
+    const powers = intervalRows.map((row) => Number(row.pcc_power_actual_kw))
+    const sorted = [...powers].sort((left, right) => left - right)
+    const middle = sorted.length >> 1
+    // `impact-c03-v1` baselines on the median PCC power inside the window and
+    // integrates the absolute deviation from it, one minute per sample.
+    const baseline =
+      sorted.length % 2 === 0
+        ? (sorted[middle - 1]! + sorted[middle]!) / 2
+        : sorted[middle]!
+    const deviationPowerMinutes = powers.reduce(
+      (total, power) => total + Math.abs(power - baseline),
+      0,
+    )
+    const calculatedImpact = deviationPowerMinutes / 60
+
+    assert.equal(intervalRows.length, 22)
+    assert.equal(baseline, 590)
+    assert.equal(deviationPowerMinutes, 1040)
+    assert.equal(H2_GOLDEN_C03_EVENT.impact.value, calculatedImpact)
+
+    const jsonC03 = jsonFixture('golden-c03.json')
+    assert(isObject(jsonC03))
+    assert(isObject(jsonC03.impact))
+    assert.equal(jsonC03.impact.value, calculatedImpact)
+    assert(Array.isArray(jsonC03.evidence))
+    const derivedEvidence = jsonC03.evidence.find(
+      (item) =>
+        isObject(item) &&
+        item.evidenceId === 'C03-EV-003' &&
+        item.variable === 'abnormal_grid_exchange_energy_kwh',
+    )
+    assert(isObject(derivedEvidence))
+    assert.equal(derivedEvidence.actualValue, calculatedImpact)
+    assert.equal(
+      H2_GOLDEN_C03_EVENT.evidence.find(
+        (item) => item.evidenceId === 'C03-EV-003',
+      )?.actualValue,
+      calculatedImpact,
+    )
+  })
+
   it('do not contain absolute paths or secret-shaped values', () => {
     const allFixtureText = [
       JSON.stringify(H2_GOLDEN_C03_EVENT),

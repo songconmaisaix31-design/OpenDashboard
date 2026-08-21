@@ -454,7 +454,7 @@ Canonical internal data must be richer than the CSV. At minimum, an anomaly even
   "evidence": [],
   "impact": {
     "metric": "abnormal_grid_exchange_energy_kwh",
-    "value": 112.4,
+    "value": 17.333333333333332,
     "unit": "kWh",
     "formulaVersion": "impact-c03-v1"
   },
