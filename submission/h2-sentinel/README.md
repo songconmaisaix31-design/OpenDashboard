@@ -67,6 +67,7 @@ deployment artifact.
 ## Contents
 
 - [Product and architecture narrative](PRODUCT_AND_ARCHITECTURE.md)
+- [Implementation boundary (T01–T14)](IMPLEMENTATION_BOUNDARY.md)
 - [Ten-page project narrative](TEN_PAGE_PROJECT_NARRATIVE.md)
 - [Demo and fallback scripts](DEMO_SCRIPT.md)
 - [Screenshot shot list](SCREENSHOT_SHOT_LIST.md)
