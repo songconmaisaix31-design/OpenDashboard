@@ -2,15 +2,17 @@ import type { H2EvidenceItem } from '../../../../../../../packages/h2-contracts/
 import {
   H2_CLAIM_LABELS,
   formatEvidenceValue,
+  formatH2FieldLabel,
   formatH2Timestamp,
 } from '../../model/presentation.ts'
 import { StatusBadge } from '../common/StatusBadge.tsx'
 
 export interface EvidencePanelProps {
   readonly evidence: readonly H2EvidenceItem[]
+  readonly onLocate?: (evidence: H2EvidenceItem) => void
 }
 
-export function EvidencePanel({ evidence }: EvidencePanelProps) {
+export function EvidencePanel({ evidence, onLocate }: EvidencePanelProps) {
   return (
     <section aria-labelledby="h2-evidence-title" className="h2-panel h2-evidence-panel">
       <div className="h2-panel__heading">
@@ -45,7 +47,7 @@ export function EvidencePanel({ evidence }: EvidencePanelProps) {
                 <dl className="h2-evidence-card__values">
                   <div>
                     <dt>变量</dt>
-                    <dd>{item.variable ?? '未指定'}</dd>
+                    <dd>{item.variable ? formatH2FieldLabel(item.variable) : '未指定'}</dd>
                   </div>
                   <div>
                     <dt>实际值</dt>
@@ -60,6 +62,17 @@ export function EvidencePanel({ evidence }: EvidencePanelProps) {
                     <dd>{item.source}</dd>
                   </div>
                 </dl>
+                {onLocate ? (
+                  <div className="h2-evidence-card__locate">
+                    <button
+                      className="h2-text-button"
+                      onClick={() => onLocate(item)}
+                      type="button"
+                    >
+                      定位到趋势图
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </article>
           ))}

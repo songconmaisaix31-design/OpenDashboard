@@ -16,6 +16,7 @@
   --h2-purple: #b393ff;
   --h2-shadow: 0 22px 65px rgb(0 0 0 / 24%);
   min-height: 100vh;
+  overflow-x: clip;
   color: var(--h2-text);
   background:
     radial-gradient(circle at 88% 4%, rgb(73 214 189 / 9%), transparent 24rem),
@@ -804,6 +805,7 @@
 .h2-evidence-card h3 { margin-top: 0.65rem; font-size: 0.75rem; line-height: 1.55; }
 .h2-evidence-card__values { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; margin-top: 0.75rem; padding-top: 0.7rem; border-top: 1px solid var(--h2-line); }
 .h2-evidence-card__values dd { margin-top: 0.18rem; color: var(--h2-muted-strong); font-size: 0.63rem; overflow-wrap: anywhere; }
+.h2-evidence-card__locate { margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--h2-line); }
 
 .h2-diagnosis-grid,
 .h2-analysis-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
@@ -815,6 +817,7 @@
 .h2-impact-panel__value { display: flex; gap: 0.55rem; align-items: baseline; padding: 0.7rem 0 1rem; }
 .h2-impact-panel__value strong { font-size: clamp(2rem, 4vw, 3.1rem); font-weight: 660; letter-spacing: -0.06em; }
 .h2-impact-panel__value span { color: var(--h2-amber); font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.72rem; }
+.h2-impact-metric-key { display: block; margin-top: 0.2rem; color: var(--h2-muted); font-size: 0.55rem; overflow-wrap: anywhere; }
 .h2-impact-panel h3 { margin-top: 1rem; font-size: 0.7rem; }
 .h2-key-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
 .h2-key-values--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -1002,6 +1005,21 @@
   .h2-report-boundary { align-items: flex-start; flex-direction: column; }
   .h2-run-log ol li { grid-template-columns: 1fr; gap: 0.2rem; }
   .h2-chart { height: 17rem; }
+}
+
+@media (max-width: 26rem) {
+  .h2-main { padding-inline: 0.6rem; }
+  .h2-page-header h1 { font-size: clamp(1.75rem, 9vw, 2.4rem); }
+  .h2-topbar { gap: 0.5rem; }
+  .h2-topbar__station { max-width: 13rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .h2-metric > strong { font-size: 1.3rem; }
+  .h2-dashboard-grid__wide .h2-chart,
+  .h2-chart { height: 15rem; }
+  .h2-event-hero__body { padding: 0.9rem; }
+  .h2-answer-panel__prompt h2 { font-size: 1.05rem; }
+  .h2-provenance { padding: 0.7rem 0.75rem; }
+  .h2-panel,
+  .h2-golden-path { padding: 0.9rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
