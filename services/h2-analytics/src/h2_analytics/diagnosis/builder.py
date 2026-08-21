@@ -24,6 +24,9 @@ _METADATA: dict[str, dict[str, Any]] = {
         "rationale": (
             "规则仅证明指令振荡与外部功率稳定并存，未授权自动闭环控制。"
         ),
+        "adjustmentObject": "EMS 电解槽群控的死区与滤波参数",
+        "priority": "高",
+        "preconditions": "光伏与PCC功率保持相对稳定、已核对参数变更留痕、具备回退条件",
     },
     "C02": {
         "title": "设备可用容量未同步导致功率指令持续偏差",
@@ -37,6 +40,9 @@ _METADATA: dict[str, dict[str, Any]] = {
         "rationale": (
             "容量偏差来源（EMS模型或设备侧）需人工确认，规则不直接下结论。"
         ),
+        "adjustmentObject": "EMS 容量模型与 PLC 状态映射/刷新周期",
+        "priority": "高",
+        "preconditions": "设备实际可用容量已现场核实、刷新前备份原容量参数",
     },
     "C03": {
         "title": "储能充放电方向异常",
@@ -50,6 +56,9 @@ _METADATA: dict[str, dict[str, Any]] = {
         "rationale": (
             "诊断将可能的接口映射问题与确证的设备故障区分开。"
         ),
+        "adjustmentObject": "储能接口符号映射、寄存器映射与控制模式",
+        "priority": "高",
+        "preconditions": "小功率方向验证通过、接口文件符号约定已确认",
     },
     "C04": {
         "title": "PCC上下网功率边界跟踪异常",
@@ -64,6 +73,9 @@ _METADATA: dict[str, dict[str, Any]] = {
         "rationale": (
             "事件证明存在越限，但不授权自动控制动作。"
         ),
+        "adjustmentObject": "储能、电解槽与光伏的出力分配",
+        "priority": "高",
+        "preconditions": "当前有效限值已带时间戳确认、各类可调容量已核算",
     },
     "C05": {
         "title": "上下网电量配额执行异常",
@@ -78,6 +90,9 @@ _METADATA: dict[str, dict[str, Any]] = {
         "rationale": (
             "配额风险属于累计约束，需结合日内计划人工复核。"
         ),
+        "adjustmentObject": "日内电量计划与负荷分配",
+        "priority": "中",
+        "preconditions": "剩余配额、负荷预测与光伏预测已复核",
     },
     "C06": {
         "title": "多台电解槽负荷分配异常",
@@ -92,6 +107,9 @@ _METADATA: dict[str, dict[str, Any]] = {
         "rationale": (
             "负荷分配是否可避免需结合运行状态与效率曲线人工确认。"
         ),
+        "adjustmentObject": "多台电解槽的负荷分配方案",
+        "priority": "中",
+        "preconditions": "效率曲线、可用状态与最小稳定功率已读取",
     },
     "C07": {
         "title": "储能SOC目标轨迹与调节裕度管理异常",
@@ -106,6 +124,9 @@ _METADATA: dict[str, dict[str, Any]] = {
         "rationale": (
             "SOC规划问题需结合日内计划人工确认，规则只给出裕度缺口证据。"
         ),
+        "adjustmentObject": "SOC 目标轨迹与充放电计划",
+        "priority": "中",
+        "preconditions": "未来负荷、PCC约束与调节备用目标已核算",
     },
 }
 
@@ -250,6 +271,21 @@ _CONTROL_ID_BY_CODE = {
 
 
 class DiagnosisBuilder:
+    """Compose a single-event diagnosis with an auditable evidence chain.
+
+    Evidence policy (T06 requirement): every measurement-style evidence item
+    carries the four required elements -- TIME, VARIABLE, ACTUAL VALUE, and
+    REFERENCE/LIMIT value -- so a reader can re-check any claim against the
+    official tables.
+
+    Alarm policy (requirement T03 and Track B task B2): records from
+    `11_alarm_log.csv` are EVIDENCE ONLY. They enter the diagnosis as
+    `alarm_log` facts for human review, but they are NEVER a detection
+    criterion: `is_anomaly` decisions come exclusively from the detection
+    module, which has no access to the evidence context. The evidence tables
+    are read by this builder after an anomaly has already been detected.
+    """
+
     def __init__(
         self,
         impact_calculator: ImpactCalculator | None = None,
@@ -328,8 +364,15 @@ class DiagnosisBuilder:
                 {
                     "recommendationId": recommendation_id,
                     "actionKind": "check",
-                    "summary": metadata["recommendation"],
-                    "rationale": metadata["rationale"],
+                    "summary": (
+                        f"{metadata['recommendation']} "
+                        f"调整对象：{metadata['adjustmentObject']}；"
+                        f"前置条件：{metadata['preconditions']}。"
+                    ),
+                    "rationale": (
+                        f"{metadata['rationale']} 优先级：{metadata['priority']}；"
+                        "本建议需人工确认后执行，服务不自动闭环下发。"
+                    ),
                     "safetyCheckIds": [item["checkId"] for item in safety_checks],
                     "evidenceIds": list(evidence_ids[:2]),
                     "requiresHumanConfirmation": True,
@@ -526,6 +569,44 @@ class DiagnosisBuilder:
                     provenance,
                 )
             )
+        for curve in _efficiency_curve_summaries(context):
+            items.append(
+                _knowledge_evidence(
+                    _evidence_id(window, offset + len(items) + 1),
+                    "efficiency_curves",
+                    (
+                        f"{curve['equipment_id']} 单位电耗区间 "
+                        f"{curve['min_kwh_per_kg']}~{curve['max_kwh_per_kg']} kWh/kg"
+                        f"（{curve['min_power_kw']}~{curve['max_power_kw']} kW 负荷区间）"
+                    ),
+                    provenance,
+                    variable=curve["variable"],
+                    actual_value=curve["min_kwh_per_kg"],
+                    reference_value=curve["max_kwh_per_kg"],
+                    unit="kWh/kg",
+                )
+            )
+        affected_ids = {
+            item["equipmentId"]
+            for item in vocabulary.affected_equipment_by_code()[window.code]
+        }
+        for maintenance in _maintenance_records(context, affected_ids):
+            items.append(
+                _knowledge_evidence(
+                    _evidence_id(window, offset + len(items) + 1),
+                    "maintenance_history",
+                    (
+                        f"维修记录 {maintenance['record_id']}（{maintenance['equipment_id']} "
+                        f"{maintenance['work_item']}）：{maintenance['finding']}；"
+                        f"建议：{maintenance['recommendation']}"
+                    ),
+                    provenance,
+                    variable=maintenance["equipment_id"],
+                    actual_value=maintenance["date"],
+                    reference_value=maintenance["recommendation"],
+                    unit="",
+                )
+            )
         return items
 
 
@@ -590,21 +671,79 @@ def _impact_evidence(
     }
 
 
+def _efficiency_curve_summaries(
+    context: EvidenceContext,
+) -> tuple[dict[str, str], ...]:
+    """Aggregate `10_electrolyzer_efficiency_curves.csv` per electrolyzer.
+
+    Each summary carries the official per-unit specific-energy field as the
+    variable name, so the curve evidence reuses official measurement points
+    instead of inventing new ones.
+    """
+    summaries: list[dict[str, str]] = []
+    for equipment_id in ("ELZ01", "ELZ02", "ELZ03"):
+        points = [
+            curve
+            for curve in context.efficiency_curves()
+            if curve.get("equipment_id") == equipment_id
+        ]
+        if not points:
+            continue
+        values = [float(point["specific_energy_kwh_per_kg"]) for point in points]
+        powers = [float(point["power_kw"]) for point in points]
+        summaries.append(
+            {
+                "equipment_id": equipment_id,
+                "variable": f"elz{equipment_id[-1]}_specific_energy_kwh_per_kg",
+                "min_kwh_per_kg": _format_float(min(values)),
+                "max_kwh_per_kg": _format_float(max(values)),
+                "min_power_kw": _format_float(min(powers)),
+                "max_power_kw": _format_float(max(powers)),
+            }
+        )
+    return tuple(summaries)
+
+
+def _maintenance_records(
+    context: EvidenceContext,
+    affected_ids: set[str],
+) -> tuple[dict[str, str], ...]:
+    """Pick `14_maintenance_history.csv` records relevant to the event.
+
+    Records whose equipment matches the affected equipment come first so the
+    most relevant history is citable; the count stays bounded for any event.
+    """
+    records = list(context.maintenance_history())
+    records.sort(
+        key=lambda row: (row.get("equipment_id") not in affected_ids, row.get("record_id", ""))
+    )
+    return tuple(records[:3])
+
+
+def _format_float(value: float) -> str:
+    return f"{value:g}"
+
+
 def _knowledge_evidence(
     evidence_id: str,
     source: str,
     conclusion: str,
     provenance: dict[str, Any],
+    *,
+    variable: str = "",
+    actual_value: str | float | bool = "",
+    reference_value: str | float | bool = "",
+    unit: str = "",
 ) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
         "evidenceId": evidence_id,
         "kind": "knowledge_base",
         "claimKind": "fact",
-        "variable": "",
-        "actualValue": "",
-        "referenceValue": "",
-        "unit": "",
+        "variable": variable,
+        "actualValue": actual_value,
+        "referenceValue": reference_value,
+        "unit": unit,
         "comparator": "=",
         "source": source,
         "conclusion": conclusion,
