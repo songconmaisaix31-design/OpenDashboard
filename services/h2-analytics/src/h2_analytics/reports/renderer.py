@@ -137,6 +137,17 @@ def _event(run: dict[str, Any], event_id: str) -> dict[str, Any]:
 
 
 def _period_summary(run: dict[str, Any]) -> dict[str, Any]:
+    """Build the PCC compliance daily report payload.
+
+    Six mandatory items (task B5):
+    1. power boundary interval        -> `boundaryIntervals` (per C04 event)
+    2. violation duration & energy    -> `violationDurationMinutes` / `violationEnergyKwh`
+       (plus a per-direction breakdown for export/import)
+    3. symbol convention              -> `signConventions`
+    4. dataset fingerprint            -> `datasetFingerprint`
+    5. constraints                    -> `constraints` (all frozen control limits)
+    6. unresolved events              -> `unresolvedEventIds` (reviewState == "open")
+    """
     boundary_events = [event for event in run["events"] if event["code"] == "C04"]
     intervals = [
         {
@@ -154,6 +165,19 @@ def _period_summary(run: dict[str, Any]) -> dict[str, Any]:
     violation_energy_kwh = sum(
         float(event["impact"]["value"]) for event in boundary_events
     )
+    # Per-direction breakdown keeps the sign convention explicit: export is a
+    # positive PCC value, import a negative one (positive_export_negative_import).
+    direction_durations: dict[str, float] = {}
+    direction_energy: dict[str, float] = {}
+    for event in boundary_events:
+        direction = "import" if event["subtype"].startswith("IMPORT") else "export"
+        duration = (
+            _instant(event["endTime"]) - _instant(event["startTime"])
+        ).total_seconds() / 60
+        direction_durations[direction] = direction_durations.get(direction, 0.0) + duration
+        direction_energy[direction] = (
+            direction_energy.get(direction, 0.0) + float(event["impact"]["value"])
+        )
     constraints = vocabulary.load_constraints()
     sign_conventions = [
         {
@@ -179,6 +203,8 @@ def _period_summary(run: dict[str, Any]) -> dict[str, Any]:
         "boundaryIntervals": intervals,
         "violationDurationMinutes": violation_duration_minutes,
         "violationEnergyKwh": violation_energy_kwh,
+        "violationDurationMinutesByDirection": direction_durations,
+        "violationEnergyKwhByDirection": direction_energy,
         "unresolvedEventIds": [
             event["eventId"]
             for event in run["events"]

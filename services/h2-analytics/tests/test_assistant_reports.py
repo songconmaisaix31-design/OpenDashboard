@@ -5,6 +5,7 @@ import json
 
 import pytest
 
+from h2_analytics import vocabulary
 from h2_analytics.contracts import ASSISTANT_QUESTION_IDS, SUBMISSION_COLUMNS
 from h2_analytics.service import AnalyticsService
 
@@ -44,6 +45,42 @@ def test_all_ten_answers_are_deterministic_without_llm(valid_csv: str) -> None:
         )
         for question_id in ASSISTANT_QUESTION_IDS
     ]
+
+
+def test_answers_carry_official_chinese_questions_and_no_invented_measurement_points(
+    valid_csv: str,
+) -> None:
+    """Task B4: answers use the official Q01-Q10 Chinese from the vocabulary.
+
+    Each answer echoes its official question verbatim, classifies itself as
+    fact / calculation / recommendation, and only cites official field names
+    when it references a measurement point.
+    """
+    service, run_id = _analyzed(valid_csv)
+    official = {
+        entry["questionId"]: entry["question"]
+        for entry in vocabulary.assistant_questions()
+    }
+    assert set(official) == set(ASSISTANT_QUESTION_IDS)
+    official_fields = set(vocabulary.official_field_names())
+
+    for question_id in ASSISTANT_QUESTION_IDS:
+        answer = service.ask(
+            run_id=run_id,
+            question_id=question_id,
+            event_id=None,
+            allow_llm_rendering=False,
+        )
+        sections = {section["sectionId"]: section for section in answer["sections"]}
+        assert sections["question"]["text"] == official[question_id], question_id
+        assert sections["answer"]["claimKind"] in {
+            "fact",
+            "calculation",
+            "recommendation",
+        }, question_id
+        citation = answer["citations"][0]
+        if citation["sourceType"] == "variable":
+            assert citation["sourceId"] in official_fields, question_id
 
 
 @pytest.mark.parametrize(
@@ -132,3 +169,26 @@ def test_html_reports_escape_imported_filename(
 
     assert "&lt;script&gt;.csv" in artifact["content"]
     assert "<script>.csv" not in artifact["content"]
+
+
+def test_period_summary_contains_all_six_required_items(valid_csv: str) -> None:
+    """Task B5: the PCC compliance daily report carries six items:
+
+    power boundary interval, violation duration & energy, symbol convention,
+    dataset fingerprint, constraints, and unresolved events.
+    """
+    service, run_id = _analyzed(valid_csv)
+    artifact = service.export_report(run_id=run_id, kind="period_summary")
+    content = artifact["content"]
+
+    assert artifact["descriptor"]["format"] == "html"
+    for marker in (
+        "数据集指纹",
+        "符号约定",
+        "功率边界区间",
+        "越限时长",
+        "生效约束",
+        "未决事件",
+    ):
+        assert marker in content, marker
+    assert "正值上网、负值下网" in content or "pcc_sign_convention" in content
