@@ -58,84 +58,18 @@ export const PRIMARY_CONTROL_OBJECTS = [
   ...new Set(ANOMALY_TAXONOMY.map((entry) => entry.primaryControlObject)),
 ]
 
-export const CANONICAL_FIELDS = [
-  'timestamp',
-  'pv_actual_kw',
-  'bess_power_kw',
-  'bess_dispatch_command_kw',
-  'pcc_power_kw',
-  'pcc_export_limit_kw',
-  'pcc_import_limit_kw',
-  'bess_soc_percent',
-  'auxiliary_load_kw',
-  'total_electrolyzer_power_kw',
-]
-
-const MAPPINGS = new Map(
-  OFFICIAL_FIELD_MAPPINGS.map((entry) => [entry.internal, entry]),
-)
-
-export const CANONICAL_OFFICIAL_SOURCE = Object.freeze(
-  Object.fromEntries(
-    CANONICAL_FIELDS.map((name) => [
-      name,
-      name === 'timestamp' || name === 'pv_actual_kw'
-        ? name
-        : MAPPINGS.get(name)?.official ?? null,
-    ]),
-  ),
-)
-
-const REQUIRED_OFFICIAL_FIELDS = [
-  ...new Set(
-    CANONICAL_FIELDS.filter((name) => CANONICAL_OFFICIAL_SOURCE[name] !== null)
-      .map((name) => CANONICAL_OFFICIAL_SOURCE[name])
-      .filter(Boolean),
-  ),
-]
-
-const ELECTROLYZER_ACTUAL_FIELDS = [
-  'elz1_power_actual_kw',
-  'elz2_power_actual_kw',
-  'elz3_power_actual_kw',
-]
-
 export function normalizeOfficialCsv(chunkText) {
   const { columns, rows } = parseCsvText(chunkText)
-  const indexByColumn = new Map(columns.map((column, index) => [column, index]))
-  for (const required of REQUIRED_OFFICIAL_FIELDS) {
-    if (!indexByColumn.has(required)) {
-      throw new Error(`Official CSV chunk is missing required field: ${required}`)
-    }
+  const timestampIndex = columns.indexOf('timestamp')
+  if (timestampIndex === -1) {
+    throw new Error('Official CSV chunk is missing required field: timestamp')
   }
-  const normalizedRows = []
-  for (const row of rows) {
-    const read = (name) => {
-      const index = indexByColumn.get(name)
-      return index === undefined ? '' : (row[index] ?? '').trim()
-    }
-    const totalElectrolyzerKw = ELECTROLYZER_ACTUAL_FIELDS.reduce(
-      (sum, field) => sum + (parseFinite(read(field)) ?? 0),
-      0,
-    )
-    const values = {}
-    for (const name of CANONICAL_FIELDS) {
-      if (name === 'timestamp') {
-        values[name] = normalizeTimestamp(read('timestamp'))
-      } else if (name === 'total_electrolyzer_power_kw') {
-        values[name] = String(Math.round(totalElectrolyzerKw * 1e6) / 1e6)
-      } else {
-        values[name] = read(CANONICAL_OFFICIAL_SOURCE[name])
-      }
-    }
-    normalizedRows.push(CANONICAL_FIELDS.map((name) => values[name]))
-  }
-  return serializeCsv(CANONICAL_FIELDS, normalizedRows)
-}
-
-function parseFinite(value) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
+  const normalizedRows = rows.map((row) =>
+    row.map((cell, columnIndex) =>
+      columnIndex === timestampIndex ? normalizeTimestamp(cell) : cell,
+    ),
+  )
+  return serializeCsv(columns, normalizedRows)
 }
 
 function normalizeTimestamp(value) {

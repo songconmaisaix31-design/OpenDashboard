@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url'
 import { parseCsvText } from '../../../validation/lib/csv.mjs'
 import {
   ANOMALY_CODES,
-  CANONICAL_FIELDS,
   EQUIPMENT,
+  OFFICIAL_FIELD_MAPPINGS,
   OFFICIAL_FIELDS,
   PRIMARY_CONTROL_OBJECTS,
   SEVERITY_BY_CODE,
@@ -35,19 +35,16 @@ describe('H2 Sentinel official vocabulary contract', () => {
     assert.deepEqual(OFFICIAL_FIELDS, frozen.fields)
   })
 
-  it('keeps the deprecated-field-map coverage closed over the canonical fields', () => {
-    assert.deepEqual(CANONICAL_FIELDS, [
-      'timestamp',
-      'pv_actual_kw',
-      'bess_power_kw',
-      'bess_dispatch_command_kw',
-      'pcc_power_kw',
-      'pcc_export_limit_kw',
-      'pcc_import_limit_kw',
-      'bess_soc_percent',
-      'auxiliary_load_kw',
-      'total_electrolyzer_power_kw',
-    ])
+  it('keeps the deprecated-field-map values within the official field vocabulary', () => {
+    const officialSet = new Set(OFFICIAL_FIELDS)
+    for (const mapping of OFFICIAL_FIELD_MAPPINGS) {
+      assert.equal(typeof mapping.internal, 'string')
+      if (mapping.official === null) {
+        assert.ok(mapping.derived, `derived expression required for ${mapping.internal}`)
+      } else {
+        assert.ok(officialSet.has(mapping.official), `${mapping.official} must be an official field`)
+      }
+    }
     for (const name of OFFICIAL_FIELDS) {
       assert.equal(typeof name, 'string')
       assert.notEqual(name, '')

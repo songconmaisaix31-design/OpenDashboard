@@ -184,8 +184,7 @@ async function main() {
       preprocessing: {
         local: [
           'official timeseries chunked by UTC calendar day',
-          'official fields mapped to canonical backend fields per packages/h2-vocabulary/data/deprecated-field-map.json',
-          'total_electrolyzer_power_kw = elz1+elz2+elz3 power_actual_kw',
+          'official 69 field names passed through unchanged to the analytics service',
           'naive "YYYY-MM-DD HH:MM:SS" timestamps normalized to ISO-8601 UTC (Z)',
         ],
         fixture: ['packages/h2-contracts/fixtures/tiny-valid-timeseries.csv'],
@@ -239,7 +238,7 @@ async function main() {
       tool: 'validation/evaluate.mjs',
       limitations: [
         'Event-level evaluation contract, not the organizer score.',
-        'The deterministic backend fallback detects C03/C04 only.',
+        'Rule detection covers the official C01-C07 field mappings.',
         'Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged.',
       ],
     },
