@@ -4,6 +4,8 @@ import { describe, it } from 'node:test'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { affectedEquipmentTokens } from '../../../validation/lib/submission.mjs'
+
 const directory = resolve(fileURLToPath(new URL('.', import.meta.url)))
 const contracts = resolve(directory, '../../../packages/h2-contracts')
 const c03 = JSON.parse(readFileSync(resolve(contracts, 'fixtures/golden-c03.json'), 'utf8'))
@@ -37,7 +39,7 @@ function expectedRow(event) {
     anomaly_subtype: event.subtype,
     severity: event.severity,
     primary_control_object: event.primaryControlObject.type,
-    affected_equipment: event.affectedEquipment.map(({ kind, id }) => `${kind}:${id}`).join(';'),
+    affected_equipment: affectedEquipmentTokens(event),
     confidence: event.confidence,
     evidence_json: JSON.stringify(event.evidence.map((item) => ({
       evidence_id: item.evidenceId,
@@ -69,6 +71,8 @@ describe('H2 Sentinel QA submission conformance', () => {
         anomaly_code: 'C03',
         anomaly_subtype: 'BESS_DIRECTION_REVERSED',
         primary_impact_metric: 'abnormal_grid_exchange_energy_kwh',
+        // Official comma-separated equipment tokens (05/04 label format).
+        affected_equipment: 'BESS,PCC',
         estimated_impact_value: 17.333333333333332,
         requires_human_confirmation: true,
       },
@@ -81,6 +85,7 @@ describe('H2 Sentinel QA submission conformance', () => {
         anomaly_code: 'C04',
         anomaly_subtype: 'EXPORT_POWER_LIMIT_NOT_TRACKED',
         primary_impact_metric: 'pcc_power_limit_violation_energy_kwh',
+        affected_equipment: 'PCC,BESS,ELZ,PV',
         estimated_impact_value: 29.333333333333332,
         requires_human_confirmation: true,
       },

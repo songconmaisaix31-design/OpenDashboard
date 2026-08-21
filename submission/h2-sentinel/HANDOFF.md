@@ -38,6 +38,21 @@ git diff --check -- submission/h2-sentinel
 
 The validator covers ten required documents, ten narrative pages, local links, and placeholder language. It does not validate runtime behavior, official data, validation metrics, deployment, remote CI, screenshots, or network isolation.
 
+## Track D update (2026-08-22, branch `h2/track-d-qa`)
+
+- `IMPLEMENTATION_BOUNDARY.md` now carries the verified evaluation snapshot:
+  validation-set event F1 0.2168 (precision 0.1265, recall 0.7571),
+  classification accuracy 0.3088, overfit sentinel GREEN (gap 0.0321).
+- `CLAIMS_LEDGER.md` reclassifies C11/C12 (official data imported and analyzed;
+  validation metrics with the frozen matching contract) and adds C16
+  (export-format claim prohibited until the `affected_equipment` defect is
+  fixed).
+- Submission-format authority lives in `validation/check-submission.mjs`
+  (official comma-separated equipment tokens, Chinese severity 高/中,
+  16 columns, UTF-8, boolean confirmation flag).
+- Open cross-track blocker: backend `submissions:export` still emits
+  `equipment_id:名称;` (see `tests/h2-sentinel/DEFECT_LOG.md` H2-QA-003).
+
 ## Project memory
 
 `MEMORY.md` was not updated because it is outside the sole write allowlist.

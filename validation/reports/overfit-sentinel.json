@@ -1,0 +1,46 @@
+{
+  "contract": "h2-sentinel-overfit-sentinel-v1",
+  "threshold": {
+    "redDelta": 0.15
+  },
+  "windows": {
+    "validation": {
+      "source": "02_validation_timeseries.csv vs 05_validation_event_labels.csv",
+      "groundTruth": 70,
+      "predictions": 419,
+      "f1": 0.2167689161554192,
+      "precision": 0.12649164677804295,
+      "recall": 0.7571428571428571,
+      "classificationAccuracy": 0.3088235294117647,
+      "report": "validation/reports/evaluate-validation.json"
+    },
+    "trainLast90": {
+      "source": "01_train_timeseries.csv (days >= 2025-10-03) vs 04_train_event_labels.csv",
+      "groundTruth": 63,
+      "predictions": 387,
+      "f1": 0.24888888888888888,
+      "precision": 0.14470284237726097,
+      "recall": 0.8888888888888888,
+      "classificationAccuracy": 0.31666666666666665,
+      "report": "validation/reports/evaluate-train-last-90.json"
+    }
+  },
+  "result": {
+    "validationF1": 0.2167689161554192,
+    "trainLast90F1": 0.24888888888888888,
+    "absoluteDelta": 0.03211997273346967,
+    "red": false,
+    "reason": "within the 0.15 tolerance; no overfit signal",
+    "interpretation": "GREEN: both windows agree within 0.15; no evidence that validation-set tuning diverged from the train window."
+  },
+  "provenance": {
+    "generatedAt": "2026-08-21T16:10:22.731Z",
+    "tool": "validation/overfit-sentinel.mjs",
+    "evaluator": "validation/evaluate.mjs",
+    "matching": "greedy event-level: same anomaly_code and interval overlap with a 10-minute grace window",
+    "limitations": [
+      "The train-last-90 window is not a held-out test set; it is the same rule pipeline on the final 90 days of the official train series.",
+      "Event-level evaluation contract, not the organizer score."
+    ]
+  }
+}

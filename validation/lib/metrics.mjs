@@ -155,3 +155,76 @@ export function mergePredictions(predictions, { gapMinutes = 2 } = {}) {
   }
   return merged
 }
+
+/**
+ * Code-agnostic event detection and classification metrics.
+ *
+ * Unlike `matchEvents` (which requires the same anomaly_code), this matcher
+ * pairs ground-truth and predicted events by temporal overlap alone, then
+ * counts how often the predicted code is correct. It separates detection
+ * quality (did we find the event at all) from classification quality (did we
+ * label it right):
+ *
+ * - detectionRecall = matched ground-truth / ground-truth
+ * - detectionPrecision = matched predictions / predictions
+ * - classificationAccuracy = code-correct matches / matched pairs
+ * - eventAccuracy = code-correct matches / ground-truth
+ */
+export function classifyEvents({ groundTruth, predictions, graceMinutes = 10 }) {
+  const graceMs = graceMinutes * 60_000
+  const normalizedGroundTruth = groundTruth.map((event) => ({
+    ...event,
+    start: toInstant(event.startTime),
+    end: toInstant(event.endTime),
+  }))
+  const normalizedPredictions = predictions.map((event) => ({
+    ...event,
+    start: toInstant(event.startTime),
+    end: toInstant(event.endTime),
+  }))
+
+  const matchedPredictionIds = new Set()
+  const orderedGroundTruth = [...normalizedGroundTruth].sort(
+    (a, b) => a.start - b.start || a.id.localeCompare(b.id),
+  )
+  const matches = []
+  for (const groundEvent of orderedGroundTruth) {
+    const candidate = normalizedPredictions
+      .filter(
+        (predicted) =>
+          !matchedPredictionIds.has(predicted.id) &&
+          predicted.start <= groundEvent.end + graceMs &&
+          predicted.end >= groundEvent.start - graceMs,
+      )
+      .sort((a, b) => a.start - b.start || a.id.localeCompare(b.id))[0]
+    if (candidate === undefined) continue
+    matchedPredictionIds.add(candidate.id)
+    matches.push({
+      groundTruthId: groundEvent.id,
+      predictionId: candidate.id,
+      groundTruthCode: groundEvent.code,
+      predictionCode: candidate.code,
+    })
+  }
+
+  const correctCode = matches.filter(
+    (match) => match.groundTruthCode === match.predictionCode,
+  ).length
+  const detectionRecall = normalizedGroundTruth.length === 0 ? 0 : matches.length / normalizedGroundTruth.length
+  const detectionPrecision = normalizedPredictions.length === 0 ? 0 : matches.length / normalizedPredictions.length
+  const classificationAccuracy = matches.length === 0 ? 0 : correctCode / matches.length
+  const eventAccuracy = normalizedGroundTruth.length === 0 ? 0 : correctCode / normalizedGroundTruth.length
+  return {
+    matches: matches.length,
+    correctCode,
+    detectionPrecision,
+    detectionRecall,
+    detectionF1: f1FromPrecisionRecall(detectionPrecision, detectionRecall),
+    classificationAccuracy,
+    eventAccuracy,
+  }
+}
+
+export function f1FromPrecisionRecall(precision, recall) {
+  return precision + recall === 0 ? 0 : (2 * precision * recall) / (precision + recall)
+}

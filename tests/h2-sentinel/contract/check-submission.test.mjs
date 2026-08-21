@@ -19,7 +19,7 @@ function row(overrides = {}) {
     anomaly_subtype: 'BESS_DIRECTION_REVERSED',
     severity: '高',
     primary_control_object: 'EMS储能功率控制与接口映射模块',
-    affected_equipment: 'BESS01:储能系统;PCC01:并网点',
+    affected_equipment: 'BESS,PCC',
     confidence: '0.94',
     evidence_json: '[{"evidence_id":"C03-EV-001","kind":"measurement","conclusion":"ok"}]',
     root_cause: 'Sign mapping mismatch.',
@@ -32,6 +32,43 @@ function row(overrides = {}) {
     first_detection_time: '2026-01-05T10:25:00Z',
     requires_human_confirmation: 'true',
     ...overrides,
+  }
+}
+
+function subtypeFor(code) {
+  return {
+    C01: 'SETPOINT_OSCILLATION',
+    C02: 'CAPACITY_NOT_SYNCHRONIZED',
+    C03: 'BESS_DIRECTION_REVERSED',
+    C04: 'EXPORT_POWER_LIMIT_NOT_TRACKED',
+    C05: 'EXPORT_ENERGY_QUOTA_RISK',
+    C06: 'INEFFICIENT_POWER_ALLOCATION',
+    C07: 'CHARGE_HEADROOM_SHORTFALL',
+  }[code]
+}
+
+function codeRow(code) {
+  return {
+    anomaly_code: code,
+    anomaly_subtype: subtypeFor(code),
+    primary_control_object: {
+      C01: 'EMS电解槽群控与功率分配模块',
+      C02: 'EMS设备状态与容量同步模块',
+      C03: 'EMS储能功率控制与接口映射模块',
+      C04: 'EMS并网点功率边界控制模块',
+      C05: 'EMS周期电量配额与日内能量计划模块',
+      C06: 'EMS电解槽群控分配模块',
+      C07: 'EMS储能SOC计划与调节备用管理模块',
+    }[code],
+    primary_impact_metric: {
+      C01: 'bess_extra_regulation_energy_kwh',
+      C02: 'unserved_elz_energy_kwh',
+      C03: 'abnormal_grid_exchange_energy_kwh',
+      C04: 'pcc_power_limit_violation_energy_kwh',
+      C05: 'grid_energy_quota_deviation_kwh',
+      C06: 'extra_energy_consumption_kwh',
+      C07: 'bess_regulation_reserve_shortfall_kwh',
+    }[code],
   }
 }
 
@@ -80,27 +117,45 @@ describe('H2 Sentinel submission format checks', () => {
     assert.match(result.issues[0], /primary_control_object/)
   })
 
-  it('rejects an affected_equipment id that is not in the equipment master', () => {
+  it('rejects an affected_equipment token that is not official', () => {
     const result = validateSubmissionText(
-      submissionCsv(row({ affected_equipment: 'BESS99:储能系统;PCC01:并网点' })),
+      submissionCsv(row({ affected_equipment: 'BESS99,PCC' })),
     )
     assert.equal(result.valid, false)
-    assert.match(result.issues[0], /not in the equipment master/)
+    assert.match(result.issues[0], /non-official token/)
   })
 
-  it('rejects an affected_equipment name that does not match the master', () => {
+  it('rejects an affected_equipment token set that does not match the code', () => {
     const result = validateSubmissionText(
-      submissionCsv(row({ affected_equipment: 'BESS01:电池系统;PCC01:并网点' })),
+      submissionCsv(row({ affected_equipment: 'BESS,PCC,PV' })),
     )
     assert.equal(result.valid, false)
-    assert.match(result.issues[0], /does not match the master name/)
+    assert.match(result.issues[0], /official token set/)
   })
 
-  it('rejects affected_equipment segments that are not id:name', () => {
-    const result = validateSubmissionText(
-      submissionCsv(row({ affected_equipment: 'BESS01' })),
-    )
-    assert.equal(result.valid, false)
+  it('rejects affected_equipment with spaces or id:name segments', () => {
+    for (const affected_equipment of ['BESS, PCC', 'BESS01:储能系统;PCC01:并网点']) {
+      const result = validateSubmissionText(submissionCsv(row({ affected_equipment })))
+      assert.equal(result.valid, false, affected_equipment)
+    }
+  })
+
+  it('accepts the official per-code affected_equipment sets', () => {
+    const cases = [
+      ['C01', 'ELZ2,ELZ3,BESS,PCC'],
+      ['C02', 'ELZ1'],
+      ['C03', 'BESS,PCC'],
+      ['C04', 'PCC,BESS,ELZ,PV'],
+      ['C05', 'PCC,BESS,ELZ'],
+      ['C06', 'ELZ1,ELZ2,ELZ3'],
+      ['C07', 'BESS,PCC,PV,ELZ'],
+    ]
+    for (const [code, affected_equipment] of cases) {
+      const result = validateSubmissionText(
+        submissionCsv(row({ ...codeRow(code), affected_equipment })),
+      )
+      assert.equal(result.valid, true, `${code} ${affected_equipment}: ${result.issues.join(' | ')}`)
+    }
   })
 
   it('rejects mojibake and replacement characters', () => {

@@ -1,9 +1,11 @@
 {
   "contract": "h2-sentinel-official-validation-evaluation-v1",
   "mode": "local",
+  "set": "validation",
   "parameters": {
     "graceMinutes": 10,
     "limitDays": 0,
+    "minDay": null,
     "mergeGapMinutes": 2,
     "matching": "greedy event-level: same anomaly_code and interval overlap with a 10-minute grace window",
     "preprocessing": {
@@ -13,7 +15,8 @@
         "naive \"YYYY-MM-DD HH:MM:SS\" timestamps normalized to ISO-8601 UTC (Z)"
       ],
       "fixture": [
-        "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv"
+        "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv",
+        "missing official fields padded with zero at import time (the fixture predates the 69-field schema)"
       ]
     }
   },
@@ -477,6 +480,8 @@
   },
   "groundTruth": {
     "count": 70,
+    "totalCount": 70,
+    "dayWindow": "all days",
     "byCode": {
       "C06": 10,
       "C02": 10,
@@ -509,6 +514,16 @@
       "precision": 0.12649164677804295,
       "recall": 0.7571428571428571,
       "f1": 0.2167689161554192
+    },
+    "classification": {
+      "definition": "code-agnostic temporal overlap; classification accuracy = code-correct / matched pairs",
+      "matches": 68,
+      "correctCode": 21,
+      "detectionPrecision": 0.162291169451074,
+      "detectionRecall": 0.9714285714285714,
+      "detectionF1": 0.278118609406953,
+      "classificationAccuracy": 0.3088235294117647,
+      "eventAccuracy": 0.3
     },
     "byCode": {
       "C01": {
@@ -1457,12 +1472,13 @@
     "C07-20260331-001"
   ],
   "provenance": {
-    "generatedAt": "2026-08-21T05:35:31.784Z",
+    "generatedAt": "2026-08-21T16:09:18.041Z",
     "tool": "validation/evaluate.mjs",
     "limitations": [
       "Event-level evaluation contract, not the organizer score.",
       "Rule detection covers the official C01-C07 field mappings.",
-      "Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged."
+      "Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged.",
+      "With --limit-days, labels are restricted to the imported UTC day window; a truncated run is not comparable to a full-window run."
     ]
   }
 }
