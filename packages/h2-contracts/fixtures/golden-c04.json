@@ -33,7 +33,7 @@
       "kind": "measurement",
       "claimKind": "fact",
       "timestamp": "2026-01-05T10:34:00Z",
-      "variable": "pcc_power_kw",
+      "variable": "pcc_power_actual_kw",
       "actualValue": 720,
       "referenceValue": 500,
       "unit": "kW",
@@ -44,7 +44,7 @@
         "mode": "FIXTURE",
         "source": "sanitized-golden-fixture",
         "generatedAt": "2026-01-05T10:45:00Z",
-        "datasetFingerprint": "sha256:799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca",
+        "datasetFingerprint": "sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51",
         "ruleVersion": "h2-rules-v1",
         "configurationVersion": "official-constraints-v1",
         "limitations": [
@@ -59,7 +59,7 @@
       "kind": "constraint",
       "claimKind": "fact",
       "timestamp": "2026-01-05T10:34:00Z",
-      "variable": "pcc_export_limit_kw",
+      "variable": "grid_export_power_limit_kw",
       "actualValue": 500,
       "referenceValue": 500,
       "unit": "kW",
@@ -70,7 +70,7 @@
         "mode": "FIXTURE",
         "source": "sanitized-golden-fixture",
         "generatedAt": "2026-01-05T10:45:00Z",
-        "datasetFingerprint": "sha256:799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca",
+        "datasetFingerprint": "sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51",
         "ruleVersion": "h2-rules-v1",
         "configurationVersion": "official-constraints-v1",
         "limitations": [
@@ -99,7 +99,7 @@
         "mode": "FIXTURE",
         "source": "sanitized-golden-fixture",
         "generatedAt": "2026-01-05T10:45:00Z",
-        "datasetFingerprint": "sha256:799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca",
+        "datasetFingerprint": "sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51",
         "ruleVersion": "h2-rules-v1",
         "configurationVersion": "official-constraints-v1",
         "limitations": [
@@ -123,7 +123,7 @@
       "mode": "FIXTURE",
       "source": "sanitized-golden-fixture",
       "generatedAt": "2026-01-05T10:45:00Z",
-      "datasetFingerprint": "sha256:799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca",
+      "datasetFingerprint": "sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51",
       "ruleVersion": "h2-rules-v1",
       "configurationVersion": "official-constraints-v1",
       "limitations": [
@@ -144,7 +144,7 @@
         "mode": "FIXTURE",
         "source": "sanitized-golden-fixture",
         "generatedAt": "2026-01-05T10:45:00Z",
-        "datasetFingerprint": "sha256:799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca",
+        "datasetFingerprint": "sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51",
         "ruleVersion": "h2-rules-v1",
         "configurationVersion": "official-constraints-v1",
         "limitations": [
@@ -164,7 +164,7 @@
         "mode": "FIXTURE",
         "source": "sanitized-golden-fixture",
         "generatedAt": "2026-01-05T10:45:00Z",
-        "datasetFingerprint": "sha256:799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca",
+        "datasetFingerprint": "sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51",
         "ruleVersion": "h2-rules-v1",
         "configurationVersion": "official-constraints-v1",
         "limitations": [
@@ -187,7 +187,7 @@
         "mode": "FIXTURE",
         "source": "sanitized-golden-fixture",
         "generatedAt": "2026-01-05T10:45:00Z",
-        "datasetFingerprint": "sha256:799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca",
+        "datasetFingerprint": "sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51",
         "ruleVersion": "h2-rules-v1",
         "configurationVersion": "official-constraints-v1",
         "limitations": [
@@ -204,7 +204,7 @@
     "mode": "FIXTURE",
     "source": "sanitized-golden-fixture",
     "generatedAt": "2026-01-05T10:45:00Z",
-    "datasetFingerprint": "sha256:799ff8549663152c784ad8d687d0df7108e295cf3d96311b122ad146c624f9ca",
+    "datasetFingerprint": "sha256:0b2ba8e38e9d7cbd53f822551959b269482b7cba2f35db372ab03f6c30166d51",
     "ruleVersion": "h2-rules-v1",
     "configurationVersion": "official-constraints-v1",
     "limitations": [

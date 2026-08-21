@@ -147,6 +147,44 @@ describe('H2 Sentinel presentation', () => {
 
     assert.match(markup, new RegExp(H2_FIXTURE_REPORT_DESCRIPTOR.contentHash))
   })
+
+  it('shows official Chinese severity, control object, and equipment names', () => {
+    const c03Markup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_EVENTS[0].eventId,
+    })
+
+    assert.match(c03Markup, /高风险/)
+    assert.match(c03Markup, /EMS储能功率控制与接口映射模块/)
+    assert.match(c03Markup, /储能系统、并网点/)
+    assert.match(c03Markup, /异常电网交换电量/)
+
+    const eventsMarkup = renderView(readyState, { route: 'events' })
+    assert.match(eventsMarkup, /储能系统、并网点/)
+    assert.match(eventsMarkup, /EMS并网点功率边界控制模块/)
+  })
+
+  it('keeps event data visible when the time series degrade', () => {
+    const markup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_C04_EVENT.eventId,
+    })
+
+    assert.match(markup, /趋势数据暂不可用/)
+    assert.match(markup, /证据链/)
+    assert.match(markup, /定位到趋势图/)
+    assert.match(markup, /影响量化/)
+    assert.match(markup, /安全检查与建议/)
+    assert.match(markup, /29\.33/)
+  })
+
+  it('renders the ten official assistant questions in Chinese', () => {
+    const markup = renderView(readyState, { route: 'assistant' })
+
+    assert.match(markup, /PCC正值和负值分别代表什么？/)
+    assert.match(markup, /如何评价多台电解槽负荷分配？/)
+    assert.match(markup, /PCC合规日报包含哪些内容？/)
+  })
 })
 
 function renderView(

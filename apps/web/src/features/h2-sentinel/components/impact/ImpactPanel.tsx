@@ -1,5 +1,5 @@
 import type { H2AnomalyEvent } from '../../../../../../../packages/h2-contracts/src/index.ts'
-import { formatH2Number } from '../../model/presentation.ts'
+import { formatH2ImpactMetric, formatH2Number } from '../../model/presentation.ts'
 import { StatusBadge } from '../common/StatusBadge.tsx'
 
 export interface ImpactPanelProps {
@@ -23,7 +23,7 @@ export function ImpactPanel({ event }: ImpactPanelProps) {
       <dl className="h2-key-values">
         <div>
           <dt>指标</dt>
-          <dd>{event.impact.metric}</dd>
+          <dd>{formatH2ImpactMetric(event)}<small className="h2-impact-metric-key">{event.impact.metric}</small></dd>
         </div>
         <div>
           <dt>公式版本</dt>

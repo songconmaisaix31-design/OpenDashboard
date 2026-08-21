@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  H2_ASSISTANT_QUESTIONS,
+  H2_ASSISTANT_QUESTIONS_ZH,
   type H2AssistantAnswer,
   type H2AssistantQuestionId,
   type H2AnomalyEvent,
@@ -13,19 +13,6 @@ import {
 import { PageHeader } from '../../components/common/PageHeader.tsx'
 import { StatusBadge } from '../../components/common/StatusBadge.tsx'
 
-const questionLabels = {
-  H2Q01: 'PCC 正负功率分别代表什么？',
-  H2Q02: '功率边界异常与能量配额异常有什么区别？',
-  H2Q03: '储能方向异常如何影响并网点功率？',
-  H2Q04: '如何识别 SOC 调节裕度不足？',
-  H2Q05: '如何定位未同步的容量降额？',
-  H2Q06: '如何区分云影波动与设定值振荡？',
-  H2Q07: '如何评估多电解槽负荷分配？',
-  H2Q08: '哪些建议必须人工确认？',
-  H2Q09: '为当前测试异常生成诊断报告。',
-  H2Q10: 'PCC 日合规报告应包含什么？',
-} as const satisfies Readonly<Record<H2AssistantQuestionId, string>>
-
 export interface AssistantPageProps {
   readonly answer: H2AssistantAnswer | null
   readonly error: string | null
@@ -36,6 +23,9 @@ export interface AssistantPageProps {
 
 export function AssistantPage({ answer, error, event, onAsk, pending }: AssistantPageProps) {
   const [selectedQuestion, setSelectedQuestion] = useState<H2AssistantQuestionId>('H2Q03')
+  const selectedQuestionZh =
+    H2_ASSISTANT_QUESTIONS_ZH.find(({ questionId }) => questionId === selectedQuestion)
+      ?.question ?? selectedQuestion
 
   return (
     <div className="h2-page h2-assistant-page">
@@ -45,7 +35,7 @@ export function AssistantPage({ answer, error, event, onAsk, pending }: Assistan
         <section aria-label="官方问题" className="h2-panel h2-question-list">
           <div className="h2-panel__heading"><div><p className="h2-eyebrow">Official questions</p><h2>十个运行问题</h2></div><StatusBadge tone="positive">离线可用</StatusBadge></div>
           <ol>
-            {H2_ASSISTANT_QUESTIONS.map(({ questionId }, index) => (
+            {H2_ASSISTANT_QUESTIONS_ZH.map(({ question, questionId }, index) => (
               <li key={questionId}>
                 <button
                   aria-pressed={selectedQuestion === questionId}
@@ -54,7 +44,7 @@ export function AssistantPage({ answer, error, event, onAsk, pending }: Assistan
                   type="button"
                 >
                   <span>{String(index + 1).padStart(2, '0')}</span>
-                  <strong>{questionLabels[questionId]}</strong>
+                  <strong>{question}</strong>
                 </button>
               </li>
             ))}
@@ -63,7 +53,7 @@ export function AssistantPage({ answer, error, event, onAsk, pending }: Assistan
 
         <section aria-labelledby="h2-answer-title" className="h2-panel h2-answer-panel">
           <div className="h2-answer-panel__prompt">
-            <div><p className="h2-eyebrow">Selected question</p><h2 id="h2-answer-title">{questionLabels[selectedQuestion]}</h2></div>
+            <div><p className="h2-eyebrow">Selected question</p><h2 id="h2-answer-title">{selectedQuestionZh}</h2></div>
             <button className="h2-button h2-button--primary" disabled={pending} onClick={() => onAsk(selectedQuestion)} type="button">{pending ? '正在组装证据…' : '基于证据回答'}</button>
           </div>
           <div className="h2-answer-panel__context">

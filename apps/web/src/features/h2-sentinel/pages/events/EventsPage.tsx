@@ -9,9 +9,12 @@ import type { H2NavigationTarget } from '../../routes.ts'
 import type { H2Workspace } from '../../model/view-state.ts'
 import {
   filterH2Events,
+  formatH2AffectedEquipment,
   formatH2Confidence,
+  formatH2ControlObject,
   formatH2Duration,
   formatH2Number,
+  formatH2Severity,
   formatH2Timestamp,
   H2_CODE_LABELS,
   H2_PROVENANCE_LABELS,
@@ -105,9 +108,9 @@ export function EventsPage({ onNavigate, workspace }: EventsPageProps) {
               <tbody>
                 {filteredEvents.map((event) => (
                   <tr key={event.eventId}>
-                    <td><div className="h2-table__event"><span className="h2-code">{event.code}</span><span><strong>{H2_CODE_LABELS[event.code]}</strong><small>{event.eventId} · {H2_SEVERITY_LABELS[event.severity]}风险 · {H2_REVIEW_LABELS[event.reviewState]}</small></span></div></td>
+                    <td><div className="h2-table__event"><span className="h2-code">{event.code}</span><span><strong>{H2_CODE_LABELS[event.code]}</strong><small>{event.eventId} · {formatH2Severity(event)}风险 · {H2_REVIEW_LABELS[event.reviewState]}</small></span></div></td>
                     <td><strong>{formatH2Timestamp(event.startTime)}</strong><small>{formatH2Duration(event.startTime, event.endTime)} · 首次发现 {formatH2Timestamp(event.firstDetectionTime)}</small></td>
-                    <td><strong>{event.primaryControlObject.displayName}</strong><small>{event.affectedEquipment.map(({ displayName }) => displayName).join('、')}</small></td>
+                    <td><strong>{formatH2ControlObject(event)}</strong><small>{formatH2AffectedEquipment(event)}</small></td>
                     <td><strong>{formatH2Number(event.impact.value, event.impact.unit)}</strong><small>{event.impact.metric}</small></td>
                     <td><strong>{formatH2Confidence(event.confidence)}</strong></td>
                     <td><StatusBadge tone={event.provenance.mode === 'FIXTURE' ? 'fixture' : 'live'}>{H2_PROVENANCE_LABELS[event.provenance.mode]}</StatusBadge></td>

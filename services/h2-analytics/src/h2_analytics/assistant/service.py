@@ -2,72 +2,74 @@ from __future__ import annotations
 
 from typing import Any
 
+from h2_analytics import vocabulary
 from h2_analytics.contracts import ASSISTANT_QUESTION_IDS, build_provenance
 from h2_analytics.errors import AnalyticsError
 
-
-ANSWER_TEMPLATES: dict[str, tuple[str, str, str, str]] = {
-    "H2Q01": (
+_ANSWERS: dict[str, tuple[str, str, str, str]] = {
+    "Q01": (
         "fact",
-        "Positive PCC power means export to the grid; negative PCC power means import from the grid.",
+        "PCC功率正值表示向电网上网，负值表示从电网下网；储能功率正值表示放电，负值表示充电。",
         "variable",
-        "pcc_power_kw",
+        "pcc_power_actual_kw",
     ),
-    "H2Q02": (
+    "Q02": (
         "fact",
-        "A C04 event concerns an active power boundary, while C05 concerns cumulative energy-quota risk.",
+        "动态上下网功率限值属于瞬时功率约束，按分钟判定是否越限；上下网日电量配额属于累计电量约束，按自然日累计核算。二者分别对应C04与C05类异常。",
         "knowledge_base",
         "h2-anomaly-taxonomy-v1",
     ),
-    "H2Q03": (
+    "Q03": (
         "calculation",
-        "A reversed BESS response changes the grid exchange relative to the dispatch command; the selected C03 evidence and impact record quantify that interval.",
+        "储能方向异常会使储能实际充放电方向与EMS指令相反，导致并网点实际功率偏离目标，形成异常电网交换电量。",
         "event",
         "C03",
     ),
-    "H2Q04": (
-        "inference",
-        "A C07 warning requires actual SOC, target SOC, available charge or discharge headroom, and the remaining time horizon.",
+    "Q04": (
+        "calculation",
+        "当可用充电能量或可用放电能量低于调节备用目标时，SOC调节裕度不足，无法覆盖未来功率波动与PCC约束。",
         "knowledge_base",
         "c07-reserve-rule-v1",
     ),
-    "H2Q05": (
+    "Q05": (
         "recommendation",
-        "Compare the available-capacity signal with the EMS capacity model and operation log before treating a C02 event as confirmed.",
+        "对比EMS报告可用容量与设备实际可用容量，核查PLC状态映射与刷新周期；若指令持续大于实际执行功率，需在人工确认后刷新容量。",
         "knowledge_base",
         "c02-capacity-check-v1",
     ),
-    "H2Q06": (
+    "Q06": (
         "recommendation",
-        "Compare PV variation with electrolyzer setpoint direction, repeated reversals, and the configured ramp limit; renewable variation alone is not a root-cause conclusion.",
+        "若电解槽功率指令在光伏与PCC实际功率相对稳定的时段高频振荡，则为控制指令振荡；若光伏与PCC同时大幅波动，则应首先考虑外部扰动。",
         "constraint",
         "electrolyzer-ramp-limit-v1",
     ),
-    "H2Q07": (
+    "Q07": (
         "calculation",
-        "Evaluate stable-power constraints, start-stop count, and efficiency-adjusted energy allocation across available electrolyzers.",
+        "应综合设备可用性、实际效率曲线、最小稳定功率与运行状态评价负荷分配；高单位电耗设备承担过多负荷或发生可避免启停即为分配异常。",
         "knowledge_base",
         "c06-allocation-rule-v1",
     ),
-    "H2Q08": (
+    "Q08": (
         "fact",
-        "Every operational recommendation requires human confirmation; this service never executes a control action.",
+        "所有操作建议均需人工确认。本服务只执行监督、诊断、解释、量化和建议，不直接向真实设备闭环下发控制指令。",
         "constraint",
         "human-confirmation-v1",
     ),
-    "H2Q09": (
+    "Q09": (
         "recommendation",
-        "Use the selected event report, which separates evidence, calculated impact, inferred cause, safety checks, and advisory recommendations.",
+        "使用单事件诊断报告，其中包含证据链、计算影响、推断原因、安全检查与咨询建议。",
         "report",
         "single_event_diagnosis",
     ),
-    "H2Q10": (
+    "Q10": (
         "recommendation",
-        "A daily PCC compliance report should include power-boundary intervals, violation duration and energy, sign convention, dataset fingerprint, constraints, and unresolved events.",
+        "PCC合规日报应包含功率边界区间、越限时长与越限电量、符号约定、数据集指纹、生效约束与未决事件。",
         "report",
         "period_summary",
     ),
 }
+
+_EVENT_DEPENDENT = {"Q03", "Q09"}
 
 
 class AssistantService:
@@ -83,10 +85,16 @@ class AssistantService:
         if question_id not in ASSISTANT_QUESTION_IDS:
             raise AnalyticsError("assistant.invalid_question", "Question ID is not supported.")
         event = _select_event(run, event_id, question_id)
-        claim_kind, text, source_type, source_id = ANSWER_TEMPLATES[question_id]
-        if event is not None and question_id in {"H2Q03", "H2Q08", "H2Q09"}:
+        claim_kind, text, source_type, source_id = _ANSWERS[question_id]
+        if event is not None and question_id in _EVENT_DEPENDENT:
             source_id = event["eventId"]
-            text = f"{text} Selected event: {event['eventId']} ({event['startTime']} to {event['endTime']})."
+            text = (
+                f"{text} 已选事件：{event['eventId']}（{event['startTime']} 至 {event['endTime']}）。"
+            )
+        elif event is None and question_id in _EVENT_DEPENDENT:
+            text = (
+                f"{text} 当前运行没有可确认的{question_id}事件，无法给出具体事件证据。"
+            )
         citation_id = f"citation-{question_id}-{source_id}"
         generated_at = run.get("completedAt", run["startedAt"])
         mode = run["dataset"]["mode"]
@@ -139,8 +147,8 @@ def _select_event(
             if event["eventId"] == event_id:
                 return event
         raise AnalyticsError("event.not_found", "Anomaly event was not found.")
-    if question_id in {"H2Q03", "H2Q09"}:
-        preferred_code = "C03" if question_id == "H2Q03" else None
+    if question_id in _EVENT_DEPENDENT:
+        preferred_code = "C03" if question_id == "Q03" else None
         return next(
             (
                 event

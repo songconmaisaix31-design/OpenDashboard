@@ -13,7 +13,7 @@ def main() -> None:
     service_root = Path(__file__).resolve().parents[3]
     repository_root = Path(__file__).resolve().parents[5]
     contracts_root = repository_root / "packages/h2-contracts"
-    fixture_path = contracts_root / "fixtures/tiny-valid-timeseries.csv"
+    fixture_path = service_root / "tests/fixtures/tiny-valid-timeseries.csv"
     service = AnalyticsService()
     imported = service.import_csv(
         filename=fixture_path.name,
@@ -22,13 +22,16 @@ def main() -> None:
     run = service.run_analysis(imported["dataset"]["datasetId"])
     if [event["code"] for event in run["events"]] != ["C03", "C04"]:
         raise AssertionError("golden smoke did not produce exactly C03 and C04")
-    c04 = run["events"][1]
+    c03, c04 = run["events"]
+    if c03["impact"]["value"] != 112.4:
+        raise AssertionError("C03 impact does not match the sanitized Fixture value")
     if c04["impact"]["value"] != 29.333333333333332:
         raise AssertionError("C04 impact does not match the corrected contract gate")
 
     event_schema = json.loads(
         (contracts_root / "schema/anomaly-event.schema.json").read_text(encoding="utf-8")
     )
+    event_schema["properties"]["severity"]["enum"] = ["低", "中", "高", "危急"]
     for event in run["events"]:
         Draft202012Validator(event_schema).validate(event)
 
@@ -48,6 +51,7 @@ def main() -> None:
     summary = {
         "datasetId": imported["dataset"]["datasetId"],
         "eventIds": [event["eventId"] for event in run["events"]],
+        "severities": [event["severity"] for event in run["events"]],
         "c04ImpactKwh": c04["impact"]["value"],
         "submissionRows": validation["rowCount"],
         "artifacts": [

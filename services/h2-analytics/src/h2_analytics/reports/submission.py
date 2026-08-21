@@ -43,9 +43,9 @@ def _submission_row(event: dict[str, Any]) -> dict[str, Any]:
         "anomaly_code": event["code"],
         "anomaly_subtype": event["subtype"],
         "severity": event["severity"],
-        "primary_control_object": event["primaryControlObject"]["type"],
+        "primary_control_object": event["primaryControlObject"]["displayName"],
         "affected_equipment": ";".join(
-            f"{item['kind']}:{item['id']}" for item in event["affectedEquipment"]
+            f"{item['id']}:{item['displayName']}" for item in event["affectedEquipment"]
         ),
         "confidence": event["confidence"],
         "evidence_json": json.dumps(evidence, ensure_ascii=False, separators=(",", ":")),

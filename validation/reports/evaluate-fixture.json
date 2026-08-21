@@ -1,0 +1,167 @@
+{
+  "contract": "h2-sentinel-official-validation-evaluation-v1",
+  "mode": "fixture",
+  "parameters": {
+    "graceMinutes": 10,
+    "limitDays": 0,
+    "mergeGapMinutes": 2,
+    "matching": "greedy event-level: same anomaly_code and interval overlap with a 10-minute grace window",
+    "preprocessing": {
+      "local": [
+        "official timeseries chunked by UTC calendar day",
+        "official fields mapped to canonical backend fields per packages/h2-vocabulary/data/deprecated-field-map.json",
+        "total_electrolyzer_power_kw = elz1+elz2+elz3 power_actual_kw",
+        "naive \"YYYY-MM-DD HH:MM:SS\" timestamps normalized to ISO-8601 UTC (Z)"
+      ],
+      "fixture": [
+        "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv"
+      ]
+    }
+  },
+  "dataset": {
+    "source": "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv",
+    "chunks": [
+      {
+        "day": "fixture",
+        "rows": 22,
+        "events": 2
+      }
+    ]
+  },
+  "groundTruth": {
+    "count": 2,
+    "byCode": {
+      "C03": 1,
+      "C04": 1
+    }
+  },
+  "predictions": {
+    "rawCount": 2,
+    "mergedCount": 2,
+    "detectorVersion": "deterministic-c03-c04-v1",
+    "byCode": {
+      "C03": 1,
+      "C04": 1
+    }
+  },
+  "metrics": {
+    "overall": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    "byCode": {
+      "C01": {
+        "code": "C01",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C02": {
+        "code": "C02",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C03": {
+        "code": "C03",
+        "groundTruth": 1,
+        "predictions": 1,
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "C04": {
+        "code": "C04",
+        "groundTruth": 1,
+        "predictions": 1,
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "C05": {
+        "code": "C05",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C06": {
+        "code": "C06",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C07": {
+        "code": "C07",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      }
+    }
+  },
+  "matches": [
+    {
+      "groundTruthId": "C03-20260105-001",
+      "predictionId": "C03-20260105-001",
+      "code": "C03",
+      "groundTruthStart": "2026-01-05T10:20:00Z",
+      "groundTruthEnd": "2026-01-05T10:41:00Z",
+      "predictionStart": "2026-01-05T10:20:00Z",
+      "predictionEnd": "2026-01-05T10:41:00Z"
+    },
+    {
+      "groundTruthId": "C04-20260105-001",
+      "predictionId": "C04-20260105-001",
+      "code": "C04",
+      "groundTruthStart": "2026-01-05T10:32:00Z",
+      "groundTruthEnd": "2026-01-05T10:39:00Z",
+      "predictionStart": "2026-01-05T10:32:00Z",
+      "predictionEnd": "2026-01-05T10:39:00Z"
+    }
+  ],
+  "unmatchedGroundTruth": [],
+  "unmatchedPredictions": [],
+  "provenance": {
+    "generatedAt": "2026-08-21T05:01:08.931Z",
+    "tool": "validation/evaluate.mjs",
+    "limitations": [
+      "Event-level evaluation contract, not the organizer score.",
+      "The deterministic backend fallback detects C03/C04 only.",
+      "Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged."
+    ]
+  }
+}

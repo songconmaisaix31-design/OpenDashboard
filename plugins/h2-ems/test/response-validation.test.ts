@@ -262,13 +262,13 @@ describe('H2 EMS remote response validation', () => {
 
     const invalidSeries = {
       runId: 'run-1',
-      variables: ['pcc_power_kw'],
-      points: [{ timestamp: 'not-a-date', values: { pcc_power_kw: Number.NaN } }],
+      variables: ['pcc_power_actual_kw'],
+      points: [{ timestamp: 'not-a-date', values: { pcc_power_actual_kw: Number.NaN } }],
     }
     await rejectsInvalid(() =>
       sourceFor(envelope(invalidSeries)).getSeries({
         runId: 'run-1',
-        variables: ['pcc_power_kw'],
+        variables: ['pcc_power_actual_kw'],
         startTime: '2026-01-01T00:00:00Z',
         endTime: '2026-01-01T00:01:00Z',
       }),
@@ -364,7 +364,7 @@ describe('H2 EMS remote response validation', () => {
 
     const seriesRequest = {
       runId: H2_FIXTURE_ANALYSIS_RUN.runId,
-      variables: ['pcc_power_kw', 'bess_power_kw'],
+      variables: ['pcc_power_actual_kw', 'bess_power_actual_kw'],
       startTime: '2026-01-05T10:20:00Z',
       endTime: '2026-01-05T10:21:00Z',
     }
@@ -373,7 +373,7 @@ describe('H2 EMS remote response validation', () => {
       variables: [...seriesRequest.variables].reverse(),
       points: [{
         timestamp: seriesRequest.startTime,
-        values: { pcc_power_kw: 1, bess_power_kw: 2 },
+        values: { pcc_power_actual_kw: 1, bess_power_actual_kw: 2 },
       }],
     }
     await rejectsInvalid(() =>
@@ -478,7 +478,7 @@ describe('H2 EMS remote response validation', () => {
   it('binds series points to requested variables, range, and order', async () => {
     const request = {
       runId: H2_FIXTURE_ANALYSIS_RUN.runId,
-      variables: ['pcc_power_kw', 'bess_power_kw'],
+      variables: ['pcc_power_actual_kw', 'bess_power_actual_kw'],
       startTime: '2026-01-05T10:20:00Z',
       endTime: '2026-01-05T10:22:00Z',
     }
@@ -488,17 +488,17 @@ describe('H2 EMS remote response validation', () => {
       points: [
         {
           timestamp: '2026-01-05T10:20:00Z',
-          values: { pcc_power_kw: 10, bess_power_kw: -5 },
+          values: { pcc_power_actual_kw: 10, bess_power_actual_kw: -5 },
         },
         {
           timestamp: '2026-01-05T10:21:00Z',
-          values: { pcc_power_kw: 11, bess_power_kw: -4 },
+          values: { pcc_power_actual_kw: 11, bess_power_actual_kw: -4 },
         },
       ],
     }
     const mutations: Array<(series: JsonRecord) => void> = [
       (series) => {
-        delete (((series.points as JsonRecord[])[0] as JsonRecord).values as JsonRecord).bess_power_kw
+        delete (((series.points as JsonRecord[])[0] as JsonRecord).values as JsonRecord).bess_power_actual_kw
       },
       (series) => {
         ;(((series.points as JsonRecord[])[0] as JsonRecord).values as JsonRecord).secret_value = 1
