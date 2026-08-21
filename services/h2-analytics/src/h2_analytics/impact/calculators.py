@@ -117,21 +117,23 @@ class ImpactCalculator:
         window: EventWindow,
         sampling_interval_minutes: float,
     ) -> ImpactCalculation:
-        values = [
-            value
+        # Official formula: sum(|abnormal PCC power - reference PCC power|) / 60.
+        # The abnormal exchange is the measured PCC power; the reference exchange
+        # is what the grid would have seen without the anomalous BESS action
+        # (pcc - bess). The deviation per row therefore equals |bess_actual|.
+        deviations = [
+            abs(value)
             for row in window.rows
-            if (value := row.value("pcc_power_actual_kw")) is not None
+            if (value := row.value("bess_power_actual_kw")) is not None
         ]
-        baseline = statistics.median(values) if values else 0.0
-        deviations = sum(abs(value - baseline) for value in values)
         return ImpactCalculation(
             "abnormal_grid_exchange_energy_kwh",
-            deviations * sampling_interval_minutes / 60,
+            sum(deviations) * sampling_interval_minutes / 60,
             "kWh",
             "impact-c03-v1",
             (
-                "Baseline is the median PCC power within the event window.",
-                "Abnormal exchange is the integrated absolute PCC deviation from baseline.",
+                "Reference PCC excludes the anomalous BESS contribution (pcc - bess).",
+                "The per-row deviation is the BESS power magnitude.",
             ),
         )
 
@@ -272,8 +274,15 @@ def _elz_hydrogen_kgph(row: DataRow) -> float | None:
 
 
 def _efficient_reference_power(row: DataRow, h2_target: float) -> float:
+    """Reference electrical power for the same hydrogen output.
+
+    Loads the available units at their efficiency-curve points in ascending
+    specific-energy order (the "efficient allocation"), keeping each assignment
+    above the minimum stable power. The curve points are the official
+    efficiency-curves vocabulary (10_electrolyzer_efficiency_curves.csv).
+    """
     curves = efficiency_curve_by_equipment()
-    candidates: list[tuple[float, float]] = []
+    points_by_unit: list[tuple[float, float, float]] = []
     for actual_field, capacity_field, available_field, equipment_id in zip(
         _ELZ_POWER_ACTUAL,
         _ELZ_ACTUAL_CAPACITY,
@@ -289,15 +298,17 @@ def _efficient_reference_power(row: DataRow, h2_target: float) -> float:
         if not points:
             continue
         capacity_kw = min(capacity, RATED_CAPACITY_KW)
-        specific = _specific_energy_at(points, capacity_kw)
-        candidates.append((specific, capacity_kw))
-    candidates.sort(key=lambda item: item[0])
+        for point in points:
+            specific = float(point["specific_energy_kwh_per_kg"])
+            power = float(point["power_kw"])
+            points_by_unit.append((specific, power, capacity_kw))
+    points_by_unit.sort(key=lambda item: (item[0], item[1]))
     remaining = h2_target
     reference_power = 0.0
-    for specific, capacity_kw in candidates:
+    for specific, power_kw, capacity_kw in points_by_unit:
         if remaining <= _EPSILON:
             break
-        max_h2 = capacity_kw / specific
+        max_h2 = min(capacity_kw, power_kw) / specific
         assigned_h2 = min(remaining, max_h2)
         assigned_power = assigned_h2 * specific
         if assigned_power > 0 and assigned_power < MIN_STABLE_KW:
@@ -305,8 +316,3 @@ def _efficient_reference_power(row: DataRow, h2_target: float) -> float:
         reference_power += assigned_power
         remaining -= assigned_h2
     return reference_power
-
-
-def _specific_energy_at(points: tuple[dict[str, float], ...], power_kw: float) -> float:
-    best = min(points, key=lambda point: abs(point["power_kw"] - power_kw))
-    return best["specific_energy_kwh_per_kg"]
