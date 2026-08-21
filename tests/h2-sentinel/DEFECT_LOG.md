@@ -28,6 +28,38 @@
 | Actual | The public Fixture adapter returned `application/json` and descriptor format `json` for the requested C03 report. |
 | Reproduction | `npm run h2:qa` |
 | Relevant commit SHA | QA baseline `6d04ee38f39d81801c87190f31eff0a1915862c6` |
+
+## Track D findings (validation and delivery)
+
+### H2-QA-003
+
+| Field | Value |
+| --- | --- |
+| Severity | blocker for D3/D4 submission format |
+| Scope | Backend `submissions:export` `affected_equipment` format |
+| Expected contract | Official labels use comma-separated, space-free tokens `BESS,PCC,PV,ELZ,ELZ1,ELZ2,ELZ3`; `equipment_master.csv` ids must not enter a submission (solo brief §2.2; verified against 350 official label rows). |
+| Actual | The exported CSV contains `ELZ01:碱性电解槽1;PCC01:并网点;...` (`equipment_id:名称`, semicolon-joined) from `reports/submission.py` line 47-49 and `diagnosis/builder.py` line 308-315. `validation/check-submission.mjs` (official-format checker) flags all 566 rows of the D4 test-set export. |
+| Reproduction | `node scripts/h2-sentinel/offline-deploy-smoke.mjs --official-data "<dir>"` |
+| Relevant commit SHA | baseline `09ed2a3` |
+| Owned implementation track | Analytics (`reports/submission.py`, `diagnosis/builder.py`; both in the frozen zone) |
+| Golden-path blocker | no (fixture path unaffected); submission-format blocker yes |
+| Evidence artifact | `validation/reports/offline-deploy-smoke.json`, `scripts/h2-sentinel/artifacts/submission-testset.csv` |
+| Status | open; fix must come from the coordinator/owner track, then Track D re-runs the D4 smoke and the checker. |
+
+### H2-QA-004
+
+| Field | Value |
+| --- | --- |
+| Severity | warning (worked around in the validation lane) |
+| Scope | Sanitized fixture import against the 69-field schema |
+| Expected contract | `datasets:analyze` on the tiny fixture returns C03/C04 events. |
+| Actual | At baseline the frozen fixture (13 columns) is rejected by `quality.blocked: Required fields are missing` because the backend now requires all 69 official fields. The validation lane pads the missing columns at import time (derived columns computed with the official formulas, others zero); fixture evaluation is green again (F1 = 1.0). |
+| Reproduction | `node validation/evaluate.mjs --mode fixture` before the padding fix |
+| Relevant commit SHA | baseline `09ed2a3` |
+| Owned implementation track | Contracts (fixture file) / Analytics (required-field contract); padding lives in `validation/evaluate.mjs` |
+| Golden-path blocker | no |
+| Evidence artifact | `validation/reports/evaluate-fixture.json` |
+| Status | open as a consistency note; the fixture file itself is frozen.
 | Owned implementation track | H2 Plugin (fixture report artifact); H3 Web labels are affected presentation. |
 | Golden-path blocker | yes |
 | Evidence | Redacted JSON summary emitted by `tests/h2-sentinel/assembled/run-assembled-qa.mjs`; no generated artifact is retained. |
