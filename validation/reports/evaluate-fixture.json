@@ -1,20 +1,22 @@
 {
   "contract": "h2-sentinel-official-validation-evaluation-v1",
   "mode": "fixture",
+  "set": "validation",
   "parameters": {
     "graceMinutes": 10,
     "limitDays": 0,
+    "minDay": null,
     "mergeGapMinutes": 2,
     "matching": "greedy event-level: same anomaly_code and interval overlap with a 10-minute grace window",
     "preprocessing": {
       "local": [
         "official timeseries chunked by UTC calendar day",
-        "official fields mapped to canonical backend fields per packages/h2-vocabulary/data/deprecated-field-map.json",
-        "total_electrolyzer_power_kw = elz1+elz2+elz3 power_actual_kw",
+        "official 69 field names passed through unchanged to the analytics service",
         "naive \"YYYY-MM-DD HH:MM:SS\" timestamps normalized to ISO-8601 UTC (Z)"
       ],
       "fixture": [
-        "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv"
+        "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv",
+        "missing official fields padded with zero at import time (the fixture predates the 69-field schema)"
       ]
     }
   },
@@ -30,6 +32,8 @@
   },
   "groundTruth": {
     "count": 2,
+    "totalCount": 2,
+    "dayWindow": "all days",
     "byCode": {
       "C03": 1,
       "C04": 1
@@ -38,7 +42,7 @@
   "predictions": {
     "rawCount": 2,
     "mergedCount": 2,
-    "detectorVersion": "deterministic-c03-c04-v1",
+    "detectorVersion": "deterministic-c01-c07-v2",
     "byCode": {
       "C03": 1,
       "C04": 1
@@ -52,6 +56,16 @@
       "precision": 1,
       "recall": 1,
       "f1": 1
+    },
+    "classification": {
+      "definition": "code-agnostic temporal overlap; classification accuracy = code-correct / matched pairs",
+      "matches": 2,
+      "correctCode": 2,
+      "detectionPrecision": 1,
+      "detectionRecall": 1,
+      "detectionF1": 1,
+      "classificationAccuracy": 1,
+      "eventAccuracy": 1
     },
     "byCode": {
       "C01": {
@@ -149,19 +163,20 @@
       "code": "C04",
       "groundTruthStart": "2026-01-05T10:32:00Z",
       "groundTruthEnd": "2026-01-05T10:39:00Z",
-      "predictionStart": "2026-01-05T10:32:00Z",
-      "predictionEnd": "2026-01-05T10:39:00Z"
+      "predictionStart": "2026-01-05T10:20:00Z",
+      "predictionEnd": "2026-01-05T10:41:00Z"
     }
   ],
   "unmatchedGroundTruth": [],
   "unmatchedPredictions": [],
   "provenance": {
-    "generatedAt": "2026-08-21T05:01:08.931Z",
+    "generatedAt": "2026-08-21T16:10:36.823Z",
     "tool": "validation/evaluate.mjs",
     "limitations": [
       "Event-level evaluation contract, not the organizer score.",
-      "The deterministic backend fallback detects C03/C04 only.",
-      "Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged."
+      "Rule detection covers the official C01-C07 field mappings.",
+      "Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged.",
+      "With --limit-days, labels are restricted to the imported UTC day window; a truncated run is not comparable to a full-window run."
     ]
   }
 }

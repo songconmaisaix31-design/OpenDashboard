@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import {
+  classifyEvents,
   computeMetrics,
   matchEvents,
   mergePredictions,
@@ -155,5 +156,67 @@ describe('H2 Sentinel evaluation metrics', () => {
       ),
     )
     assert.equal(merged.length, 2)
+  })
+
+  it('classifies an exact-match event with accuracy 1', () => {
+    const result = classifyEvents({
+      groundTruth: groundTruth(['g1', 'C03', '2026-01-05T10:00:00Z', '2026-01-05T11:00:00Z']),
+      predictions: predictions(['p1', 'C03', '2026-01-05T10:01:00Z', '2026-01-05T10:59:00Z']),
+    })
+    assert.equal(result.matches, 1)
+    assert.equal(result.correctCode, 1)
+    assert.equal(result.detectionRecall, 1)
+    assert.equal(result.detectionPrecision, 1)
+    assert.equal(result.detectionF1, 1)
+    assert.equal(result.classificationAccuracy, 1)
+    assert.equal(result.eventAccuracy, 1)
+  })
+
+  it('separates detection from a wrong-code classification', () => {
+    const result = classifyEvents({
+      groundTruth: groundTruth(['g1', 'C03', '2026-01-05T10:00:00Z', '2026-01-05T11:00:00Z']),
+      predictions: predictions(['p1', 'C04', '2026-01-05T10:10:00Z', '2026-01-05T10:50:00Z']),
+    })
+    assert.equal(result.matches, 1)
+    assert.equal(result.correctCode, 0)
+    assert.equal(result.detectionRecall, 1)
+    assert.equal(result.detectionPrecision, 1)
+    assert.equal(result.detectionF1, 1)
+    assert.equal(result.classificationAccuracy, 0)
+    assert.equal(result.eventAccuracy, 0)
+  })
+
+  it('counts a detection miss and an unmatched prediction', () => {
+    const result = classifyEvents({
+      groundTruth: groundTruth(
+        ['g1', 'C02', '2026-01-05T10:00:00Z', '2026-01-05T11:00:00Z'],
+        ['g2', 'C05', '2026-01-06T10:00:00Z', '2026-01-06T11:00:00Z'],
+      ),
+      predictions: predictions(
+        ['p1', 'C02', '2026-01-05T10:05:00Z', '2026-01-05T10:30:00Z'],
+        ['p2', 'C04', '2026-01-07T00:00:00Z', '2026-01-07T00:30:00Z'],
+      ),
+    })
+    assert.equal(result.matches, 1)
+    assert.equal(result.correctCode, 1)
+    assert.equal(result.detectionRecall, 0.5)
+    assert.equal(result.detectionPrecision, 0.5)
+    assert.equal(result.detectionF1, 0.5)
+    assert.equal(result.classificationAccuracy, 1)
+    assert.equal(result.eventAccuracy, 0.5)
+  })
+
+  it('handles an empty prediction set safely', () => {
+    const result = classifyEvents({
+      groundTruth: groundTruth(['g1', 'C03', '2026-01-05T10:00:00Z', '2026-01-05T11:00:00Z']),
+      predictions: [],
+    })
+    assert.equal(result.matches, 0)
+    assert.equal(result.correctCode, 0)
+    assert.equal(result.detectionRecall, 0)
+    assert.equal(result.detectionPrecision, 0)
+    assert.equal(result.detectionF1, 0)
+    assert.equal(result.classificationAccuracy, 0)
+    assert.equal(result.eventAccuracy, 0)
   })
 })
