@@ -29,8 +29,13 @@ class EventWindow:
 
 
 POLICIES = {
+    "C01": AggregationPolicy(minimum_rows=5, confirmation_row=5),
+    "C02": AggregationPolicy(minimum_rows=5, confirmation_row=5),
     "C03": AggregationPolicy(minimum_rows=5, confirmation_row=5),
     "C04": AggregationPolicy(minimum_rows=3, confirmation_row=3),
+    "C05": AggregationPolicy(minimum_rows=3, confirmation_row=3),
+    "C06": AggregationPolicy(minimum_rows=3, confirmation_row=3),
+    "C07": AggregationPolicy(minimum_rows=5, confirmation_row=5),
 }
 DEFAULT_POLICY = AggregationPolicy(minimum_rows=3, confirmation_row=3)
 
