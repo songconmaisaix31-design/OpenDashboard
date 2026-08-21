@@ -22,15 +22,18 @@ _ELZ_SPECIFIC = tuple(f"elz{index}_specific_energy_kwh_per_kg" for index in _ELZ
 _ELZ_RUN_STATE = tuple(f"elz{index}_run_state" for index in _ELZ_IDS)
 _ELZ_AVAILABLE_FLAG = tuple(f"elz{index}_available_flag" for index in _ELZ_IDS)
 
-_OSCILLATION_WINDOW = 5
+_OSCILLATION_WINDOW = 15
 _OSCILLATION_AMPLITUDE_KW = 80.0
-_OSCILLATION_TRANSITIONS = 2
-_STABILITY_SPAN_KW = 40.0
-_DIFF_EPSILON_KW = 5.0
+_OSCILLATION_TURNS = 2
+_OSCILLATION_TURN_KW = 10.0
+_STABILITY_SPAN_KW = 300.0
 
 _RATED_CAPACITY_KW = 1_000.0
 _CAPACITY_SKEW_KW = 200.0
 _COMMAND_EXECUTION_GAP_KW = 50.0
+_BESS_REVERSAL_POWER_KW = 100.0
+_BESS_REVERSAL_SOC_DELTA_PCT = 0.25
+_SOC_TARGET_DEVIATION_PCT = 10.0
 
 
 class RuleRowDetector:
@@ -51,7 +54,7 @@ class RuleRowDetector:
             previous = rows[index - 1] if index > 0 else None
             candidates.extend(self._detect_c01(rows, index))
             candidates.extend(self._detect_c02(row))
-            candidates.extend(self._detect_c03(row))
+            candidates.extend(self._detect_c03(row, previous))
             candidates.extend(self._detect_c04(row))
             candidates.extend(self._detect_c05(row))
             candidates.extend(self._detect_c06(row, previous))
@@ -98,12 +101,15 @@ class RuleRowDetector:
                 second - first
                 for first, second in zip(numeric, numeric[1:], strict=False)
             ]
-            direction_changes = [
-                first * second < 0
-                for first, second in zip(diffs, diffs[1:], strict=False)
-                if abs(first) >= _DIFF_EPSILON_KW and abs(second) >= _DIFF_EPSILON_KW
+            significant = [
+                diff for diff in diffs if abs(diff) >= _OSCILLATION_TURN_KW
             ]
-            if sum(direction_changes) >= _OSCILLATION_TRANSITIONS:
+            turns = sum(
+                1
+                for first, second in zip(significant, significant[1:], strict=False)
+                if first * second < 0
+            )
+            if turns >= _OSCILLATION_TURNS:
                 oscillating = True
                 break
         if not oscillating:
@@ -149,18 +155,36 @@ class RuleRowDetector:
             )
         return ()
 
-    def _detect_c03(self, row: DataRow) -> tuple[DetectionCandidate, ...]:
+    def _detect_c03(
+        self,
+        row: DataRow,
+        previous: DataRow | None,
+    ) -> tuple[DetectionCandidate, ...]:
         command = row.value("bess_power_cmd_kw")
         actual = row.value("bess_power_actual_kw")
         if (
-            command is None
-            or actual is None
-            or abs(command) < 1.0
-            or abs(actual) < 1.0
-            or command * actual >= 0
+            command is not None
+            and actual is not None
+            and abs(command) >= 1.0
+            and abs(actual) >= 1.0
+            and command * actual < 0
         ):
+            return (self._candidate(row, "C03", "BESS_DIRECTION_REVERSED", 0.94),)
+        if previous is None:
             return ()
-        return (self._candidate(row, "C03", "BESS_DIRECTION_REVERSED", 0.94),)
+        soc = row.value("bess_soc_pct")
+        previous_soc = previous.value("bess_soc_pct")
+        power = actual if actual is not None else command
+        if power is None or soc is None or previous_soc is None:
+            return ()
+        if abs(power) < _BESS_REVERSAL_POWER_KW:
+            return ()
+        delta_soc = soc - previous_soc
+        if abs(delta_soc) < _BESS_REVERSAL_SOC_DELTA_PCT:
+            return ()
+        if power * delta_soc > 0:
+            return (self._candidate(row, "C03", "BESS_DIRECTION_REVERSED", 0.94),)
+        return ()
 
     def _detect_c04(self, row: DataRow) -> tuple[DetectionCandidate, ...]:
         export_violation = row.value("pcc_export_power_violation_kw")
@@ -294,13 +318,16 @@ class RuleRowDetector:
         return ()
 
     def _detect_c07(self, row: DataRow) -> tuple[DetectionCandidate, ...]:
-        charge_available = row.value("bess_available_charge_energy_kwh")
-        discharge_available = row.value("bess_available_discharge_energy_kwh")
-        reserve_target = row.value("bess_regulation_reserve_target_kwh")
-        if reserve_target is None:
+        soc = row.value("bess_soc_pct")
+        target = row.value("soc_target_pct")
+        if soc is None or target is None:
             return ()
-        if charge_available is not None and charge_available < reserve_target:
-            return (self._candidate(row, "C07", "CHARGE_HEADROOM_SHORTFALL", 0.86),)
-        if discharge_available is not None and discharge_available < reserve_target:
-            return (self._candidate(row, "C07", "DISCHARGE_RESERVE_SHORTFALL", 0.86),)
-        return ()
+        deviation = soc - target
+        if abs(deviation) < _SOC_TARGET_DEVIATION_PCT:
+            return ()
+        subtype = (
+            "CHARGE_HEADROOM_SHORTFALL"
+            if deviation < 0
+            else "DISCHARGE_RESERVE_SHORTFALL"
+        )
+        return (self._candidate(row, "C07", subtype, 0.86),)

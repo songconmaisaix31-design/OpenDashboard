@@ -54,13 +54,13 @@ class DatasetLoader:
         mode = "FIXTURE" if fingerprint == FIXTURE_FINGERPRINT else "LIVE_ANALYSIS"
         reader = csv.reader(io.StringIO(text, newline=""), strict=True)
         try:
-            rows = list(reader)
+            header_cells = next(reader)
+        except StopIteration:
+            raise CsvImportError("import.empty", "CSV must include a header row.")
         except csv.Error as error:
             raise CsvImportError("import.malformed_csv", "CSV syntax is malformed.") from error
-        if not rows:
-            raise CsvImportError("import.empty", "CSV must include a header row.")
 
-        headers = tuple(cell.strip() for cell in rows[0])
+        headers = tuple(cell.strip() for cell in header_cells)
         if not headers or any(not header for header in headers):
             raise CsvImportError("import.invalid_header", "CSV header names must be non-empty.")
         duplicates = sorted(name for name, count in Counter(headers).items() if count > 1)
@@ -71,15 +71,16 @@ class DatasetLoader:
                 tuple(duplicates),
             )
 
-        body = [row for row in rows[1:] if any(cell.strip() for cell in row)]
-        if len(body) > MAX_CSV_ROWS:
+        missing_fields = tuple(name for name in REQUIRED_FIELDS if name not in headers)
+        try:
+            parsed_rows, parse_counts = _parse_rows(headers, reader)
+        except csv.Error as error:
+            raise CsvImportError("import.malformed_csv", "CSV syntax is malformed.") from error
+        if len(parsed_rows) > MAX_CSV_ROWS:
             raise CsvImportError(
                 "import.too_many_rows",
                 f"CSV exceeds the {MAX_CSV_ROWS}-row in-memory import limit.",
             )
-
-        missing_fields = tuple(name for name in REQUIRED_FIELDS if name not in headers)
-        parsed_rows, parse_counts = _parse_rows(headers, body)
         timestamps = [row.timestamp for row in parsed_rows if row.timestamp is not None]
         interval_minutes = _sampling_interval_minutes(timestamps)
         start_time, end_time = _time_range(timestamps)
@@ -146,7 +147,7 @@ def _validate_filename(filename: str) -> str:
 
 def _parse_rows(
     headers: tuple[str, ...],
-    body: list[list[str]],
+    body: Any,
 ) -> tuple[list[DataRow], dict[str, Any]]:
     parsed: list[DataRow] = []
     missing_values: Counter[str] = Counter()
@@ -154,6 +155,8 @@ def _parse_rows(
     invalid_timestamps = 0
     malformed_rows = 0
     for index, cells in enumerate(body, start=1):
+        if not any(cell.strip() for cell in cells):
+            continue
         if len(cells) != len(headers):
             malformed_rows += 1
         record = {

@@ -100,7 +100,7 @@ def test_rule_detector_covers_all_seven_codes(valid_csv: str) -> None:
 
     c01_rows = tuple(
         replace(baseline, values={**baseline.values, "elz1_power_cmd_kw": value})
-        for value in (600, 300, 600, 300, 600)
+        for value in (600, 300, 600, 300, 600, 300, 600, 600, 600, 600, 600, 600, 600, 600, 600)
     )
     scenarios: dict[str, tuple] = {
         "C01": c01_rows,
@@ -122,8 +122,8 @@ def test_rule_detector_covers_all_seven_codes(valid_csv: str) -> None:
             elz2_actual_available_capacity_kw=1000.0,
         ),
         "C07": single(
-            bess_available_charge_energy_kwh=100.0,
-            bess_regulation_reserve_target_kwh=300.0,
+            bess_soc_pct=40.0,
+            soc_target_pct=88.0,
         ),
     }
     for code, rows in scenarios.items():
