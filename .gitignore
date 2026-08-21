@@ -17,3 +17,4 @@ scripts/h2-sentinel/artifacts/
 tests/h2-sentinel/reports/generated/
 .DS_Store
 Thumbs.db
+.vercel
