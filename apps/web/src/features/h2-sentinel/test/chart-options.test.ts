@@ -7,6 +7,7 @@ import type { H2SeriesResponse } from '../../../../../../packages/h2-contracts/s
 import {
   createEventChartOption,
   createPccChartOption,
+  createQuotaChartOption,
   createSocChartOption,
   createVariableChartOption,
 } from '../model/chart-options.ts'
@@ -81,6 +82,53 @@ describe('H2 chart options', () => {
 
     assert.deepEqual(seriesNames(createVariableChartOption(series, field)), [
       '储能实际SOC',
+    ])
+  })
+
+  it('plots the dedicated energy-quota view with official Chinese names', () => {
+    const quotaSeries: H2SeriesResponse = {
+      runId: H2_WEB_FIXTURE_RUN.runId,
+      variables: [
+        'grid_export_energy_used_kwh_day',
+        'grid_export_energy_quota_kwh_day',
+        'grid_import_energy_used_kwh_day',
+        'grid_import_energy_quota_kwh_day',
+      ],
+      points: [
+        {
+          timestamp: '2026-01-05T00:00:00Z',
+          values: {
+            grid_export_energy_used_kwh_day: 1200,
+            grid_export_energy_quota_kwh_day: 4000,
+            grid_import_energy_used_kwh_day: 800,
+            grid_import_energy_quota_kwh_day: 2500,
+          },
+        },
+      ],
+    }
+
+    assert.deepEqual(seriesNames(createQuotaChartOption(quotaSeries)), [
+      '当日累计上网电量',
+      '当日上网电量配额',
+      '当日累计下网电量',
+      '当日下网电量配额',
+    ])
+  })
+
+  it('skips quota series that are absent from the response', () => {
+    const partialSeries: H2SeriesResponse = {
+      runId: H2_WEB_FIXTURE_RUN.runId,
+      variables: ['grid_export_energy_quota_kwh_day'],
+      points: [
+        {
+          timestamp: '2026-01-05T00:00:00Z',
+          values: { grid_export_energy_quota_kwh_day: 4000 },
+        },
+      ],
+    }
+
+    assert.deepEqual(seriesNames(createQuotaChartOption(partialSeries)), [
+      '当日上网电量配额',
     ])
   })
 
