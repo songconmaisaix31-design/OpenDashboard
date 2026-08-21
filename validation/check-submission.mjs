@@ -1,5 +1,6 @@
 import { readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { decodeUtf8Strict } from './lib/csv.mjs'
 import {
@@ -234,16 +235,19 @@ export function validateSubmissionFile(candidatePath) {
   return validateSubmissionText(text)
 }
 
-const candidates = process.argv.slice(2)
-if (candidates.length === 0) {
-  console.error('Usage: node validation/check-submission.mjs <path-to-submission.csv>')
-  process.exitCode = 2
-} else {
-  let anyInvalid = false
-  for (const candidate of candidates) {
-    const result = validateSubmissionFile(candidate)
-    console.log(JSON.stringify(result, null, 2))
-    if (!result.valid) anyInvalid = true
+const isDirectRun = process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(new URL(import.meta.url))
+if (isDirectRun) {
+  const candidates = process.argv.slice(2)
+  if (candidates.length === 0) {
+    console.error('Usage: node validation/check-submission.mjs <path-to-submission.csv>')
+    process.exitCode = 2
+  } else {
+    let anyInvalid = false
+    for (const candidate of candidates) {
+      const result = validateSubmissionFile(candidate)
+      console.log(JSON.stringify(result, null, 2))
+      if (!result.valid) anyInvalid = true
+    }
+    process.exitCode = anyInvalid ? 1 : 0
   }
-  process.exitCode = anyInvalid ? 1 : 0
 }
