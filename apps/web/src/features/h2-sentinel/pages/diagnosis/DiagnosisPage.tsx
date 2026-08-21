@@ -1,6 +1,9 @@
-import type { H2AnomalyEvent, H2SeriesResponse } from '../../../../../../../packages/h2-contracts/src/index.ts'
+import { useEffect, useState } from 'react'
+
+import type { H2AnomalyEvent, H2EvidenceItem, H2SeriesResponse } from '../../../../../../../packages/h2-contracts/src/index.ts'
 import type { H2NavigationTarget } from '../../routes.ts'
 import {
+  evidenceFocusWindow,
   formatH2AffectedEquipment,
   formatH2Confidence,
   formatH2ControlObject,
@@ -29,6 +32,14 @@ export interface DiagnosisPageProps {
 }
 
 export function DiagnosisPage({ event, events, onNavigate, series, seriesError }: DiagnosisPageProps) {
+  const [focusEvidence, setFocusEvidence] = useState<H2EvidenceItem | null>(null)
+  const focusWindow =
+    event && focusEvidence ? evidenceFocusWindow(event, focusEvidence) : null
+
+  useEffect(() => {
+    setFocusEvidence(null)
+  }, [event?.eventId])
+
   if (!event) {
     return (
       <div className="h2-page">
@@ -91,16 +102,20 @@ export function DiagnosisPage({ event, events, onNavigate, series, seriesError }
       <section className="h2-panel h2-chart-panel">
         <div className="h2-panel__heading">
           <div><p className="h2-eyebrow">Synchronized evidence</p><h2>时间对齐趋势与事件区间</h2></div>
-          <span>单位 kW · 阴影为事件区间</span>
+          {focusWindow ? (
+            <button className="h2-text-button" onClick={() => setFocusEvidence(null)} type="button">重置缩放</button>
+          ) : (
+            <span>单位 kW · 阴影为事件区间</span>
+          )}
         </div>
         {series ? (
-          <EChartsCanvas ariaLabel={`${event.code} 事件时间对齐证据图，含约束线与事件区间`} option={createEventChartOption(series, event)} />
+          <EChartsCanvas ariaLabel={`${event.code} 事件时间对齐证据图，含约束线与事件区间`} option={createEventChartOption(series, event, focusWindow)} />
         ) : (
           <div className="h2-chart-empty" role="status"><strong>趋势数据暂不可用</strong><p>{seriesError ?? '事件结构化证据仍可核验，系统不会绘制推测曲线。'}</p></div>
         )}
       </section>
 
-      <EvidencePanel evidence={event.evidence} />
+      <EvidencePanel evidence={event.evidence} onLocate={(evidence) => setFocusEvidence(evidence)} />
 
       <div className="h2-diagnosis-grid">
         <section className="h2-panel h2-cause-panel">

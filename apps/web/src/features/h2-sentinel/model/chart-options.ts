@@ -9,6 +9,7 @@ import {
   formatH2FieldLabel,
   formatH2FieldUnit,
   formatH2Timestamp,
+  type H2ChartFocusWindow,
 } from './presentation.ts'
 
 const COLORS = ['#49d6bd', '#ffb45d', '#8ea9ff', '#f3778f', '#b393ff'] as const
@@ -43,6 +44,7 @@ const powerSeriesByCode = {
 export function createEventChartOption(
   response: H2SeriesResponse,
   event: H2AnomalyEvent,
+  focusWindow?: H2ChartFocusWindow | null,
 ): EChartsCoreOption {
   const definitions =
     event.code === 'C03'
@@ -51,11 +53,17 @@ export function createEventChartOption(
         ? powerSeriesByCode.C04
         : createEvidenceSeries(event)
 
-  return createLineOption(response, definitions, 'kW', {
-    startTime: event.startTime,
-    endTime: event.endTime,
-    label: `${event.code} 事件区间`,
-  })
+  return createLineOption(
+    response,
+    definitions,
+    'kW',
+    {
+      startTime: event.startTime,
+      endTime: event.endTime,
+      label: `${event.code} 事件区间`,
+    },
+    focusWindow,
+  )
 }
 
 function createEvidenceSeries(event: H2AnomalyEvent): readonly SeriesDefinition[] {
@@ -150,12 +158,14 @@ function createLineOption(
     readonly endTime: string
     readonly label: string
   },
+  focusWindow?: H2ChartFocusWindow | null,
 ): EChartsCoreOption {
-  const timestamps = response.points.map(({ timestamp }) => timestamp)
+  const timestamps = response.points.map(({ timestamp }) => Date.parse(timestamp))
   const resolvedDefinitions = definitions.map((definition) => ({
     ...definition,
     label: definition.label ?? formatH2FieldLabel(definition.variable),
   }))
+  const zoomRange = createFocusZoomRange(timestamps, focusWindow)
 
   return {
     aria: { enabled: true, decal: { show: true } },
@@ -183,12 +193,13 @@ function createLineOption(
         fillerColor: 'rgba(73, 214, 189, 0.12)',
         handleStyle: { color: '#49d6bd' },
         textStyle: { color: '#77899c' },
+        ...(zoomRange ? { start: zoomRange.start, end: zoomRange.end } : {}),
       },
     ],
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: timestamps,
+      data: response.points.map(({ timestamp }) => timestamp),
       axisLabel: {
         color: '#7f91a4',
         formatter: (value: string) => formatH2Timestamp(value),
@@ -225,5 +236,38 @@ function createLineOption(
             }
           : undefined,
     })),
+  }
+}
+
+function createFocusZoomRange(
+  timestamps: readonly number[],
+  focusWindow: H2ChartFocusWindow | null | undefined,
+): { readonly start: number; readonly end: number } | null {
+  if (!focusWindow) {
+    return null
+  }
+  const startTime = Date.parse(focusWindow.startTime)
+  const endTime = Date.parse(focusWindow.endTime)
+  if (Number.isNaN(startTime) || Number.isNaN(endTime)) {
+    return null
+  }
+
+  const total = timestamps.length
+  if (total === 0) {
+    return null
+  }
+  const first = timestamps.findIndex((value) => value >= startTime)
+  if (first === -1) {
+    return { start: 0, end: 100 }
+  }
+  const exclusiveEnd = timestamps.findIndex((value) => value > endTime)
+  const last = exclusiveEnd === -1 ? total - 1 : exclusiveEnd - 1
+  if (last < first) {
+    return { start: 0, end: 100 }
+  }
+
+  return {
+    start: (first / total) * 100,
+    end: ((last + 1) / total) * 100,
   }
 }

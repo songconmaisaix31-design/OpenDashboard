@@ -12,6 +12,7 @@ import type {
   H2ClaimKind,
   H2DataQualityStatus,
   H2DatasetMode,
+  H2EvidenceItem,
   H2EvidenceValue,
   H2ProvenanceMode,
   H2ReviewState,
@@ -177,6 +178,50 @@ export function formatH2ImpactMetric(event: H2AnomalyEvent): string {
   return (
     anomalyTaxonomyByCode(event.code)?.primaryImpactMetricZh ?? event.impact.metric
   )
+}
+
+export interface H2ChartFocusWindow {
+  readonly startTime: string
+  readonly endTime: string
+}
+
+/**
+ * Computes the chart focus window that locates a single evidence item inside
+ * the event interval. Interval evidence focuses the whole interval; a
+ * timestamped evidence point focuses a small window around the point, clamped
+ * to the event bounds.
+ */
+export function evidenceFocusWindow(
+  event: H2AnomalyEvent,
+  evidence: H2EvidenceItem,
+): H2ChartFocusWindow | null {
+  if (evidence.interval) {
+    return {
+      startTime: evidence.interval.startTime,
+      endTime: evidence.interval.endTime,
+    }
+  }
+  if (!evidence.timestamp) {
+    return null
+  }
+
+  const eventStart = Date.parse(event.startTime)
+  const eventEnd = Date.parse(event.endTime)
+  const point = Date.parse(evidence.timestamp)
+  if (Number.isNaN(eventStart) || Number.isNaN(eventEnd) || Number.isNaN(point)) {
+    return null
+  }
+
+  const halfWindowMs = 3 * 60_000
+  const start = Math.max(eventStart, point - halfWindowMs)
+  const end = Math.min(eventEnd, point + halfWindowMs)
+  if (end <= start) {
+    return { startTime: event.startTime, endTime: event.endTime }
+  }
+  return {
+    startTime: new Date(start).toISOString(),
+    endTime: new Date(end).toISOString(),
+  }
 }
 
 export interface H2FieldDictionaryRow {

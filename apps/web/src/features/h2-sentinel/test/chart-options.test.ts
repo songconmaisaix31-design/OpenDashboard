@@ -10,6 +10,7 @@ import {
   createSocChartOption,
   createVariableChartOption,
 } from '../model/chart-options.ts'
+import { evidenceFocusWindow } from '../model/presentation.ts'
 import { H2_WEB_FIXTURE_RUN } from './fixture-data-source.ts'
 import { createH2WebFixtureDataSource } from './fixture-data-source.ts'
 
@@ -25,6 +26,15 @@ const seriesNames = (option: EChartsCoreOption): readonly string[] =>
   ((option as { series?: readonly { readonly name?: string }[] }).series ?? [])
     .map(({ name }) => name ?? '')
     .filter(Boolean)
+
+const sliderZoom = (option: EChartsCoreOption): { readonly start: number; readonly end: number } => {
+  const dataZoom = (option as { dataZoom?: readonly { readonly type?: string; readonly start?: number; readonly end?: number }[] }).dataZoom ?? []
+  const slider = dataZoom.find(({ type }) => type === 'slider')
+  assert(slider)
+  assert(typeof slider.start === 'number')
+  assert(typeof slider.end === 'number')
+  return { start: slider.start, end: slider.end }
+}
 
 describe('H2 chart options', () => {
   it('uses official field labels for the golden power evidence chart', async () => {
@@ -72,5 +82,37 @@ describe('H2 chart options', () => {
     assert.deepEqual(seriesNames(createVariableChartOption(series, field)), [
       '储能实际SOC',
     ])
+  })
+
+  it('locates a timestamped evidence item to a clamped chart zoom window', async () => {
+    const c03Event = H2_WEB_FIXTURE_RUN.events.find(({ code }) => code === 'C03')
+    assert(c03Event)
+    const measurement = c03Event.evidence.find(({ evidenceId }) => evidenceId === 'C03-EV-001')
+    assert(measurement)
+    const interval = c03Event.evidence.find(({ evidenceId }) => evidenceId === 'C03-EV-003')
+    assert(interval)
+
+    assert.deepEqual(evidenceFocusWindow(c03Event, measurement), {
+      startTime: '2026-01-05T10:21:00.000Z',
+      endTime: '2026-01-05T10:27:00.000Z',
+    })
+    assert.deepEqual(evidenceFocusWindow(c03Event, interval), {
+      startTime: '2026-01-05T10:20:00Z',
+      endTime: '2026-01-05T10:41:00Z',
+    })
+
+    const series = await seriesFor([
+      'bess_power_cmd_kw',
+      'bess_power_actual_kw',
+      'pcc_power_actual_kw',
+    ])
+    const option = createEventChartOption(
+      series,
+      c03Event,
+      evidenceFocusWindow(c03Event, measurement),
+    )
+    const zoom = sliderZoom(option)
+    assert(Math.abs(zoom.start - 100 / 22) < 0.01)
+    assert(Math.abs(zoom.end - (8 / 22) * 100) < 0.01)
   })
 })

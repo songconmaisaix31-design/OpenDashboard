@@ -172,6 +172,7 @@ describe('H2 Sentinel presentation', () => {
 
     assert.match(markup, /趋势数据暂不可用/)
     assert.match(markup, /证据链/)
+    assert.match(markup, /定位到趋势图/)
     assert.match(markup, /影响量化/)
     assert.match(markup, /安全检查与建议/)
     assert.match(markup, /29\.33/)
