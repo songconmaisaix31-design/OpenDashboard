@@ -1,0 +1,130 @@
+{
+  "schema": "h2-sentinel-official-csv-e2e-v1",
+  "status": "passed",
+  "errorCode": null,
+  "runId": "run_f2bc8c0433f8",
+  "taskId": "task_e3_official_validation",
+  "dispatchId": "dispatch_e3_official_validation",
+  "testedCodeSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+  "attempt": 6,
+  "expected": {
+    "raw": {
+      "bytes": 77865257,
+      "sha256": "88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9",
+      "rows": 172800,
+      "fields": 69
+    },
+    "normalized": {
+      "bytes": 78038054,
+      "sha256": "4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169",
+      "rows": 172800,
+      "fields": 69
+    }
+  },
+  "stages": [
+    {
+      "stage": "raw_metadata",
+      "status": "passed",
+      "durationMs": 0,
+      "bytes": 77865257
+    },
+    {
+      "stage": "raw_identity",
+      "status": "passed",
+      "durationMs": 524,
+      "bytes": 77865257,
+      "sha256": "88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9",
+      "rows": 172800,
+      "fields": 69
+    },
+    {
+      "stage": "normalize",
+      "status": "passed",
+      "durationMs": 2009,
+      "bytes": 78038054,
+      "sha256": "4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169",
+      "rows": 172800,
+      "fields": 69
+    },
+    {
+      "stage": "launcher",
+      "status": "passed",
+      "durationMs": 2499
+    },
+    {
+      "stage": "same_origin_adapter",
+      "status": "passed",
+      "durationMs": 1
+    },
+    {
+      "stage": "import",
+      "status": "passed",
+      "durationMs": 5146,
+      "rowCount": 172800,
+      "fieldCount": 69,
+      "fingerprint": "sha256:4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169",
+      "qualityStatus": "passed"
+    },
+    {
+      "stage": "analysis",
+      "status": "passed",
+      "durationMs": 4460,
+      "runId": "run-live-h2-4407495ad75299f2",
+      "eventCount": 104,
+      "analysisStatus": "completed"
+    },
+    {
+      "stage": "export",
+      "status": "passed",
+      "durationMs": 11,
+      "contentHash": "sha256:af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326"
+    },
+    {
+      "stage": "checker",
+      "status": "passed",
+      "durationMs": 8,
+      "rowCount": 104,
+      "columnCount": 16
+    },
+    {
+      "stage": "cleanup",
+      "status": "passed",
+      "durationMs": 31
+    }
+  ],
+  "artifacts": [
+    {
+      "ref": "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/submission.csv",
+      "bytes": 168775,
+      "sha256": "af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326"
+    }
+  ],
+  "seriesHydration": {
+    "status": "passed",
+    "durationMs": 6864,
+    "runId": "run-live-h2-4407495ad75299f2",
+    "variableCount": 21,
+    "pointCount": 172800
+  },
+  "resources": {
+    "rssBytes": 840331264,
+    "resourceUsage": {
+      "userCPUTime": 5703000,
+      "systemCPUTime": 1375000,
+      "maxRSS": 1338484,
+      "sharedMemorySize": 0,
+      "unsharedDataSize": 0,
+      "unsharedStackSize": 0,
+      "minorPageFault": 0,
+      "majorPageFault": 681255,
+      "swappedOut": 0,
+      "fsRead": 1640,
+      "fsWrite": 57,
+      "ipcSent": 0,
+      "ipcReceived": 0,
+      "signalsCount": 0,
+      "voluntaryContextSwitches": 0,
+      "involuntaryContextSwitches": 0
+    }
+  }
+}
