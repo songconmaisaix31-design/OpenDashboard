@@ -38,8 +38,8 @@ mounts the feature behind an existing router.
 - The mode/provenance banner remains visible on every ready view.
 - Fixture and Live Analysis use the same injected contract.
 - A clean Live Analysis source with no datasets shows an accessible CSV picker;
-  imports are limited to `.csv` files up to 5 MiB before content is read,
-  matching the accepted H1 sidecar boundary.
+  imports are limited by `H2_CSV_MAX_BYTES` (currently 300 MiB) before content
+  is read, matching the accepted H1 sidecar boundary.
 - C03 and C04 are directly accessible from overview, event center, and hash
   routes.
 - Unknown routes and malformed encoded diagnosis hashes fail closed to the

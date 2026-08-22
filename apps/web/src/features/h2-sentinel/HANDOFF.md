@@ -31,8 +31,8 @@ cannot contain its own final object ID without rewriting history.
   tooltips, constraint series, event band, zoom, and reduced-motion handling.
 - Loading, empty, error, degraded series, missing event, missing validation
   labels, and unknown-safety states.
-- Clean Live Analysis empty-state CSV import path with `.csv` and 5 MiB
-  pre-read bounds, followed by injected import, analysis, event, and series
+- Clean Live Analysis empty-state CSV import path with `.csv` and the 300 MiB
+  local analytics pre-read bound, followed by injected import, analysis, event, and series
   hydration.
 - Deterministic Fixture preview and feature-local regression tests.
 
@@ -68,7 +68,7 @@ of this worker branch.
 - `node --import tsx --test
   "apps/web/src/features/h2-sentinel/test/*.test.ts*"` — passed: 7 tests, 0
   failures. Coverage includes all six views, loading/empty/error/unknown safety,
-  corrected C04 impact, hash routing, immutable filtering, 5 MiB/type bounds,
+  corrected C04 impact, hash routing, immutable filtering, 300 MiB/type bounds,
   and clean `LIVE_ANALYSIS` empty → import → ready hydration.
 - `npm run typecheck` — passed with strict TypeScript.
 - `npm run test` — passed: 53 tests, 0 failures across the repository.
