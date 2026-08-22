@@ -34,7 +34,7 @@ async function withTempDir(run) {
   }
 }
 
-function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', events, check, mutate = {}, stopResult = { code: 0, signal: null, timedOut: false } } = {}) {
+function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', events, check, mutate = {}, readyWebUrl = 'http://127.0.0.1:4100/h2-sentinel/?mode=local', stopResult = { code: 0, signal: null, timedOut: false } } = {}) {
   const calls = []
   const hydrationInputs = []
   let metadataCalls = 0
@@ -151,7 +151,7 @@ function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', eve
         calls.push(['start', options])
         if (events?.start) throw new Error('launcher output must not be recorded')
         return {
-          ready: { webUrl: 'http://127.0.0.1:4100/' },
+          ready: { webUrl: readyWebUrl },
           stop: async () => {
             stopped += 1
             if (events?.cleanup) throw new Error('cleanup output must not be recorded')
@@ -353,10 +353,23 @@ test('uses only the launcher web origin with the mandated 30 second adapter time
     assert.deepEqual(fixture.calls[0][1], { mode: 'local', webPort: 4100, analyticsPort: 4101 })
     assert.deepEqual(fixture.calls[1][1], {
       enabled: true,
-      baseUrl: 'http://127.0.0.1:4100/',
+      baseUrl: 'http://127.0.0.1:4100',
       timeoutMs: 30_000,
     })
     assert.equal(fixture.stopped(), 1)
+  })
+})
+
+test('fails closed on an invalid launcher ready URL without exposing it or creating a source', async () => {
+  await withTempDir(async (directory) => {
+    const fixture = depsFor({ readyWebUrl: 'not a URL / secret' })
+    const result = await runFixture(directory, fixture)
+    const report = await readFile(result.reportPath, 'utf8')
+    assert.equal(result.status, 'failed')
+    assert.equal(result.errorCode, 'E_LAUNCHER_READY_INVALID')
+    assert.deepEqual(fixture.calls.map(([name]) => name), ['start'])
+    assert.equal(fixture.stopped(), 1)
+    assert.doesNotMatch(report, /not a URL|secret/i)
   })
 })
 
