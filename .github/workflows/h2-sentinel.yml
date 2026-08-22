@@ -88,3 +88,8 @@ jobs:
       - name: Validate submission documents
         shell: pwsh
         run: ./submission/h2-sentinel/scripts/validate-submission.ps1
+
+      - name: Validate submission documents with Windows PowerShell 5.1
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: ./submission/h2-sentinel/scripts/validate-submission.ps1
