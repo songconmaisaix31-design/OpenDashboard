@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { getHeapStatistics } from 'node:v8'
 import { resourceUsage, memoryUsage } from 'node:process'
 
+import { hydrateH2Workspace } from '../apps/web/src/features/h2-sentinel/model/workspace-loader.ts'
 import { createLiveH2EmsDataSource } from '../plugins/h2-ems/src/index.ts'
 import { validateSubmissionFile } from './check-submission.mjs'
 import { splitCsvLine } from './lib/csv.mjs'
@@ -66,6 +67,7 @@ function defaultDependencies() {
     startLauncher,
     createLiveDataSource: createLiveH2EmsDataSource,
     checkSubmission: validateSubmissionFile,
+    hydrateWorkspace: hydrateH2Workspace,
     getResources: currentResources,
   }
 }
@@ -320,6 +322,45 @@ function isCleanStop(result) {
   return result?.timedOut === false && result.code === 0 && result.signal === null
 }
 
+function assertSeriesHydrationBinding(workspace, imported, normalizedIdentity) {
+  if (!workspace || typeof workspace !== 'object' || !workspace.run || typeof workspace.run !== 'object') {
+    throw new RunnerError('E_SERIES_HYDRATION_FAILED')
+  }
+  const { run, series, seriesError } = workspace
+  if (series === null || seriesError !== null || !series || typeof series !== 'object') {
+    throw new RunnerError('E_SERIES_HYDRATION_FAILED')
+  }
+  if (!run.dataset || typeof run.dataset !== 'object' ||
+    run.dataset.datasetId !== imported.dataset.datasetId ||
+    run.dataset.fingerprint !== imported.dataset.fingerprint) {
+    throw new RunnerError('E_SERIES_IDENTITY_MISMATCH')
+  }
+  if (typeof run.runId !== 'string' || run.runId.length === 0 || series.runId !== run.runId) {
+    throw new RunnerError('E_SERIES_RUN_ID_MISMATCH')
+  }
+  if (!Array.isArray(series.variables) ||
+    series.variables.length < 1 ||
+    series.variables.length > 32 ||
+    new Set(series.variables).size !== series.variables.length ||
+    series.variables.some((variable) => typeof variable !== 'string' || variable.length === 0)) {
+    throw new RunnerError('E_SERIES_VARIABLES_INVALID')
+  }
+  if (!Array.isArray(series.points) || series.points.length !== normalizedIdentity.rows) {
+    throw new RunnerError('E_SERIES_POINT_COUNT_MISMATCH')
+  }
+  return {
+    runId: run.runId,
+    variableCount: series.variables.length,
+    pointCount: series.points.length,
+  }
+}
+
+function seriesHydrationErrorCode(error) {
+  return error instanceof RunnerError && /^E_SERIES_[A-Z0-9_]+$/.test(error.code)
+    ? error.code
+    : 'E_SERIES_HYDRATION_FAILED'
+}
+
 export function sanitizeErrorCode(error) {
   return error instanceof RunnerError && /^E_[A-Z0-9_]+$/.test(error.code)
     ? error.code
@@ -361,6 +402,10 @@ export async function runOfficialCsvE2e({
     },
     stages: [],
     artifacts: [],
+    seriesHydration: {
+      status: 'not_attempted',
+      errorCode: 'E_SERIES_HYDRATION_NOT_ATTEMPTED',
+    },
     resources: null,
   }
   let session
@@ -439,7 +484,12 @@ export async function runOfficialCsvE2e({
     try {
       imported = await source.importCsv({ filename: 'official-timeseries.csv', text: normalized })
       assertImportBinding(imported, normalizedIdentity)
-      report.stages.push(stageRecord('import', 'passed', startedAt))
+      report.stages.push(stageRecord('import', 'passed', startedAt, {
+        rowCount: imported.dataset.rowCount,
+        fieldCount: imported.dataset.fields.length,
+        fingerprint: imported.dataset.fingerprint,
+        qualityStatus: imported.quality.status,
+      }))
     } catch (error) {
       throw stableStageError('import', error)
     }
@@ -449,7 +499,11 @@ export async function runOfficialCsvE2e({
     try {
       analysis = await source.runAnalysis(imported.dataset.datasetId)
       assertAnalysisBinding(analysis, imported)
-      report.stages.push(stageRecord('analysis', 'passed', startedAt))
+      report.stages.push(stageRecord('analysis', 'passed', startedAt, {
+        runId: analysis.runId,
+        eventCount: analysis.events.length,
+        analysisStatus: analysis.status,
+      }))
     } catch (error) {
       throw stableStageError('analysis', error)
     }
@@ -466,7 +520,9 @@ export async function runOfficialCsvE2e({
         bytes: Buffer.byteLength(submission.content),
         sha256: createHash('sha256').update(submission.content).digest('hex'),
       })
-      report.stages.push(stageRecord('export', 'passed', startedAt))
+      report.stages.push(stageRecord('export', 'passed', startedAt, {
+        contentHash: submission.descriptor.contentHash,
+      }))
     } catch (error) {
       throw stableStageError('export', error)
     }
@@ -475,9 +531,32 @@ export async function runOfficialCsvE2e({
     try {
       const check = await deps.checkSubmission(resolve(directory, 'submission.csv'))
       assertCheckerBinding(check, analysis.events.length)
-      report.stages.push(stageRecord('checker', 'passed', startedAt))
+      report.stages.push(stageRecord('checker', 'passed', startedAt, {
+        rowCount: check.rowCount,
+        columnCount: check.columns.length,
+      }))
     } catch (error) {
       throw stableStageError('checker', error)
+    }
+
+    const hydrationStartedAt = Date.now()
+    try {
+      const workspace = await deps.hydrateWorkspace(
+        source,
+        [imported.dataset],
+        imported.dataset,
+      )
+      const summary = assertSeriesHydrationBinding(workspace, imported, normalizedIdentity)
+      report.seriesHydration = {
+        status: 'passed',
+        durationMs: Date.now() - hydrationStartedAt,
+        ...summary,
+      }
+    } catch (error) {
+      report.seriesHydration = {
+        status: 'failed',
+        errorCode: seriesHydrationErrorCode(error),
+      }
     }
 
     report.status = 'passed'

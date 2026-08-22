@@ -36,6 +36,7 @@ async function withTempDir(run) {
 
 function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', events, check, mutate = {}, stopResult = { code: 0, signal: null, timedOut: false } } = {}) {
   const calls = []
+  const hydrationInputs = []
   let metadataCalls = 0
   let inspectCalls = 0
   let readCalls = 0
@@ -77,6 +78,21 @@ function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', eve
   mutate.import?.(imported)
   mutate.analysis?.(analysis)
   mutate.export?.(submission)
+  const hydrationWorkspace = {
+    run: {
+      ...analysis,
+      dataset: { ...analysis.dataset },
+      quality: { ...analysis.quality },
+      events: [...analysis.events],
+    },
+    series: {
+      runId: analysis.runId,
+      variables: ['power_kw'],
+      points: Array.from({ length: expected.normalized.rows }, () => ({})),
+    },
+    seriesError: null,
+  }
+  mutate.hydration?.(hydrationWorkspace)
   const checkerResult = check ?? {
     valid: true,
     columns: Array.from({ length: 16 }, () => 'column'),
@@ -103,6 +119,7 @@ function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', eve
   let nextPort = 4100
   return {
     calls,
+    hydrationInputs: () => hydrationInputs,
     metadataCalls: () => metadataCalls,
     inspectCalls: () => inspectCalls,
     readCalls: () => readCalls,
@@ -147,7 +164,16 @@ function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', eve
         if (events?.source) throw new Error('source output must not be recorded')
         return source
       },
-      checkSubmission: () => checkerResult,
+      checkSubmission: () => {
+        calls.push(['checker'])
+        return checkerResult
+      },
+      hydrateWorkspace: async (...argumentsList) => {
+        calls.push(['hydrate'])
+        hydrationInputs.push(argumentsList)
+        if (events?.hydrate) throw new Error('series failure must not be recorded')
+        return hydrationWorkspace
+      },
       getResources: () => ({ rssBytes: 123, resourceUsage: { maxRSS: 456 } }),
     },
   }
@@ -322,7 +348,7 @@ test('uses only the launcher web origin with the mandated 30 second adapter time
     const result = await runFixture(directory, fixture)
     assert.equal(result.status, 'passed')
     assert.deepEqual(fixture.calls.map(([name]) => name), [
-      'start', 'source', 'import', 'analysis', 'export',
+      'start', 'source', 'import', 'analysis', 'export', 'checker', 'hydrate',
     ])
     assert.deepEqual(fixture.calls[0][1], { mode: 'local', webPort: 4100, analyticsPort: 4101 })
     assert.deepEqual(fixture.calls[1][1], {
@@ -330,6 +356,97 @@ test('uses only the launcher web origin with the mandated 30 second adapter time
       baseUrl: 'http://127.0.0.1:4100/',
       timeoutMs: 30_000,
     })
+    assert.equal(fixture.stopped(), 1)
+  })
+})
+
+test('measures series hydration only after checker and records compact verified summaries', async () => {
+  await withTempDir(async (directory) => {
+    const fixture = depsFor()
+    const result = await runFixture(directory, fixture)
+    const report = JSON.parse(await readFile(result.reportPath, 'utf8'))
+    const hydrationInput = fixture.hydrationInputs()[0]
+    assert.equal(result.status, 'passed')
+    assert.deepEqual(fixture.calls.map(([name]) => name), [
+      'start', 'source', 'import', 'analysis', 'export', 'checker', 'hydrate',
+    ])
+    assert.equal(hydrationInput[1].length, 1)
+    assert.strictEqual(hydrationInput[1][0], hydrationInput[2])
+    assert.deepEqual(report.seriesHydration, {
+      status: 'passed',
+      durationMs: report.seriesHydration.durationMs,
+      runId: 'run-1',
+      variableCount: 1,
+      pointCount: fixture.expected.normalized.rows,
+    })
+    assert.doesNotMatch(JSON.stringify(report), /power_kw|series failure|not persisted/i)
+    assert.deepEqual(report.stages.find(({ stage }) => stage === 'import'), {
+      stage: 'import',
+      status: 'passed',
+      durationMs: report.stages.find(({ stage }) => stage === 'import').durationMs,
+      rowCount: fixture.expected.normalized.rows,
+      fieldCount: fixture.expected.normalized.fields,
+      fingerprint: `sha256:${fixture.expected.normalized.sha256}`,
+      qualityStatus: 'passed',
+    })
+    assert.deepEqual(report.stages.find(({ stage }) => stage === 'analysis'), {
+      stage: 'analysis',
+      status: 'passed',
+      durationMs: report.stages.find(({ stage }) => stage === 'analysis').durationMs,
+      runId: 'run-1',
+      eventCount: 2,
+      analysisStatus: 'completed',
+    })
+    assert.equal(report.stages.find(({ stage }) => stage === 'export').contentHash,
+      `sha256:${createHash('sha256').update('header\nrow\nrow\n').digest('hex')}`)
+    assert.deepEqual(
+      {
+        rowCount: report.stages.find(({ stage }) => stage === 'checker').rowCount,
+        columnCount: report.stages.find(({ stage }) => stage === 'checker').columnCount,
+      },
+      { rowCount: 2, columnCount: 16 },
+    )
+  })
+})
+
+for (const [name, options, expectedCode] of [
+  ['a thrown hydration', { events: { hydrate: true } }, 'E_SERIES_HYDRATION_FAILED'],
+  ['a missing series', { mutate: { hydration: (value) => { value.series = null } } }, 'E_SERIES_HYDRATION_FAILED'],
+  ['a series error', { mutate: { hydration: (value) => { value.seriesError = 'not persisted' } } }, 'E_SERIES_HYDRATION_FAILED'],
+  ['a mismatched dataset id', { mutate: { hydration: (value) => { value.run.dataset.datasetId = 'other-dataset' } } }, 'E_SERIES_IDENTITY_MISMATCH'],
+  ['a mismatched fingerprint', { mutate: { hydration: (value) => { value.run.dataset.fingerprint = 'sha256:bad' } } }, 'E_SERIES_IDENTITY_MISMATCH'],
+  ['a mismatched series run id', { mutate: { hydration: (value) => { value.series.runId = 'other-run' } } }, 'E_SERIES_RUN_ID_MISMATCH'],
+  ['an empty variable selection', { mutate: { hydration: (value) => { value.series.variables = [] } } }, 'E_SERIES_VARIABLES_INVALID'],
+  ['an over-limit variable selection', { mutate: { hydration: (value) => { value.series.variables = Array.from({ length: 33 }, (_, index) => `v${index}`) } } }, 'E_SERIES_VARIABLES_INVALID'],
+  ['a duplicate variable selection', { mutate: { hydration: (value) => { value.series.variables = ['power_kw', 'power_kw'] } } }, 'E_SERIES_VARIABLES_INVALID'],
+  ['a mismatched point count', { mutate: { hydration: (value) => { value.series.points = [] } } }, 'E_SERIES_POINT_COUNT_MISMATCH'],
+]) {
+  test(`records independent hydration failure for ${name}`, async () => {
+    await withTempDir(async (directory) => {
+      const fixture = depsFor(options)
+      const result = await runFixture(directory, fixture)
+      const report = JSON.parse(await readFile(result.reportPath, 'utf8'))
+      assert.equal(result.status, 'passed')
+      assert.equal(result.errorCode, null)
+      assert.deepEqual(report.seriesHydration, { status: 'failed', errorCode: expectedCode })
+      assert.doesNotMatch(JSON.stringify(report.seriesHydration), /not persisted|series failure/i)
+      assert.equal(fixture.stopped(), 1)
+      assert.equal(fixture.calls.at(-1)[0], 'hydrate')
+    })
+  })
+}
+
+test('does not attempt hydration when the main checker chain has not passed', async () => {
+  await withTempDir(async (directory) => {
+    const fixture = depsFor({ events: { import: true } })
+    const result = await runFixture(directory, fixture)
+    const report = JSON.parse(await readFile(result.reportPath, 'utf8'))
+    assert.equal(result.status, 'failed')
+    assert.deepEqual(report.seriesHydration, {
+      status: 'not_attempted',
+      errorCode: 'E_SERIES_HYDRATION_NOT_ATTEMPTED',
+    })
+    assert.equal(fixture.calls.some(([name]) => name === 'hydrate'), false)
     assert.equal(fixture.stopped(), 1)
   })
 })
