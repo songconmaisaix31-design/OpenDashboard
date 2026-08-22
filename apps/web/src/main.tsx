@@ -89,7 +89,11 @@ const bootstrapH2Sentinel = async (mode: H2Mode): Promise<void> => {
   const plugin =
     mode === 'fixture'
       ? h2EmsPlugin
-      : createH2EmsPlugin({ enabled: true, baseUrl: window.location.origin })
+      : createH2EmsPlugin({
+          enabled: true,
+          baseUrl: window.location.origin,
+          timeoutMs: 30_000,
+        })
   const pluginRuntime = createPluginRuntime([plugin])
   await pluginRuntime.start()
   const dataSource = pluginRuntime.resolve(H2_EMS_DATA_SOURCE)
