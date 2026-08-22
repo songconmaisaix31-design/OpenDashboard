@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "run_f2bc8c0433f8",
+  "planParentSha": "f5646486f3912d1f97052bc9ee08f9c48053346e",
+  "parallelTaskBaseSha": "2e809854422230f5afaca4776d6ec56e5c8507be",
+  "planSha": "2e809854422230f5afaca4776d6ec56e5c8507be",
+  "testedCodeSha": "081298270a144837ce6e1b2c3e2279825059430e",
+  "contractGate": {
+    "contractsTree": "11608e5ff5c0e69c3dd4a18588e5a13027151e82",
+    "vocabularyTree": "84d3d39a864e25e69e607a0314f3b27aa10c0fe8",
+    "analyticsContractsBlob": "3d33f410379339f417f4bc7451483e484124acc6"
+  },
+  "tasks": [
+    { "taskId": "web-csv", "owner": "accepted-web-csv", "writePaths": ["apps/web/src/features/h2-sentinel"], "commitSha": "9b164f570daa81affe4e9e4efecaa74562f3bb75", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/HANDOFF.md"] },
+    { "taskId": "smoke", "owner": "accepted-smoke", "writePaths": ["scripts/h2-sentinel"], "commitSha": "24ff81c52fd4d099796a44ff02902fd4bc2e3014", "status": "passed", "evidence": ["scripts/h2-sentinel/smoke.mjs"] },
+    { "taskId": "vercel-route", "owner": "accepted-vercel", "writePaths": ["vercel.json"], "commitSha": "c4fe86f99c7309e4a2cb605166508b3dc184f1e6", "status": "passed", "evidence": ["vercel.json"] },
+    { "taskId": "epoch-1-integration", "owner": "coordinator", "writePaths": ["docs/competition/h2-sentinel/delivery"], "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "status": "passed", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md", "docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json"] }
+  ],
+  "dispatches": [
+    { "dispatchId": "ctx_7a5d29219bc7", "taskId": "task_80c5a51b18c3", "status": "passed", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md"] }
+  ],
+  "commits": [
+    { "taskId": "web-csv", "localSha": "9b164f570daa81affe4e9e4efecaa74562f3bb75", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/HANDOFF.md"] },
+    { "taskId": "smoke", "localSha": "24ff81c52fd4d099796a44ff02902fd4bc2e3014", "status": "passed", "evidence": ["scripts/h2-sentinel/smoke.mjs"] },
+    { "taskId": "vercel-route", "localSha": "c4fe86f99c7309e4a2cb605166508b3dc184f1e6", "status": "passed", "evidence": ["vercel.json"] },
+    { "taskId": "epoch-1-integration", "localSha": "081298270a144837ce6e1b2c3e2279825059430e", "status": "passed", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md"] }
+  ],
+  "attempts": [
+    { "gateId": "ubuntuSmoke", "attempt": 1, "runId": "historical-ubuntu-smoke", "dispatchId": "historical", "commitSha": "2e809854422230f5afaca4776d6ec56e5c8507be", "runnerOS": "Ubuntu", "environment": "historical-run", "command": "npm run h2:smoke", "status": "failed", "reason": "Historical Ubuntu smoke attempt timed out; retained separately and not overwritten by later Windows results.", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md"] },
+    { "gateId": "integration", "attempt": 1, "runId": "run_f2bc8c0433f8", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "local-worktree", "command": "npm ci; npm run check; npm run h2:test; npm run h2:qa; npm run h2:launcher:test; uv lock --check; uv sync --locked --extra dev; uv run --locked --extra dev pytest tests", "status": "passed", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md"] },
+    { "gateId": "integration", "attempt": 2, "runId": "run_f2bc8c0433f8", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "local-worktree", "command": "npm run h2:smoke", "status": "failed", "reason": "Launcher did not report analytics health before READY; process exited with code 1.", "evidence": ["scripts/h2-sentinel/smoke.mjs"] },
+    { "gateId": "integration", "attempt": 3, "runId": "run_f2bc8c0433f8", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "services/h2-analytics", "command": "uv lock --check; uv sync --locked --extra dev; uv run --locked --extra dev pytest tests", "status": "passed", "evidence": ["services/h2-analytics/pyproject.toml", "services/h2-analytics/uv.lock"] },
+    { "gateId": "submission", "attempt": 1, "runId": "run_f2bc8c0433f8", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "local-worktree", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File submission/h2-sentinel/validate-submission.ps1", "status": "failed", "reason": "Requested path does not exist; actual script path was then tested and failed with a PowerShell parser error.", "evidence": ["submission/h2-sentinel/scripts/validate-submission.ps1"] }
+  ],
+  "gates": {
+    "webOfficialCsvE2E": { "status": "pending", "reason": "Accepted metadata/pre-read fix exists, but a current full official-file E2E run is not evidenced.", "attempts": [1] },
+    "ubuntuSmoke": { "status": "pending", "reason": "Only a historical timed-out Ubuntu attempt is available; Windows success cannot substitute for Ubuntu.", "attempts": [1] },
+    "officialDataValidation": { "status": "pending", "reason": "No direct current official-data validation result or score is available.", "attempts": [] },
+    "deployment": { "status": "pending", "reason": "Route configuration is committed, but no deployed URL or deployed commit evidence is available.", "attempts": [] },
+    "submission": { "status": "pending", "reason": "Current submission validation was not completed; the available validator has a PowerShell parser error.", "attempts": [1] },
+    "integration": { "status": "passed", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md", "services/h2-analytics/uv.lock"], "attempts": [2, 3] }
+  },
+  "publication": { "status": "pending", "reason": "Live Git remote was unreachable during verification; no remote SHA, canonical publication, or PR head is claimed." },
+  "verdict": "HOLD",
+  "blockingGateIds": ["webOfficialCsvE2E", "ubuntuSmoke", "officialDataValidation", "deployment", "submission"]
+}
