@@ -16,7 +16,7 @@ const adversarialLauncherPath = resolve(scriptDirectory, 'adversarial-launch.mjs
 const artifactDirectory = resolve(scriptDirectory, 'artifacts')
 const fixtureCsvPath = resolve(
   repositoryRoot,
-  'packages/h2-contracts/fixtures/tiny-valid-timeseries.csv',
+  'services/h2-analytics/tests/fixtures/tiny-valid-timeseries.csv',
 )
 
 const activeLaunchers = new Set()
