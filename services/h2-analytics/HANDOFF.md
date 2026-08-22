@@ -134,9 +134,11 @@ deterministic repeatability.
   `tests/fixtures/` with all 69 official columns.
 - Detection covers all seven classes (`deterministic-c01-c07-v2`) with the
   official field names; aggregation policies exist for every code.
-- Events and submissions use the official Chinese severity (`高`/`中`), the
-  official `primary_control_object`, and `equipment_id:equipment_name`
-  affected-equipment values, while keeping the frozen 16 submission columns.
+- Analysis events and API severity counts use the canonical English values
+  (`low`/`medium`/`high`/`critical`). The external competition submission
+  renderer emits the official Chinese taxonomy (`高`/`中`) only after the
+  event code and internal canonical severity agree; unknown or inconsistent
+  mappings fail closed while the frozen 16 submission columns stay unchanged.
 - Impacts are computed for all seven classes from the official field formulas,
   with no fingerprint-keyed constants: every golden impact value, C03 included,
   is reproducible from the fixture CSV by the declared formula.
@@ -150,8 +152,7 @@ deterministic repeatability.
 - The `period_summary` report is a PCC compliance daily report covering power
   boundary intervals, violation duration and energy, sign conventions, dataset
   fingerprint, constraints, and unresolved events.
-- The frozen `packages/h2-contracts/schema/*.json` still enumerate English
-  severity and `H2Qxx` question IDs; the contracts track must update them to
-  the official Chinese values. Tests relax only those conflicting enums locally
-  and otherwise validate against the frozen schemas.
+- Analysis runs and events validate directly against the unchanged canonical
+  schemas. The external submission is checked through the official CSV checker
+  and explicit C01-C07 taxonomy assertions; no internal schema is relaxed.
 
