@@ -221,6 +221,14 @@ try {
   if ($markdownText -match [regex]::Escape($legacyLocalZipLabel)) {
     Add-ValidationError('A local organizer ZIP source label remains in the package.')
   }
+  $legacyOfficialCsvLabel = 'Official' + ' CSV data | Not included'
+  $legacyNoOfficialCsv = 'no official' + ' CSV'
+  $legacyReceiptHashWording = 'No receipt tied to' + ' package hash'
+  foreach ($legacyAmbiguity in @($legacyOfficialCsvLabel, $legacyNoOfficialCsv, $legacyReceiptHashWording)) {
+    if ($markdownText -match [regex]::Escape($legacyAmbiguity)) {
+      Add-ValidationError('A superseded CSV or receipt ambiguity remains in the package.')
+    }
+  }
 
   $evidenceCommit = '7d925d009802b81c6b14e7cc41f82898206b7a88'
   $reportRelativePath = 'validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json'

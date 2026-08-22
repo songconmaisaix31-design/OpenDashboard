@@ -71,7 +71,7 @@ ranking, or official score.
 | --- | --- | --- |
 | Technical attempt-6 evidence | Recorded | Bound to `58090bc`; later document SHA needs its own gates. |
 | Registration/submission | UNKNOWN-HOLD | No organizer form evidence. |
-| Receipt/acceptance/approval | UNKNOWN-HOLD | No receipt tied to package hash. |
+| Receipt/acceptance/approval | UNKNOWN-HOLD | No organizer receipt independently tied to the actual submitted artifact/version. |
 | Official score/rank | UNKNOWN-HOLD | No organizer result. |
 | Visual verification | UNKNOWN-HOLD | HTTP shells are not visual or interactive verification. |
 | Final submission package/archive hash and redistribution review | UNKNOWN-HOLD | The pipeline-derived CSV hash is not a final archive identity. |

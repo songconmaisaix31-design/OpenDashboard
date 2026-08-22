@@ -20,11 +20,11 @@
 | R09 | Interactive deep-link verification | UNKNOWN-HOLD | HTTP shell success is insufficient. |
 | R10 | Remote CI at tested SHA | Recorded | Green push H2 `32591314579`, PR H2 `32591315711`, generic PR `32591315735`, all for `58090bc`. |
 | R11 | Organizer registration/submission | UNKNOWN-HOLD | No form or submission evidence. |
-| R12 | Organizer receipt/acceptance/approval | UNKNOWN-HOLD | No receipt tied to package hash. |
+| R12 | Organizer receipt/acceptance/approval | UNKNOWN-HOLD | No organizer receipt independently tied to the actual submitted artifact/version. |
 | R13 | Official score/rank | UNKNOWN-HOLD | No organizer result. |
 | R14 | Historical internal metrics | Historical/unbound | 0.2168 and 0.9517 lack immutable `testedCodeSha` binding; not current metrics. |
 | R15 | Organizer package documentation integrity | Discrepancy recorded | The three supplied organizer ZIP copies are 68,574,329 bytes, SHA-256 `27dd2d096e0eb002cf50feb68f33fd1b586b46e4daddf97398390dc6394a5072`; do not call the package fully verified. |
-| R16 | Source-package licensing | UNKNOWN-HOLD | Final archive redistribution/licensing review is not complete; no official CSV, screenshots, or secret material is included here. |
+| R16 | Source-package licensing | UNKNOWN-HOLD | Final archive redistribution/licensing review is not complete; no raw official input, screenshots, or secret material is included here. |
 | R17 | Organizer-rule source | Revision fact | Feishu revision 146, reviewed 2026-08-23; external accessibility and final organizer status are not repository proof. |
 
 ## Technical versus organizer evidence

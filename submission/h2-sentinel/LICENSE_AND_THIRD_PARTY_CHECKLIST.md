@@ -14,7 +14,7 @@ The supplied requirement text also references Section 8 D01-D13 and Section 13 s
 | --- | --- | --- |
 | Locked package dependency notices | Source-level record | Review root notice files for the actual distribution. |
 | Copied H2 source/assets | No copied upstream material asserted | Re-review every future imported asset or snippet. |
-| Official CSV data | Not included | Do not distribute it through this package. |
+| Raw official input | Not included | Do not distribute the raw source; the pipeline-derived attempt-6 export is archived as technical evidence only. |
 | Screenshots and visual assets | Not included | No desktop/mobile visual pass is claimed. |
 | Organizer package manifest | Discrepancy recorded | Do not call the whole package checksum-verified. |
 | Final distribution | UNKNOWN-HOLD | Final organizer archive hash and redistribution/licensing review are not established. |
