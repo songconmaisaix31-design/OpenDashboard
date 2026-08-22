@@ -1,0 +1,85 @@
+{
+  "schema": "h2-sentinel-official-csv-e2e-v1",
+  "status": "failed",
+  "errorCode": "E_SOURCE_FAILED",
+  "runId": "run_f2bc8c0433f8",
+  "taskId": "e2_official_validation",
+  "testedCodeSha": "330232871fc9c3070e879ad6950fcdba93f96082",
+  "attempt": 1,
+  "expected": {
+    "raw": {
+      "bytes": 77865257,
+      "sha256": "88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9",
+      "rows": 172800,
+      "fields": 69
+    },
+    "normalized": {
+      "bytes": 78038054,
+      "sha256": "4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169",
+      "rows": 172800,
+      "fields": 69
+    }
+  },
+  "stages": [
+    {
+      "stage": "raw_metadata",
+      "status": "passed",
+      "durationMs": 0,
+      "bytes": 77865257
+    },
+    {
+      "stage": "raw_identity",
+      "status": "passed",
+      "durationMs": 536,
+      "bytes": 77865257,
+      "sha256": "88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9",
+      "rows": 172800,
+      "fields": 69
+    },
+    {
+      "stage": "normalize",
+      "status": "passed",
+      "durationMs": 2181,
+      "bytes": 78038054,
+      "sha256": "4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169",
+      "rows": 172800,
+      "fields": 69
+    },
+    {
+      "stage": "launcher",
+      "status": "passed",
+      "durationMs": 3704
+    },
+    {
+      "stage": "cleanup",
+      "status": "passed",
+      "durationMs": 72
+    }
+  ],
+  "artifacts": [],
+  "seriesHydration": {
+    "status": "not_attempted",
+    "errorCode": "E_SERIES_HYDRATION_NOT_ATTEMPTED"
+  },
+  "resources": {
+    "rssBytes": 1164144640,
+    "resourceUsage": {
+      "userCPUTime": 3609000,
+      "systemCPUTime": 750000,
+      "maxRSS": 1152432,
+      "sharedMemorySize": 0,
+      "unsharedDataSize": 0,
+      "unsharedStackSize": 0,
+      "minorPageFault": 0,
+      "majorPageFault": 353498,
+      "swappedOut": 0,
+      "fsRead": 1606,
+      "fsWrite": 41,
+      "ipcSent": 0,
+      "ipcReceived": 0,
+      "signalsCount": 0,
+      "voluntaryContextSwitches": 0,
+      "involuntaryContextSwitches": 0
+    }
+  }
+}
