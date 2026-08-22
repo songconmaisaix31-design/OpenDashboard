@@ -125,6 +125,8 @@ function spawnForFailure(argumentsList, withIpc = false, entryPath = launcherPat
     env: process.env,
     shell: false,
     stdio: withIpc ? ['ignore', 'pipe', 'pipe', 'ipc'] : ['ignore', 'pipe', 'pipe'],
+    // POSIX fallback cleanup targets this launcher's dedicated process group.
+    detached: process.platform !== 'win32',
     windowsHide: true,
   })
   collectLines(child.stdout, stdout)
@@ -200,6 +202,30 @@ async function terminateDirectProcess(pid) {
     return
   }
   process.kill(pid, 'SIGKILL')
+}
+
+async function cleanupFailureSession(session, observedPids, webPort, analyticsPort) {
+  const cleanupErrors = []
+  const collect = async (operation) => {
+    try {
+      await operation()
+    } catch (error) {
+      cleanupErrors.push(error)
+    }
+  }
+
+  if (session.child.pid) {
+    await collect(() => terminatePidTree(session.child.pid))
+  }
+  for (const pid of observedPids) {
+    await collect(() => assertPidStopped(pid))
+  }
+  await collect(() => assertPortReleased(webPort))
+  await collect(() => assertPortReleased(analyticsPort))
+
+  if (cleanupErrors.length > 0) {
+    throw new AggregateError(cleanupErrors, 'Adversarial fallback cleanup failed.')
+  }
 }
 
 async function listProcesses() {
@@ -536,7 +562,12 @@ async function runAnalyticsExitBeforeReadySmoke() {
     })
     const healthRecord = await analyticsHealthy
     assert.equal(typeof healthRecord.analyticsPid, 'number')
-    for (const processEntry of await listDescendants(session.child.pid)) {
+    const descendants = await listDescendants(session.child.pid)
+    assert.ok(
+      descendants.some(({ pid }) => pid === healthRecord.analyticsPid),
+      `Analytics IPC PID ${healthRecord.analyticsPid} is not owned by the launcher.`,
+    )
+    for (const processEntry of descendants) {
       observedPids.add(processEntry.pid)
     }
     await terminateDirectProcess(healthRecord.analyticsPid)
@@ -554,16 +585,16 @@ async function runAnalyticsExitBeforeReadySmoke() {
     throw error
   } finally {
     if (!auditCompleted) {
-      const cleanupErrors = []
-      for (const pid of [...observedPids].reverse()) {
-        try {
-          await terminatePidTree(pid)
-        } catch (error) {
-          cleanupErrors.push(error)
+      try {
+        await cleanupFailureSession(session, observedPids, webPort, analyticsPort)
+      } catch (cleanupError) {
+        if (primaryError !== null) {
+          throw new AggregateError(
+            [primaryError, cleanupError],
+            'Adversarial smoke and fallback cleanup failed.',
+          )
         }
-      }
-      if (primaryError === null && cleanupErrors.length > 0) {
-        throw new AggregateError(cleanupErrors, 'Adversarial fallback cleanup failed.')
+        throw cleanupError
       }
     }
   }
