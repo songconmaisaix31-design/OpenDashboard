@@ -50,6 +50,13 @@ function verifyPrerequisites() {
   return problems
 }
 
+function formatSubmissionCheckerNote(check) {
+  const status = check.valid ? 'passed' : 'failed'
+  const issueCount = check.issues.length
+  const issueSummary = issueCount === 0 ? '' : ` (${issueCount} issue${issueCount === 1 ? '' : 's'})`
+  return `The affected_equipment serialization is checked against the official comma-separated token format; the current submission checker ${status}${issueSummary}.`
+}
+
 async function main() {
   const options = parseArguments(process.argv.slice(2))
   const prerequisites = verifyPrerequisites()
@@ -177,7 +184,7 @@ async function main() {
       },
       steps,
       notes: [
-        'The exported affected_equipment uses equipment-master id:name tokens (backend reports/submission.py); the official format is comma-separated tokens. The checker verdict reflects the official format (D3) and stays failed until the backend export is fixed.',
+        formatSubmissionCheckerNote(check),
         'Artifact directory is gitignored; the JSON report is the committed evidence.',
       ],
       provenance: {
@@ -228,4 +235,9 @@ async function requestWithTimeout(baseUrl, route, payload, timeoutMs) {
   return body.data
 }
 
-await main()
+const invokedPath = process.argv[1] ? resolve(process.argv[1]) : null
+if (invokedPath === fileURLToPath(import.meta.url)) {
+  await main()
+}
+
+export { formatSubmissionCheckerNote }
