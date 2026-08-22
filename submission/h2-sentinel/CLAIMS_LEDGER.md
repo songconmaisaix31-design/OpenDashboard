@@ -1,35 +1,33 @@
 # H2 Sentinel Claims Ledger
 
-Use this ledger for public copy, demo narration, and judge answers. Current
-evidence is limited to the current coordinator-verified assembled snapshot and
-the H6 checks recorded on 2026-08-19.
+Use this ledger for public copy, demo narration, and judge answers. Every claim
+must retain its evidence class and SHA boundary.
 
-| ID | Permitted wording | Classification | Current evidence | Release rule |
+| ID | Permitted wording | Classification | Evidence | Boundary |
 | --- | --- | --- | --- | --- |
-| C01 | “H2 contracts define C01-C07, provenance, and the exact submission-column order.” | Implemented contract fact | `packages/h2-contracts/**` | Say “define”; do not infer an export run. |
-| C02 | “Sanitized synthetic C03/C04 Fixture data is available.” | Fixture evidence | Contract fixtures and assembled Fixture mode | Always say Fixture/synthetic; never official data or a score. |
-| C03 | “The generic Fixture Demo remains at `/`; H2 opens only with explicit `fixture` or `local` mode.” | Current H6 evidence | `apps/web/src/main.tsx`, H6 handoff | Do not say the generic entry was replaced. |
-| C04 | “Local H2 browser requests use a same-origin proxy to a validated loopback analytics target.” | Current H6 evidence | H6 source and smoke | Do not expand this into a network-isolation or deployment claim. |
-| C05 | “The Local golden path produced deterministic no-LLM C03 HTML output and a two-row, 16-column validated submission CSV.” | Local deterministic evidence | H6 smoke and Python validation | Scope the statement to the Local golden path. |
-| C06 | “The assembled verification recorded 92 repository tests, 60 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine H2 smoke scenarios.” | Current assembled evidence | Assembled QA evidence and analytics handoff | Scope this to the recorded assembled snapshot; do not infer a remote CI run. |
-| C07 | “A human Chrome review checked desktop and 390x844 Fixture screens without document-width overflow.” | Manual Chrome evidence | H6 handoff | Do not call this automated screenshot regression or claim image assets exist. |
-| C08 | “The assembled build processed 684 modules and emitted 900.01 kB minified JavaScript (297.15 kB gzip) plus 47.44 kB CSS; Vite still emitted its standard greater-than-500-kB warning.” | Current assembled evidence | Recorded production build | Do not imply the bundle-warning issue is resolved. |
-| C09 | “Recommendations are advisory and require human confirmation.” | Implemented behavior and contract fact | H2 UI/contract/H6 review | Never describe direct equipment control. |
-| C10 | “Fixture single-event diagnosis, period summary, and quality reports export deterministic safe HTML with matching media type and filename.” | Current plugin evidence | Source `92f7b78`, coordinator integration `abe454b`, focused plugin test coverage | Scope to the three HTML report kinds; JSON and CSV retain their own formats. |
-| C11 | “Official validation/test CSV data was imported and analyzed by the local loopback pipeline; the official test set (172,800 rows) produced a 566-row 16-column submission CSV.” | Verified local pipeline evidence | `validation/reports/offline-deploy-smoke.json`, `validation/reports/evaluate-validation.json` | Say “imported and analyzed”; never claim an organizer score, and keep the export-format blocker explicit. |
-| C12 | “Under Track D's frozen event-level matching contract (10-minute grace, greedy same-code), the official validation set (70 events) measures event F1 = 0.2168 (precision 0.1265, recall 0.7571); classification accuracy 0.3088; the train-last-90 sentinel window measures F1 = 0.2489 (gap 0.0321, GREEN).” | Versioned validation result | `validation/reports/evaluate-validation.json`, `validation/reports/overfit-sentinel.json` | Always name the matching contract and the dataset split; never call this an organizer score, rank, or approval. |
-| C13 | “The app is deployed, online, or present on `main`.” | Unverified | No deployment or main publication evidence | Prohibited. |
-| C14 | “GitHub Actions verified this candidate remotely.” | Unverified | Workflow file is committed only | Prohibited until a specific remote run is available. |
-| C15 | “Optional LLM rendering is required for the golden path.” | False | Local smoke is deterministic and no-LLM | Prohibited. |
-| C16 | “The exported submission CSV already uses the official comma-separated `affected_equipment` format.” | False (cross-track defect) | Backend export emits `equipment_id:名称;`; D3 checker flags all rows | Prohibited until `reports/submission.py` is fixed and the D4 smoke verdict turns green. |
+| C01 | “H2 contracts define C01-C07, provenance, and the exact 16-column submission order.” | Implemented contract fact | `packages/h2-contracts/**` | Defining a contract is not an export run. |
+| C02 | “Sanitized synthetic C03/C04 Fixture data is available.” | Fixture evidence | Contract fixtures | Never official or plant data. |
+| C03 | “Attempt-6 processed a raw official input that is not repository content through the technical pipeline: 172,800 rows, 69 fields, 104 events, and a 104-row by 16-column export.” | Attempt-6 technical E2E | Report `8796dd1f...9111bf27f`, tested SHA `58090bc` | It is technical pipeline evidence, not acceptance, score, or rank. |
+| C04 | “The pipeline-derived attempt-6 `submission.csv` has SHA-256 `af8814d...c91d60326`.” | Artifact-integrity evidence | Attempt-6 artifact and report | It is not a final organizer package/archive hash or receipt. |
+| C05 | “Custom domain `204421.xyz` served recorded 200 same-origin H2 SPA shells on eight listed routes, and its referenced asset contained `H2 Sentinel` and `氢哨`.” | Deployment HTTP-shell evidence | Deployment `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` | Direct Vercel root/Fixture returned 302 SSO (`AUTH-REDIRECT/UNKNOWN-HOLD`); never claim a literal `invalid-mode` marker, visual, or interactive pass. |
+| C06 | “Three named GitHub Actions runs were green for exact SHA `58090bc`.” | Remote CI evidence | `32591314579`, `32591315711`, `32591315735` | Does not cover later documentation commits. |
+| C07 | “Recommendations are advisory and require human confirmation.” | Implemented safety boundary | H2 contracts and product code | Never describe equipment control. |
+| C08 | “Internal/API severity uses English enum values; external submission taxonomy uses Chinese `高`/`中`.” | Contract/interface fact | Submission and vocabulary contracts | Do not substitute an internal enum for a submitted value. |
+| C09 | “Fixture reports and Local deterministic outputs have the documented formats.” | Bounded implementation evidence | Source and focused checks | Fixture provenance remains synthetic. |
+| C10 | “Registration, submission, receipt, acceptance, approval, official score, and rank are UNKNOWN-HOLD.” | Organizer-status boundary | No admissible organizer evidence | Prohibited until independently evidenced. |
+| C11 | “Visual desktop/mobile and interactive verification are UNKNOWN-HOLD.” | Visual-status boundary | HTTP shell checks only | Prohibited: call HTTP success a visual, screenshot, or interactive pass. |
+| C12 | “Historical internal metrics, including 0.2168 and 0.9517, are unbound to an immutable `testedCodeSha`.” | Historical/unbound | Older reports | Do not use as current F1, precision, recall, or accuracy claims. |
+| C13 | “The final organizer submission package/archive hash and redistribution review are UNKNOWN-HOLD.” | Archive-status boundary | No final archive evidence | The attempt-6 CSV artifact hash is not interchangeable with an archive hash. |
 
 ## Forbidden transformations
 
-- Fixture data must not become live plant data, official data, a score, or a validation result.
-- Validation-set F1 / precision / recall / classification numbers must not become an organizer score, rank, or approval.
-- The D4 offline-deploy smoke must not become a deployment or network-isolation claim.
-- Manual Chrome review must not become screenshot automation or a submitted screenshot.
-- A committed workflow must not become a remote CI result.
-- Fixture HTML format parity must not become an official-data, score, deployment, or broad report-format claim.
-- The exported submission CSV must not be presented as official-format until the `affected_equipment` defect is fixed (C16).
+- Never turn attempt-6 technical evidence into an organizer submission,
+  receipt, acceptance, approval, score, rank, or visual verification.
+- Never turn a 200 SPA shell or inspected JavaScript marker into a screenshot,
+  desktop/mobile visual pass, or interactive-flow pass.
+- Never turn the attempt-6 `submission.csv` hash into a final organizer
+  submission package/archive hash, receipt, or redistribution authorization.
+- Never present historical 0.2168, 0.9517, or related internal metrics as a
+  current F1, precision, recall, or accuracy result.
+- Never call Fixture data official data, live plant data, or a score.
 - Every recommendation retains the human-confirmation qualification.

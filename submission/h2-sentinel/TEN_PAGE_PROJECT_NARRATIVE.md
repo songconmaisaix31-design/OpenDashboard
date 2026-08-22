@@ -1,47 +1,43 @@
 # H2 Sentinel Ten-Page Project Narrative
 
-This narrative describes the current coordinator-verified assembled snapshot and recorded H6 evidence. It does not claim publication to `main`, deployment, official data, validation metrics, organizer results, remote CI execution, network-isolation proof, or committed screenshot assets.
+This narrative separates technical evidence from organizer outcomes and visual verification. It is bounded by tested code SHA `58090bc1747d621bc87d698259319a70c34e75f2`.
 
 ## Page 1 — Title and outcome
 
-**H2 Sentinel / 氢哨** is a local-first H2 EMS anomaly-diagnosis and decision-support application. It makes a suspected coordination anomaly reviewable through evidence, impact, safety checks, provenance, and an advisory next step requiring human confirmation.
+**H2 Sentinel / 氢哨** is local-first H2 EMS anomaly diagnosis and decision support. It turns a suspected coordination anomaly into an evidence-led human review rather than an autonomous equipment action.
 
-## Page 2 — The operator problem
+## Page 2 — Operator problem
 
-An alarm does not explain whether a disturbance is routine renewable variation, when it began, which equipment is involved, or what should be reviewed. H2 Sentinel turns available deterministic evidence into a traceable review workflow rather than an opaque classifier, notebook, or chat response.
+An operator needs timing, measurements, constraints, impact, provenance, and a safe next step in one review flow. A narrative answer without those elements does not support accountable operations.
 
 ## Page 3 — Product boundary
 
-The application supports diagnosis and bounded operational review. It does not replace an EMS, control equipment, autonomously dispatch power, or permit a language model to decide a control action. Models detect, deterministic rules verify, explanations remain bounded by structured evidence, and people decide.
+The product supervises, diagnoses, quantifies impact, and advises. It does not dispatch power, replace the EMS, control equipment, or allow a language model to make a control decision. Recommendations require human confirmation.
 
 ## Page 4 — Evidence before explanation
 
-The assembled flow exposes event interval, variable identity, observed value, reference or constraint, impact, safety state, and machine-readable conclusion before a recommendation. This preserves traceability and makes uncertainty visible instead of hiding it behind generated prose.
+The interface keeps event interval, variable identity, observed value, reference or constraint, impact, safety state, provenance, and conclusion separate before an advisory explanation. Fixture remains visibly synthetic.
 
-## Page 5 — Explicit local-first composition
+## Page 5 — Attempt-6 technical E2E
 
-The generic Fixture Demo remains at `/`. H2 is deliberately opt-in at `/h2-sentinel/?mode=fixture` or `/h2-sentinel/?mode=local`. Fixture statically registers the reviewed H2 plugin without starting Python. Local mode uses the same-origin `/api/v1/h2-sentinel` proxy to a validated `127.0.0.1` analytics target; it is not a remote-control or general plugin system.
+Attempt-6 bound to `58090bc` processed a raw official input that is not repository content: 77,865,257 bytes, 172,800 rows, and 69 fields (SHA-256 `88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9`). Normalization produced 78,038,054 bytes (SHA-256 `4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169`).
 
-## Page 6 — Fixture and Local provenance
+## Page 6 — Technical result and artifact identity
 
-The contracts distinguish `FIXTURE`, `LIVE_ANALYSIS`, `DERIVED`, `MODEL`, `RULE`, and `LLM_RENDERED`. C03/C04 Fixture content is sanitized synthetic evidence and remains visibly labeled. The Local golden path is deterministic and no-LLM, but it is still not official-data validation evidence.
+The run recorded 104 events, a 104-row by 16-column pipeline-derived `submission.csv`, 21 variables by 172,800 points, and passed cleanup. Its report path is `validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json`, SHA-256 `8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f`; CSV SHA-256 is `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`. These facts are technical evidence, not a score, rank, receipt, or final organizer archive identity.
 
-## Page 7 — Seven anomaly classes
+## Page 7 — Taxonomy and submission representation
 
-The contract vocabulary covers C01-C07 across electrolyzer setpoints, available capacity, BESS direction, PCC boundaries, energy quotas, load allocation, and SOC/reserve. Event start, end, and first-detection time remain distinct, and confidence is normalized to 0..1. These interfaces do not establish detector performance on official data.
+C01-C07 form the shared taxonomy. Internal/API severity is represented by English enum values; external submission uses Chinese `高`/`中`. This boundary prevents an interface convenience from silently changing a submitted taxonomy.
 
-## Page 8 — C03 evidence-first case
+## Page 8 — Deployment and CI evidence
 
-C03 is the BESS charge/discharge direction anomaly. H6 Local smoke produced a deterministic no-LLM C03 HTML report and a two-row `submission.csv` that passed its exact 16-column validator. Plugin source `92f7b78` also makes the Fixture single-event diagnosis deterministic safe HTML. These are local/Fixture outputs, not official-data results.
+Only custom `204421.xyz` served recorded 200 same-origin H2 SPA shells on eight checked root/H2 routes; its referenced asset contained `H2 Sentinel` and `氢哨`. Direct Vercel root/Fixture returned 302 SSO (`AUTH-REDIRECT/UNKNOWN-HOLD`). Remote CI runs `32591314579`, `32591315711`, and `32591315735` are green for exact SHA `58090bc`. Neither fact proves later-SHA CI, visual quality, or interactive behavior.
 
-## Page 9 — C04 boundary-tracking case
+## Page 9 — Organizer package and submission boundary
 
-C04 is PCC import/export boundary tracking. The sanitized Fixture includes eight inclusive one-minute points at 720 kW against a 500 kW limit, yielding `29.333333333333332 kWh`. Manual Chrome review inspected the mounted C04 flow; it did not create a screenshot asset or validate a plant boundary.
+The organizer package has a documented manifest discrepancy, so the full package is not called verified. The separate official-test CSV identity remains intact. [Feishu revision 146](https://explorneo.feishu.cn/docx/OwAodS0VxoDUsGxsEFGcRgEtn2f), reviewed 2026-08-23, requires a single leader submission by the 2026-08-21 deadline; external accessibility and organizer status are not repository proof. Registration, form submission, receipt, acceptance, approval, score, rank, and final archive hash are `UNKNOWN-HOLD`.
 
-## Page 10 — Reproducibility and honest evaluation
+## Page 10 — Honest release decision
 
-The assembled snapshot recorded 92 repository tests, 60 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine H2 smoke scenarios. Its production build processed 684 modules and emitted 900.01 kB minified JavaScript (297.15 kB gzip) plus 47.44 kB CSS, while still emitting Vite's standard greater-than-500-kB warning. The recorded local path rejects a 307 health redirect, covers Windows-owned child cleanup, and exposes report content hashes for review; none of these facts proves general network isolation. Official data, validation metrics, organizer score, deployment, remote GitHub Actions run, network isolation proof, and committed screenshots remain undelivered.
-
-## Source basis
-
-Derived from the [H6 integration handoff](../../scripts/h2-sentinel/HANDOFF.md) and bounded by the [H2 contract package](../../packages/h2-contracts/README.md).
+Desktop/mobile visual and interactive verification are `UNKNOWN-HOLD` because no computer control was authorized. Historical internal 0.2168 and 0.9517 numbers lack immutable `testedCodeSha` binding and are not current metrics. The attempt-6 `submission.csv` SHA-256 is `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`; final archive redistribution/licensing review is `UNKNOWN-HOLD`.
