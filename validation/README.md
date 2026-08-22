@@ -88,3 +88,49 @@ canonical backend vocabulary per `packages/h2-vocabulary/data/deprecated-field-m
 normalized to ISO-8601 UTC. The sanitized tiny fixture (which predates the
 69-field schema) is padded at import time: derived columns computable from
 present base columns use the official formulas, everything else is zero.
+
+## Epoch 2 official same-origin runner
+
+`official-csv-e2e.mjs` is the coordinator-only official-data gate. It accepts
+an external, read-only CSV path and never copies the raw CSV into this
+repository. Before it starts the local launcher or loads the full CSV text, it
+requires the literal expected commit to equal `HEAD` and streams the raw file to
+check all frozen identity values:
+
+| Representation | Bytes | SHA-256 | Rows | Fields |
+| --- | ---: | --- | ---: | ---: |
+| Raw official CSV | `77,865,257` | `88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9` | `172,800` | `69` |
+| Normalized official CSV | `78,038,054` | `4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169` | `172,800` | `69` |
+
+Run it only from the assembled, verified commit on a host with at least 8 GiB
+physical RAM and a 4 GiB Node heap:
+
+```powershell
+node --max-old-space-size=4096 --import tsx validation/official-csv-e2e.mjs `
+  --official-csv "<operator-approved-read-only-csv-path>" `
+  --expected-commit "<40-lowercase-hex-assembled-head>" `
+  --run-id "official-20260823-1"
+```
+
+The run ID is restricted to lowercase letters, digits, and single hyphens. The
+runner creates, but never overwrites,
+`validation/reports/epoch-2/<safe-run-id>/attempt-<n>/`. Each attempt contains
+the exported submission artifact and a sanitized `report.json`; the report
+contains stable error codes, fixed identities, hashes/counts/durations,
+repository-relative artifact references, and Node resource counters only. It
+does not contain the operator path, URL, port, PID, arguments, environment,
+request/response body, stdout, stderr, or stack trace.
+
+After the raw and normalized identity gates, the runner starts the existing
+local launcher once and constructs the existing Live data source only from the
+launcher's `ready.webUrl` with `timeoutMs: 30000`. The required order is
+`importCsv -> runAnalysis -> exportSubmission -> checker`; every request stays
+on that same Web origin. The launcher is stopped exactly once in `finally` on
+both success and failure, without retry. A checker failure returns exit code 1.
+
+The test suite uses only injected synthetic data and faked dependencies. It
+does not read or execute the official CSV:
+
+```powershell
+node --import tsx --test validation/official-csv-e2e.test.mjs
+```
