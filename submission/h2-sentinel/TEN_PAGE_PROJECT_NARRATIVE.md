@@ -40,4 +40,4 @@ The organizer package has a documented manifest discrepancy, so the full package
 
 ## Page 10 — Honest release decision
 
-Desktop/mobile visual and interactive verification are `UNKNOWN-HOLD` because no computer control was authorized. Historical internal 0.2168 and 0.9517 numbers lack immutable `testedCodeSha` binding and are not current metrics. The submission package SHA-256 is `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
+Desktop/mobile visual and interactive verification are `UNKNOWN-HOLD` because no computer control was authorized. Historical internal 0.2168 and 0.9517 numbers lack immutable `testedCodeSha` binding and are not current metrics. The attempt-6 `submission.csv` SHA-256 is `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.

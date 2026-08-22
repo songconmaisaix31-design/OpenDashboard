@@ -20,7 +20,7 @@ normalized 78,038,054 bytes
 passed cleanup. The report path is
 `validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json`
 with SHA-256 `8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f`.
-The submission package SHA-256 is
+The attempt-6 `submission.csv` SHA-256 is
 `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
 
 Deployment evidence is `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` at

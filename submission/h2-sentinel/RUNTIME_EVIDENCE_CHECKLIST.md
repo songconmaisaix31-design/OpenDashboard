@@ -4,7 +4,7 @@
 
 - Executable/tested SHA: `58090bc1747d621bc87d698259319a70c34e75f2`.
 - Attempt-6 report: `validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json`, SHA-256 `8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f`.
-- Submission package SHA-256: `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
+- Attempt-6 `submission.csv` SHA-256: `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
 - This checklist does not bind later document commits to the attempt-6 code SHA.
 
 | ID | Required evidence | Status | What it proves and does not prove |
