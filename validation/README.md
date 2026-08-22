@@ -142,6 +142,12 @@ the analysis run, text/csv media type, and matching content hash. The checker
 must be valid, have 16 columns, and return the analysis event count. A checker
 or cleanup failure returns exit code 1.
 
+When the Live adapter throws its typed `H2EmsAdapterError`, the report retains
+only the whitelisted stable code as `E_<STAGE>_<ADAPTER_CODE>` (for example,
+`E_ANALYSIS_REMOTE_REQUEST_FAILED`). It never records the adapter message,
+URL, port, request or response body, path, or stack trace. Any other exception
+continues to use the generic `E_<STAGE>_FAILED` code.
+
 After checker success, the runner invokes the existing read-only
 `hydrateH2Workspace` seam with the imported dataset. Its top-level
 `seriesHydration` result is independent from the main chain: a passed result
