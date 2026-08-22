@@ -128,7 +128,10 @@ stdout, stderr, or stack trace.
 
 After the raw and normalized identity gates, the runner starts the existing
 local launcher once and constructs the existing Live data source only from the
-launcher's `ready.webUrl` with `timeoutMs: 30000`. The required order is
+launcher's parsed loopback origin with `timeoutMs: 30000`. The launcher ready
+URL may include the H2 route and query; those components are deliberately not
+passed to the adapter. An invalid/non-loopback ready URL fails closed with a
+stable launcher-ready code and is never written to the report. The required order is
 `importCsv -> runAnalysis -> exportSubmission -> checker`; every request stays
 on that same Web origin. The launcher is stopped exactly once in `finally` on
 both success and failure, without retry. Import is bound to `LIVE_ANALYSIS`,

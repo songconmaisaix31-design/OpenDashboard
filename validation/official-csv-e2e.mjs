@@ -34,6 +34,7 @@ const REQUEST_TIMEOUT_MS = 30_000
 const REPORT_SCHEMA = 'h2-sentinel-official-csv-e2e-v1'
 const SAFE_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/
 const COMMIT_PATTERN = /^[0-9a-f]{40}$/
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', '[::1]', '::1'])
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const DEFAULT_REPORT_ROOT = resolve(scriptDirectory, 'reports/epoch-2')
 
@@ -322,6 +323,25 @@ function isCleanStop(result) {
   return result?.timedOut === false && result.code === 0 && result.signal === null
 }
 
+function deriveLiveOrigin(readyWebUrl) {
+  try {
+    const url = new URL(readyWebUrl)
+    if (
+      (url.protocol !== 'http:' && url.protocol !== 'https:') ||
+      !LOOPBACK_HOSTS.has(url.hostname.toLowerCase()) ||
+      url.username !== '' ||
+      url.password !== '' ||
+      url.port === ''
+    ) {
+      throw new RunnerError('E_LAUNCHER_READY_INVALID')
+    }
+    return url.origin
+  } catch (error) {
+    if (error instanceof RunnerError) throw error
+    throw new RunnerError('E_LAUNCHER_READY_INVALID')
+  }
+}
+
 function assertSeriesHydrationBinding(workspace, imported, normalizedIdentity) {
   if (!workspace || typeof workspace !== 'object' || !workspace.run || typeof workspace.run !== 'object') {
     throw new RunnerError('E_SERIES_HYDRATION_FAILED')
@@ -469,9 +489,10 @@ export async function runOfficialCsvE2e({
     let source
     startedAt = Date.now()
     try {
+      const baseUrl = deriveLiveOrigin(session.ready.webUrl)
       source = deps.createLiveDataSource({
         enabled: true,
-        baseUrl: session.ready.webUrl,
+        baseUrl,
         timeoutMs: REQUEST_TIMEOUT_MS,
       })
       report.stages.push(stageRecord('same_origin_adapter', 'passed', startedAt))
