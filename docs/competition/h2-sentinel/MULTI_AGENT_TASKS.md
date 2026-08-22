@@ -1677,9 +1677,11 @@ their unchecked release items occurred. Epoch 4 freezes executable SHA
 and uses separate decisions for technical readiness, registration/form
 submission, receipt/acceptance, official score, and visual verification.
 
-The unique integrator records final track SHAs, the final post-document SHA,
-and fresh gates. Until that record exists, every Track A-F finalization field
-is `pending`. Technical evidence must not be promoted into organizer
-submission, receipt, score, deployment code-SHA binding, or visual approval.
-Attempts 1 through 5 remain immutable history; attempt 6 is described only by
-sanitized evidence hashes and its declared technical scope.
+The unique integrator records accepted plan and Track A-F source commit
+sequences and remote tips in the release manifest. That source integration
+does not itself complete the release-candidate commit, publication, or fresh
+exact-SHA gates; those remain `pending` until separately recorded. Technical
+evidence must not be promoted into organizer submission, receipt, score,
+visual approval, or broader deployment behavior. Attempts 1 through 5 remain
+immutable history; attempt 6 is described only by sanitized evidence hashes
+and its declared technical scope.

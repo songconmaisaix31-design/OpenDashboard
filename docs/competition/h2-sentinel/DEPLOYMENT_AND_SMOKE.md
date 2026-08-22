@@ -83,10 +83,21 @@ npm run h2:smoke
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File submission/h2-sentinel/scripts/validate-submission.ps1
 ```
 
-Observed deployment transport evidence is limited to deployment
-`dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf`, hostname
-`h2-sentinel-hxrbu0wan-dwwww.vercel.app`, and custom domain `204421.xyz`.
-Root, fixture with and without a trailing slash, local, and invalid-mode routes
-returned HTTP 200 SPA shells; static assets contained H2, invalid-mode, and
-Chinese markers. Those checks are neither visual nor interactive proof and do
-not bind the deployment to the tested executable SHA.
+Observed deployment transport evidence is origin-specific for deployment
+`dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf`:
+
+- On `https://204421.xyz`, all eight probes returned an HTTP 200 SPA shell:
+  `/`, `/?mode=fixture`, both slash forms of H2 fixture, local, and invalid
+  routes. This is same-origin transport evidence only.
+- On `https://h2-sentinel-hxrbu0wan-dwwww.vercel.app`, direct `/` and
+  `/?mode=fixture` each returned HTTP 302 to the Vercel SSO endpoint. Those
+  direct probes are `AUTH-REDIRECT/UNKNOWN-HOLD`, not H2 shell evidence.
+- The custom-domain asset `/assets/index-C2wmhv_n.js` was HTTP 200, 935,592
+  bytes, SHA-256
+  `b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6`.
+  It contains `H2 Sentinel` and `氢哨`; the literal `invalid-mode` is absent.
+
+The matching local production asset establishes a static-asset-only binding to
+the frozen executable SHA. It is neither desktop/mobile visual verification nor
+interactive smoke proof, and it does not establish organizer submission,
+receipt, acceptance, or score.

@@ -823,3 +823,15 @@ Release readiness therefore remains a set of independent decisions. Technical
 readiness may become `GO` only after the final post-document SHA receives its
 fresh gates; registration/form submission, receipt/acceptance, official score,
 and visual verification remain `UNKNOWN-HOLD` until separately evidenced.
+
+The organizer rule source is
+`https://explorneo.feishu.cn/docx/OwAodS0VxoDUsGxsEFGcRgEtn2f`, revision 146,
+reviewed on 2026-08-23. It describes requirements and deadlines, not a
+completed form or receipt. The final organizer submission archive, its SHA-256,
+its binding to an actual submitted artifact/version, receipt binding, and
+redistribution or licensing record are all `UNKNOWN-HOLD`; neither the input
+ZIP hash nor the attempt-6 `submission.csv` hash substitutes for them.
+
+The custom-domain production asset matches the local production bundle for the
+frozen executable SHA. This static binding does not infer visual or interactive
+behavior and does not change any organizer-facing decision.

@@ -2,9 +2,9 @@
   "schemaVersion": "2.0",
   "epoch": 4,
   "runId": "run_f2bc8c0433f8",
-  "planParentSha": "90088005259ec6ff18042238c99e118e67fb172b",
+  "planParentSha": "7f02c938d37b06b49109fa9e5020cb345a851897",
   "parallelTaskBaseSha": "58090bc1747d621bc87d698259319a70c34e75f2",
-  "planSha": "30f8f36ff936b295596c5515f15d2a8d17cebaff",
+  "planSha": "ce53fbec9634c9f8720351dc2d9913fb158fdee3",
   "testedCodeSha": "58090bc1747d621bc87d698259319a70c34e75f2",
   "contractGate": {
     "contractsTree": "11608e5ff5c0e69c3dd4a18588e5a13027151e82",
@@ -16,22 +16,25 @@
       "taskId": "trackA",
       "owner": "Epoch 4 Track A",
       "writePaths": [".gitattributes"],
-      "status": "pending",
-      "reason": "The Track A final commit SHA is not recorded in the unique integration record."
+      "commitSha": "9e84227692bb4c1ec4d160e254240e9c6f636256",
+      "status": "passed",
+      "evidence": [".gitattributes"]
     },
     {
       "taskId": "trackB",
       "owner": "Epoch 4 Track B",
       "writePaths": ["validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6"],
-      "status": "pending",
-      "reason": "The Track B final commit SHA is not recorded in the unique integration record."
+      "commitSha": "7d925d009802b81c6b14e7cc41f82898206b7a88",
+      "status": "passed",
+      "evidence": ["validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json"]
     },
     {
       "taskId": "trackC",
       "owner": "Epoch 4 Track C",
       "writePaths": ["submission/h2-sentinel"],
-      "status": "pending",
-      "reason": "The Track C final commit SHA is not recorded in the unique integration record."
+      "commitSha": "ad313acf004a0755d18ec3ffd85158b71054aeb8",
+      "status": "passed",
+      "evidence": ["submission/h2-sentinel/README.md"]
     },
     {
       "taskId": "trackD",
@@ -44,92 +47,119 @@
         "docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json",
         "docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.json"
       ],
-      "status": "pending",
-      "reason": "The Track D final commit SHA is not recorded in the unique integration record."
+      "commitSha": "9ee96da739a54a84072b162cc496f75412997acc",
+      "status": "passed",
+      "evidence": ["docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.json"]
     },
     {
       "taskId": "trackE",
       "owner": "Epoch 4 Track E",
       "writePaths": ["scripts/h2-sentinel/HANDOFF.md"],
-      "status": "pending",
-      "reason": "The Track E final commit SHA is not recorded in the unique integration record."
+      "commitSha": "5b25ce362e55a7c9097f07b94a0c04e25610e3e2",
+      "status": "passed",
+      "evidence": ["scripts/h2-sentinel/HANDOFF.md"]
     },
     {
       "taskId": "trackF",
       "owner": "Epoch 4 Track F",
       "writePaths": ["MEMORY.md"],
-      "status": "pending",
-      "reason": "The Track F final commit SHA is not recorded in the unique integration record."
+      "commitSha": "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa",
+      "status": "passed",
+      "evidence": ["MEMORY.md"]
     }
   ],
   "dispatches": [
     {
       "dispatchId": "dispatch_e4_trackA",
       "taskId": "trackA",
-      "status": "pending",
-      "reason": "The unique integrator has not recorded the Track A dispatch outcome."
+      "status": "passed",
+      "evidence": [".gitattributes"]
     },
     {
       "dispatchId": "dispatch_e4_trackB",
       "taskId": "trackB",
-      "status": "pending",
-      "reason": "The unique integrator has not recorded the Track B dispatch outcome."
+      "status": "passed",
+      "evidence": ["validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json"]
     },
     {
       "dispatchId": "dispatch_e4_trackC",
       "taskId": "trackC",
-      "status": "pending",
-      "reason": "The unique integrator has not recorded the Track C dispatch outcome."
+      "status": "passed",
+      "evidence": ["submission/h2-sentinel/README.md"]
     },
     {
       "dispatchId": "dispatch_e4_trackD",
       "taskId": "trackD",
-      "status": "pending",
-      "reason": "The unique integrator has not recorded the Track D dispatch outcome."
+      "status": "passed",
+      "evidence": ["docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.json"]
     },
     {
       "dispatchId": "dispatch_e4_trackE",
       "taskId": "trackE",
-      "status": "pending",
-      "reason": "The unique integrator has not recorded the Track E dispatch outcome."
+      "status": "passed",
+      "evidence": ["scripts/h2-sentinel/HANDOFF.md"]
     },
     {
       "dispatchId": "dispatch_e4_trackF",
       "taskId": "trackF",
-      "status": "pending",
-      "reason": "The unique integrator has not recorded the Track F dispatch outcome."
+      "status": "passed",
+      "evidence": ["MEMORY.md"]
     }
   ],
   "commits": [
     {
       "taskId": "trackA",
-      "status": "pending",
-      "reason": "No Track A commit SHA is recorded for final Epoch 4 integration."
+      "localSha": "9e84227692bb4c1ec4d160e254240e9c6f636256",
+      "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-eol",
+      "remoteSha": "9e84227692bb4c1ec4d160e254240e9c6f636256",
+      "observedAt": "2026-08-22T19:55:34Z",
+      "status": "passed",
+      "evidence": [".gitattributes"]
     },
     {
       "taskId": "trackB",
-      "status": "pending",
-      "reason": "No Track B commit SHA is recorded for final Epoch 4 integration."
+      "localSha": "7d925d009802b81c6b14e7cc41f82898206b7a88",
+      "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-evidence",
+      "remoteSha": "7d925d009802b81c6b14e7cc41f82898206b7a88",
+      "observedAt": "2026-08-22T19:55:34Z",
+      "status": "passed",
+      "evidence": ["validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json"]
     },
     {
       "taskId": "trackC",
-      "status": "pending",
-      "reason": "No Track C commit SHA is recorded for final Epoch 4 integration."
+      "localSha": "ad313acf004a0755d18ec3ffd85158b71054aeb8",
+      "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-submission",
+      "remoteSha": "ad313acf004a0755d18ec3ffd85158b71054aeb8",
+      "observedAt": "2026-08-22T19:55:34Z",
+      "status": "passed",
+      "evidence": ["submission/h2-sentinel/README.md"]
     },
     {
       "taskId": "trackD",
-      "status": "pending",
-      "reason": "No Track D commit SHA is recorded for final Epoch 4 integration."
+      "localSha": "9ee96da739a54a84072b162cc496f75412997acc",
+      "remoteRef": "refs/heads/songconmaisaix31-design/h2-delivery-integrate-e3",
+      "remoteSha": "9ee96da739a54a84072b162cc496f75412997acc",
+      "observedAt": "2026-08-22T19:55:34Z",
+      "status": "passed",
+      "evidence": ["docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.json"]
     },
     {
       "taskId": "trackE",
-      "status": "pending",
-      "reason": "No Track E commit SHA is recorded for final Epoch 4 integration."
+      "localSha": "5b25ce362e55a7c9097f07b94a0c04e25610e3e2",
+      "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-handoff",
+      "remoteSha": "5b25ce362e55a7c9097f07b94a0c04e25610e3e2",
+      "observedAt": "2026-08-22T19:55:34Z",
+      "status": "passed",
+      "evidence": ["scripts/h2-sentinel/HANDOFF.md"]
     },
     {
       "taskId": "trackF",
-      "status": "pending",
-      "reason": "No Track F commit SHA is recorded for final Epoch 4 integration."
+      "localSha": "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa",
+      "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-memory",
+      "remoteSha": "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa",
+      "observedAt": "2026-08-22T19:55:34Z",
+      "status": "passed",
+      "evidence": ["MEMORY.md"]
     }
   ],
   "attempts": [
@@ -172,43 +202,43 @@
     "deployment": {
       "status": "pending",
       "attempts": [],
-      "reason": "Transport and static-asset observations do not bind the deployment to testedCodeSha and do not prove visual or interactive behavior."
+      "reason": "The static asset is bound to testedCodeSha, but fresh candidate gates and independent visual or interactive verification remain pending."
     },
     "submission": {
       "status": "pending",
       "attempts": [],
-      "reason": "No organizer form submission, receipt, or acceptance is evidenced."
+      "reason": "No organizer form submission, final archive binding, receipt, or acceptance is evidenced."
     },
     "integration": {
       "status": "pending",
       "attempts": [],
-      "reason": "The final post-document integration SHA and fresh exact-SHA gates remain pending."
+      "reason": "The release-candidate commit and fresh exact-SHA gates remain pending."
     }
   },
   "publication": {
     "integrationBranch": {
       "status": "pending",
-      "reason": "The final post-document integration commit and remote observation are not yet recorded."
+      "reason": "The release-candidate commit and remote observation are not yet recorded."
     },
     "canonical": {
       "status": "pending",
-      "reason": "Canonical publication of the final post-document SHA is not yet recorded."
+      "reason": "Canonical publication of the release-candidate SHA is not yet recorded."
     }
   },
   "deployment": {
     "status": "pending",
-    "reason": "Observed HTTP 200 SPA shells and static assets are not a tested-code binding, visual verification, or interactive smoke proof."
+    "reason": "The static-asset binding is limited evidence; it is not fresh candidate gating, visual verification, or interactive smoke proof."
   },
   "submission": {
     "status": "pending",
-    "reason": "Local technical artifacts do not prove organizer registration, submission, receipt, acceptance, or score."
+    "reason": "Local technical artifacts do not prove organizer registration, final archive submission, receipt, acceptance, or score."
   },
   "verdict": "HOLD",
   "blockingGateIds": ["deployment", "submission", "integration"],
   "decisions": {
     "technicalReadiness": {
       "status": "PENDING",
-      "reason": "The frozen executable base has evidence, but the final post-document integration SHA and its fresh gates are not yet recorded."
+      "reason": "The frozen executable base and static asset have evidence, but the release-candidate commit and fresh exact-SHA gates are not yet recorded."
     },
     "registrationOrFormSubmission": {
       "status": "UNKNOWN-HOLD",
@@ -216,7 +246,7 @@
     },
     "receiptOrAcceptance": {
       "status": "UNKNOWN-HOLD",
-      "reason": "No organizer receipt, acknowledgement, or acceptance tied to a package hash is available."
+      "reason": "No organizer receipt, acknowledgement, or acceptance is bound to the actual submitted artifact and version."
     },
     "officialScore": {
       "status": "UNKNOWN-HOLD",
@@ -233,16 +263,16 @@
   },
   "finalization": {
     "tracks": [
-      { "track": "A", "status": "pending", "reason": "Track A final commit and remote SHA are not yet recorded." },
-      { "track": "B", "status": "pending", "reason": "Track B final commit and remote SHA are not yet recorded." },
-      { "track": "C", "status": "pending", "reason": "Track C final commit and remote SHA are not yet recorded." },
-      { "track": "D", "status": "pending", "reason": "Track D final commit and remote SHA are not yet recorded." },
-      { "track": "E", "status": "pending", "reason": "Track E final commit and remote SHA are not yet recorded." },
-      { "track": "F", "status": "pending", "reason": "Track F final commit and remote SHA are not yet recorded." }
+      { "track": "A", "commitSha": "9e84227692bb4c1ec4d160e254240e9c6f636256", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-eol", "remoteSha": "9e84227692bb4c1ec4d160e254240e9c6f636256", "observedAt": "2026-08-22T19:55:34Z", "status": "passed", "evidence": [".gitattributes"] },
+      { "track": "B", "commitSha": "7d925d009802b81c6b14e7cc41f82898206b7a88", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-evidence", "remoteSha": "7d925d009802b81c6b14e7cc41f82898206b7a88", "observedAt": "2026-08-22T19:55:34Z", "status": "passed", "evidence": ["validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json"] },
+      { "track": "C", "commitSha": "ad313acf004a0755d18ec3ffd85158b71054aeb8", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-submission", "remoteSha": "ad313acf004a0755d18ec3ffd85158b71054aeb8", "observedAt": "2026-08-22T19:55:34Z", "status": "passed", "evidence": ["submission/h2-sentinel/README.md"] },
+      { "track": "D", "commitSha": "9ee96da739a54a84072b162cc496f75412997acc", "remoteRef": "refs/heads/songconmaisaix31-design/h2-delivery-integrate-e3", "remoteSha": "9ee96da739a54a84072b162cc496f75412997acc", "observedAt": "2026-08-22T19:55:34Z", "status": "passed", "evidence": ["docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.json"] },
+      { "track": "E", "commitSha": "5b25ce362e55a7c9097f07b94a0c04e25610e3e2", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-handoff", "remoteSha": "5b25ce362e55a7c9097f07b94a0c04e25610e3e2", "observedAt": "2026-08-22T19:55:34Z", "status": "passed", "evidence": ["scripts/h2-sentinel/HANDOFF.md"] },
+      { "track": "F", "commitSha": "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e4-memory", "remoteSha": "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa", "observedAt": "2026-08-22T19:55:34Z", "status": "passed", "evidence": ["MEMORY.md"] }
     ],
     "postDocumentationIntegration": {
       "status": "pending",
-      "reason": "The unique integrator must record the final post-document SHA and fresh gates."
+      "reason": "The unique integrator must record the release-candidate SHA and fresh gates after this manifest is committed."
     }
   },
   "officialAttempts": [
@@ -328,17 +358,40 @@
   ],
   "deploymentObservation": {
     "deploymentId": "dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf",
-    "hostname": "h2-sentinel-hxrbu0wan-dwwww.vercel.app",
-    "customDomain": "204421.xyz",
-    "codeShaBinding": "unverified",
-    "routeChecks": [
-      { "routePath": "/", "status": "SPA_SHELL_200" },
-      { "routePath": "/h2-sentinel?mode=fixture", "status": "SPA_SHELL_200" },
-      { "routePath": "/h2-sentinel/?mode=fixture", "status": "SPA_SHELL_200" },
-      { "routePath": "/h2-sentinel?mode=local", "status": "SPA_SHELL_200" },
-      { "routePath": "/h2-sentinel?mode=invalid", "status": "SPA_SHELL_200" }
+    "origins": [
+      {
+        "origin": "https://204421.xyz",
+        "status": "SPA_SHELL_200",
+        "routeChecks": [
+          { "routePath": "/", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+          { "routePath": "/?mode=fixture", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+          { "routePath": "/h2-sentinel?mode=fixture", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+          { "routePath": "/h2-sentinel/?mode=fixture", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+          { "routePath": "/h2-sentinel?mode=local", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+          { "routePath": "/h2-sentinel/?mode=local", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+          { "routePath": "/h2-sentinel?mode=invalid", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+          { "routePath": "/h2-sentinel/?mode=invalid", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" }
+        ]
+      },
+      {
+        "origin": "https://h2-sentinel-hxrbu0wan-dwwww.vercel.app",
+        "status": "AUTH-REDIRECT/UNKNOWN-HOLD",
+        "routeChecks": [
+          { "routePath": "/", "httpStatus": 302, "classification": "AUTH-REDIRECT/UNKNOWN-HOLD", "redirectsFollowed": false, "responseContentType": "text/plain", "location": "https://vercel.com/sso-api" },
+          { "routePath": "/?mode=fixture", "httpStatus": 302, "classification": "AUTH-REDIRECT/UNKNOWN-HOLD", "redirectsFollowed": false, "responseContentType": "text/plain", "location": "https://vercel.com/sso-api" }
+        ],
+        "reason": "Redirects were not followed; this origin is not H2 shell evidence."
+      }
     ],
-    "assetMarkers": ["h2", "invalid-mode", "chinese-marker"],
+    "asset": {
+      "origin": "https://204421.xyz",
+      "assetPath": "/assets/index-C2wmhv_n.js",
+      "httpStatus": 200,
+      "bytes": 935592,
+      "sha256": "b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6",
+      "markersPresent": ["H2 Sentinel", "氢哨"],
+      "markersAbsent": ["invalid-mode"]
+    },
     "evidenceScope": "transport-and-static-assets-only"
   },
   "inputPackageIntegrity": {
@@ -357,5 +410,51 @@
       "actualTopLevelDocumentCount": 5,
       "reason": "The five actual top-level documents do not match listed paths or names: the XLSX is only renamed with the same hash, the DOCX and two Markdown files differ in content or size, and an unlisted PDF is present. The cover and PDF name D01-D13 and a scoring framework, while the DOCX body lacks Sections 8 and 13; no missing content is inferred."
     }
+  },
+  "acceptedIntegrationInputs": {
+    "plan": {
+      "parentSha": "7f02c938d37b06b49109fa9e5020cb345a851897",
+      "sourceRef": "refs/heads/songconmaisaix31-design/h2-delivery-plan-e4",
+      "remoteTip": "ce53fbec9634c9f8720351dc2d9913fb158fdee3",
+      "commitSequence": ["ce53fbec9634c9f8720351dc2d9913fb158fdee3"],
+      "observedAt": "2026-08-22T19:55:34Z"
+    },
+    "tracks": [
+      { "track": "A", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-eol", "remoteTip": "9e84227692bb4c1ec4d160e254240e9c6f636256", "commitSequence": ["2b7b416c23e611b9c12fe66f4bb92a80805f984a", "9e84227692bb4c1ec4d160e254240e9c6f636256"], "observedAt": "2026-08-22T19:55:34Z" },
+      { "track": "B", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-evidence", "remoteTip": "7d925d009802b81c6b14e7cc41f82898206b7a88", "commitSequence": ["7d925d009802b81c6b14e7cc41f82898206b7a88"], "observedAt": "2026-08-22T19:55:34Z" },
+      { "track": "C", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-submission", "remoteTip": "ad313acf004a0755d18ec3ffd85158b71054aeb8", "commitSequence": ["65acf2f1c4c5d99b265f527011111c2ba3db5e4b", "6eaf89d37ca65254ce884d5c15ea88b12955bf0e", "f8dcfb2ef2e72137d219e476e85955a9345b3e17", "ad313acf004a0755d18ec3ffd85158b71054aeb8"], "observedAt": "2026-08-22T19:55:34Z" },
+      { "track": "D", "sourceRef": "refs/heads/songconmaisaix31-design/h2-delivery-integrate-e3", "remoteTip": "9ee96da739a54a84072b162cc496f75412997acc", "commitSequence": ["7c7b2d0e6ea76b73862228da31d26fcda3905a29", "b505277c46feaac6314ad780bb6ed0f7df1b7311", "9ee96da739a54a84072b162cc496f75412997acc"], "observedAt": "2026-08-22T19:55:34Z" },
+      { "track": "E", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-handoff", "remoteTip": "5b25ce362e55a7c9097f07b94a0c04e25610e3e2", "commitSequence": ["f9f8bd045cea85905fbbaac3b3085484cbc347ba", "4ddd5d3ba8926057660fc2ad20973fdc2351d80f", "5b25ce362e55a7c9097f07b94a0c04e25610e3e2"], "observedAt": "2026-08-22T19:55:34Z" },
+      { "track": "F", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-memory", "remoteTip": "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa", "commitSequence": ["39f7b59c155d7aa89604f61d5af3799f30962181", "b179464193bb2dda1ff9353fa6f2d671ac52559e", "6b3def669909d9bddeaf8c4d7c1b44160ed3f700", "2e7cc75e0a7486722f84b7a2a3ae18605060a7f5", "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa"], "observedAt": "2026-08-22T19:55:34Z" }
+    ]
+  },
+  "organizerRuleSource": {
+    "url": "https://explorneo.feishu.cn/docx/OwAodS0VxoDUsGxsEFGcRgEtn2f",
+    "revision": "146",
+    "reviewedOn": "2026-08-23",
+    "status": "reviewed",
+    "reason": "The rule source describes requirements and deadlines only; it is not evidence of a completed form, receipt, acceptance, score, or visual review."
+  },
+  "finalSubmissionArchive": {
+    "status": "UNKNOWN-HOLD",
+    "actualSubmittedArtifactBinding": "UNKNOWN-HOLD",
+    "finalArchiveSha256": "UNKNOWN-HOLD",
+    "organizerReceiptBinding": "UNKNOWN-HOLD",
+    "redistributionAndLicensing": "UNKNOWN-HOLD",
+    "reason": "No final organizer submission archive, submitted-artifact version binding, receipt binding, or redistribution and licensing record is available. The attempt-6 submission.csv SHA-256 and the input ZIP SHA-256 are not substitutes."
+  },
+  "staticAssetBinding": {
+    "status": "passed",
+    "testedCodeSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+    "localAssetPath": "apps/web/dist/assets/index-C2wmhv_n.js",
+    "localAssetBytes": 935592,
+    "localAssetSha256": "b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6",
+    "remoteAssetOrigin": "https://204421.xyz",
+    "remoteAssetPath": "/assets/index-C2wmhv_n.js",
+    "remoteAssetBytes": 935592,
+    "remoteAssetSha256": "b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6",
+    "deploymentId": "dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf",
+    "scope": "static-asset-only",
+    "reason": "Local production output and the custom-domain asset match exactly. This establishes only a static asset binding to the frozen executable base; it does not establish visual or interactive behavior."
   }
 }

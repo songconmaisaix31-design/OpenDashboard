@@ -706,11 +706,18 @@ it does not prove any organizer or visual outcome.
 | --- | --- | --- |
 | Technical readiness | `PENDING` | The final post-document integration SHA and fresh exact-SHA gates are not yet recorded. |
 | Registration/form submission | `UNKNOWN-HOLD` | Revision 146 requires the captain's one-time team submission; no completed-form evidence exists. |
-| Receipt/acceptance | `UNKNOWN-HOLD` | No organizer receipt, acknowledgement, or acceptance tied to the package hash exists. |
+| Receipt/acceptance | `UNKNOWN-HOLD` | No organizer receipt, acknowledgement, or acceptance is bound to the actual submitted artifact and version. |
 | Official score | `UNKNOWN-HOLD` | No organizer score is attributable to this submission. Historical 0.2168 and 0.9517 values are unbound. |
 | Visual verification | `UNKNOWN-HOLD` | HTTP SPA-shell and static-asset probes are not desktop/mobile visual or interactive evidence. |
 | Overall competition state | `HOLD` | The independent unknown holds and the pending technical finalization remain unresolved. |
 
-The 2026-08-21 online-work deadline is a historical rule date, not evidence
-that a team form was submitted. The release manifest is the machine-readable
-source for the exact artifact hashes and finalizer-pending fields.
+The rule source is
+`https://explorneo.feishu.cn/docx/OwAodS0VxoDUsGxsEFGcRgEtn2f`, revision 146,
+reviewed on 2026-08-23. The 2026-08-21 online-work deadline is a historical
+rule date, not evidence that a team form was submitted.
+
+The release manifest is the machine-readable source for the accepted plan and
+Track A-F commit sequences, exact artifact hashes, origin-specific deployment
+observations, and finalizer-pending fields. Its static-asset binding is limited
+to the matching local and custom-domain bundle; it is not visual or interactive
+verification.

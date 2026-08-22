@@ -68,7 +68,11 @@
       "uniqueItems": true
     },
     "deploymentObservation": { "$ref": "#/$defs/deploymentObservation" },
-    "inputPackageIntegrity": { "$ref": "#/$defs/inputPackageIntegrity" }
+    "inputPackageIntegrity": { "$ref": "#/$defs/inputPackageIntegrity" },
+    "acceptedIntegrationInputs": { "$ref": "#/$defs/acceptedIntegrationInputs" },
+    "organizerRuleSource": { "$ref": "#/$defs/organizerRuleSource" },
+    "finalSubmissionArchive": { "$ref": "#/$defs/finalSubmissionArchive" },
+    "staticAssetBinding": { "$ref": "#/$defs/staticAssetBinding" }
   },
   "allOf": [
     {
@@ -84,7 +88,11 @@
           "officialAttempts",
           "ciRuns",
           "deploymentObservation",
-          "inputPackageIntegrity"
+          "inputPackageIntegrity",
+          "acceptedIntegrationInputs",
+          "organizerRuleSource",
+          "finalSubmissionArchive",
+          "staticAssetBinding"
         ],
         "properties": {
           "epoch": { "const": 4 },
@@ -93,7 +101,11 @@
           "officialAttempts": {},
           "ciRuns": {},
           "deploymentObservation": {},
-          "inputPackageIntegrity": {}
+          "inputPackageIntegrity": {},
+          "acceptedIntegrationInputs": {},
+          "organizerRuleSource": {},
+          "finalSubmissionArchive": {},
+          "staticAssetBinding": {}
         }
       }
     },
@@ -679,26 +691,54 @@
         "status": { "const": "SPA_SHELL_200" }
       }
     },
+    "originRouteCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routePath", "httpStatus", "classification", "redirectsFollowed"],
+      "properties": {
+        "routePath": { "type": "string", "pattern": "^/[^\\r\\n]*$" },
+        "httpStatus": { "type": "integer", "minimum": 100, "maximum": 599 },
+        "classification": { "enum": ["SPA_SHELL_200", "AUTH-REDIRECT/UNKNOWN-HOLD"] },
+        "redirectsFollowed": { "const": false },
+        "responseContentType": { "type": "string", "minLength": 1, "maxLength": 240, "pattern": "^[^\\r\\n]+$" },
+        "location": { "$ref": "#/$defs/httpsUrl" }
+      }
+    },
+    "deploymentOriginObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin", "status", "routeChecks"],
+      "properties": {
+        "origin": { "$ref": "#/$defs/httpsUrl" },
+        "status": { "enum": ["SPA_SHELL_200", "AUTH-REDIRECT/UNKNOWN-HOLD"] },
+        "routeChecks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/originRouteCheck" } },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "assetObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin", "assetPath", "httpStatus", "bytes", "sha256", "markersPresent", "markersAbsent"],
+      "properties": {
+        "origin": { "$ref": "#/$defs/httpsUrl" },
+        "assetPath": { "type": "string", "pattern": "^/[^\\r\\n]*$" },
+        "httpStatus": { "const": 200 },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "markersPresent": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1, "maxLength": 240, "pattern": "^[^\\r\\n]+$" }, "uniqueItems": true },
+        "markersAbsent": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1, "maxLength": 240, "pattern": "^[^\\r\\n]+$" }, "uniqueItems": true }
+      }
+    },
     "deploymentObservation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["deploymentId", "hostname", "customDomain", "codeShaBinding", "routeChecks", "assetMarkers", "evidenceScope"],
+      "required": ["deploymentId", "origins", "asset", "evidenceScope"],
       "properties": {
         "deploymentId": { "$ref": "#/$defs/id" },
-        "hostname": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
-        "customDomain": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
-        "codeShaBinding": { "enum": ["verified", "unverified"] },
-        "testedCodeSha": { "$ref": "#/$defs/sha" },
-        "routeChecks": { "type": "array", "minItems": 4, "items": { "$ref": "#/$defs/routeCheck" } },
-        "assetMarkers": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+        "origins": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/deploymentOriginObservation" } },
+        "asset": { "$ref": "#/$defs/assetObservation" },
         "evidenceScope": { "const": "transport-and-static-assets-only" }
-      },
-      "allOf": [
-        {
-          "if": { "properties": { "codeShaBinding": { "const": "verified" } } },
-          "then": { "required": ["testedCodeSha"], "properties": { "testedCodeSha": {} } }
-        }
-      ]
+      }
     },
     "inputDataIntegrity": {
       "type": "object",
@@ -732,6 +772,86 @@
       "properties": {
         "dataIntegrity": { "$ref": "#/$defs/inputDataIntegrity" },
         "organizerDocumentationManifest": { "$ref": "#/$defs/organizerDocumentationManifest" }
+      }
+    },
+    "acceptedIntegrationInputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan", "tracks"],
+      "properties": {
+        "plan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["parentSha", "sourceRef", "remoteTip", "commitSequence", "observedAt"],
+          "properties": {
+            "parentSha": { "$ref": "#/$defs/sha" },
+            "sourceRef": { "$ref": "#/$defs/id" },
+            "remoteTip": { "$ref": "#/$defs/sha" },
+            "commitSequence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha" }, "uniqueItems": true },
+            "observedAt": { "$ref": "#/$defs/timestamp" }
+          }
+        },
+        "tracks": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["track", "sourceRef", "remoteTip", "commitSequence", "observedAt"],
+            "properties": {
+              "track": { "enum": ["A", "B", "C", "D", "E", "F"] },
+              "sourceRef": { "$ref": "#/$defs/id" },
+              "remoteTip": { "$ref": "#/$defs/sha" },
+              "commitSequence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha" }, "uniqueItems": true },
+              "observedAt": { "$ref": "#/$defs/timestamp" }
+            }
+          }
+        }
+      }
+    },
+    "organizerRuleSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "revision", "reviewedOn", "status", "reason"],
+      "properties": {
+        "url": { "$ref": "#/$defs/httpsUrl" },
+        "revision": { "type": "string", "pattern": "^[0-9]+$" },
+        "reviewedOn": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "status": { "const": "reviewed" },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "finalSubmissionArchive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "actualSubmittedArtifactBinding", "finalArchiveSha256", "organizerReceiptBinding", "redistributionAndLicensing", "reason"],
+      "properties": {
+        "status": { "const": "UNKNOWN-HOLD" },
+        "actualSubmittedArtifactBinding": { "const": "UNKNOWN-HOLD" },
+        "finalArchiveSha256": { "const": "UNKNOWN-HOLD" },
+        "organizerReceiptBinding": { "const": "UNKNOWN-HOLD" },
+        "redistributionAndLicensing": { "const": "UNKNOWN-HOLD" },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "staticAssetBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "testedCodeSha", "localAssetPath", "localAssetBytes", "localAssetSha256", "remoteAssetOrigin", "remoteAssetPath", "remoteAssetBytes", "remoteAssetSha256", "deploymentId", "scope", "reason"],
+      "properties": {
+        "status": { "const": "passed" },
+        "testedCodeSha": { "$ref": "#/$defs/sha" },
+        "localAssetPath": { "$ref": "#/$defs/repoPath" },
+        "localAssetBytes": { "type": "integer", "minimum": 1 },
+        "localAssetSha256": { "$ref": "#/$defs/sha256" },
+        "remoteAssetOrigin": { "$ref": "#/$defs/httpsUrl" },
+        "remoteAssetPath": { "type": "string", "pattern": "^/[^\\r\\n]*$" },
+        "remoteAssetBytes": { "type": "integer", "minimum": 1 },
+        "remoteAssetSha256": { "$ref": "#/$defs/sha256" },
+        "deploymentId": { "$ref": "#/$defs/id" },
+        "scope": { "const": "static-asset-only" },
+        "reason": { "$ref": "#/$defs/reason" }
       }
     },
     "releaseArea": {
