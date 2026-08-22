@@ -689,3 +689,28 @@ Use canonical repositories and official documentation when revisiting a reuse de
 - Merlion, rejected for this branch because the upstream repository is archived: https://github.com/salesforce/Merlion
 
 A project appearing in this list does not authorize broad adoption. The narrow decision in Section 10 remains authoritative.
+
+## 22. Epoch 4 release-evidence status
+
+This section supersedes only the release-status interpretation of the earlier
+milestones and readiness checklist. It does not turn a planning checklist into
+release proof.
+
+The executable base is frozen at
+`58090bc1747d621bc87d698259319a70c34e75f2`. CI runs `32591314579`,
+`32591315711`, and `32591315735` each concluded successfully for that SHA.
+Sanitized attempt-6 evidence is technical evidence for that executable base;
+it does not prove any organizer or visual outcome.
+
+| Independent decision | Current status | Evidence boundary |
+| --- | --- | --- |
+| Technical readiness | `PENDING` | The final post-document integration SHA and fresh exact-SHA gates are not yet recorded. |
+| Registration/form submission | `UNKNOWN-HOLD` | Revision 146 requires the captain's one-time team submission; no completed-form evidence exists. |
+| Receipt/acceptance | `UNKNOWN-HOLD` | No organizer receipt, acknowledgement, or acceptance tied to the package hash exists. |
+| Official score | `UNKNOWN-HOLD` | No organizer score is attributable to this submission. Historical 0.2168 and 0.9517 values are unbound. |
+| Visual verification | `UNKNOWN-HOLD` | HTTP SPA-shell and static-asset probes are not desktop/mobile visual or interactive evidence. |
+| Overall competition state | `HOLD` | The independent unknown holds and the pending technical finalization remain unresolved. |
+
+The 2026-08-21 online-work deadline is a historical rule date, not evidence
+that a team form was submitted. The release manifest is the machine-readable
+source for the exact artifact hashes and finalizer-pending fields.

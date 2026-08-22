@@ -29,24 +29,30 @@ Web → 轮询 `/health` 与页面就绪 → 打印 READY → 优雅停机。
 [H2 Sentinel] Analytics port 8765 is already in use on 127.0.0.1. Choose another analytics port.
 ```
 
-## 3. D4 离线部署冒烟（官方测试集全量）
+## 3. Historical offline smoke and Epoch 4 technical evidence
 
-```bash
-node scripts/h2-sentinel/offline-deploy-smoke.mjs --official-data "<官方数据目录>"
-```
+The 2026-08-22 offline-smoke entry that reported 566 predicted events and an
+`affected_equipment` format blocker is historical. It is not a current
+Epoch 4 blocker, a current official-run result, or a deployment verdict.
 
-实测流程（`validation/reports/offline-deploy-smoke.json`，2026-08-22）：
+The sanitized attempt-6 technical record is bound to executable SHA
+`58090bc1747d621bc87d698259319a70c34e75f2` and records:
 
-| 步骤 | 结果 |
-| --- | --- |
-| 规范化（69 官方列通过、时间戳转 ISO UTC） | 通过，172,800 行 |
-| 导入 `03_test_timeseries.csv`（单次请求） | 通过，rowCount=172,800，约 5.2s |
-| 分析（`datasets:analyze`） | 通过，566 个预测事件，约 4.3s |
-| 导出 submission.csv（566 行，16 列，UTF-8） | 通过 |
-| D3 格式校验（`validation/check-submission.mjs`） | **blocked**：566 行全部因 `affected_equipment` 为 `ELZ01:碱性电解槽1;...` 的 equipment-master 格式，非官方逗号 token 格式（见第 5 节跨轨缺陷） |
+- raw input: 77,865,257 bytes, 172,800 rows, 69 fields, SHA-256
+  `88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9`;
+- normalized input: 78,038,054 bytes, SHA-256
+  `4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169`;
+- 104 events, a 104-by-16 submission, 21 series with 172,800 points each,
+  and a passed cleanup status;
+- report SHA-256
+  `8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f` and
+  submission SHA-256
+  `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
 
-导出产物（gitignored）：`scripts/h2-sentinel/artifacts/submission-testset.csv`。
-证据报告：`validation/reports/offline-deploy-smoke.json`。
+That evidence is technical only. It does not establish organizer submission,
+receipt, acceptance, official score, deployment code-SHA binding, or visual
+verification. This document intentionally contains no command that reruns the
+official CSV.
 
 ## 4. 故障排查
 
@@ -58,27 +64,29 @@ node scripts/h2-sentinel/offline-deploy-smoke.mjs --official-data "<官方数据
 | `Web readiness timed out` | Vite 未在时限内就绪 | 确认 `npm ci` 完成；`--web-runtime preview` 需先 `npm run h2:build` |
 | 端口被占用 | 残留进程 | `taskkill /PID <pid> /T /F`（Windows）或换端口；launcher 停机时已做进程树清理 |
 | `datasets:import` 409 `quality.blocked` | 列不齐 69 官方字段 / 时间戳未规范化 / 重复时间戳 / 越限数值 | 先跑 `validation/evaluate.mjs` 的规范化路径（`normalizeOfficialCsv`）；检查表头与 `fields.json` 无差集 |
-| 提交文件格式校验失败 | 见第 5 节跨轨缺陷 | 由协调方修复后端导出，D 轨重新出报告 |
+| 提交文件格式校验失败 | Inspect the current validator result and its exact artifact hash | Do not overwrite historical attempt evidence; route any code defect to its owner |
 
-## 5. 跨轨缺陷记录（提交格式阻塞）
+## 5. Historical cross-track defect record
 
-- **现象**：后端 `submissions:export` 导出的 `affected_equipment` 为
-  `ELZ01:碱性电解槽1;PCC01:并网点;...`（equipment-master 的 `id:名称`，分号连接）。
-- **官方口径**：`docs/plans/2026-08-21-h2-solo-execution-brief.md` §2.2 —— 官方标签
-  （04/05，350 条）的 token 是 `BESS,PCC,PV,ELZ,ELZ1,ELZ2,ELZ3`，**逗号分隔无空格**；
-  `equipment_master.csv` 不得进 submission。
-- **责任文件**（冻结区/他轨）：`services/h2-analytics/src/h2_analytics/reports/submission.py`
-  （`;`.join `id:displayName`）、`diagnosis/builder.py`（affectedEquipment 取自 taxonomy 的 equipmentId）。
-- **请求**：协调方将导出改为官方逗号 token（C01/C02 的涉事机组按事件填充），D 轨复核后
-  `offline-deploy-smoke` 的 verdict 方可转绿。
+The earlier 566-row `affected_equipment` export finding is retained as a
+point-in-time diagnostic record only. It must not be presented as an active
+Epoch 4 blocker. The current attempt-6 record instead describes a 104-by-16
+submission and a passed cleanup status. Track D does not re-evaluate or modify
+the frozen implementation that produced either record.
 
-## 6. 复现命令汇总
+## 6. Current non-official verification boundaries
 
 ```bash
 npm ci
-npm run h2:check                                    # D 轨门禁
-node validation/evaluate.mjs --mode local --official-data "<dir>"            # D1 验证集 F1
-node validation/overfit-sentinel.mjs --official-data "<dir>"                 # D2 过拟合哨兵
-node validation/check-submission.mjs <submission.csv>                        # D3 格式校验
-node scripts/h2-sentinel/offline-deploy-smoke.mjs --official-data "<dir>"    # D4 部署冒烟
+npm run h2:check
+npm run h2:smoke
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File submission/h2-sentinel/scripts/validate-submission.ps1
 ```
+
+Observed deployment transport evidence is limited to deployment
+`dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf`, hostname
+`h2-sentinel-hxrbu0wan-dwwww.vercel.app`, and custom domain `204421.xyz`.
+Root, fixture with and without a trailing slash, local, and invalid-mode routes
+returned HTTP 200 SPA shells; static assets contained H2, invalid-mode, and
+Chinese markers. Those checks are neither visual nor interactive proof and do
+not bind the deployment to the tested executable SHA.

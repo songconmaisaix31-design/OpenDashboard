@@ -793,3 +793,33 @@ The competition branch is done when:
 8. the product does not require an LLM, network, database, or dynamic plugin loader;
 9. every implementation track has committed and pushed its work with verification evidence;
 10. the integration branch is reproducible from documented commits and has no known golden-path blocker.
+
+## 21. Epoch 4 release-evidence boundary
+
+This PRD describes product requirements, not organizer outcomes. The
+2026-08-21 internal submission target is a historical planning deadline and
+does not establish registration, form submission, receipt, acceptance, score,
+or visual review.
+
+The frozen executable base is
+`58090bc1747d621bc87d698259319a70c34e75f2`. The sanitized attempt-6 record
+contains technical input, normalization, event, submission-shape, and cleanup
+evidence. It must never be described as an official score or organizer
+acceptance. In particular, the historical 0.2168 and 0.9517 values are
+unbound and are not official scores.
+
+Input data integrity has a narrow `PASS`: three ZIP archives are identical at
+68,574,329 bytes with SHA-256
+`27dd2d096e0eb002cf50feb68f33fd1b586b46e4daddf97398390dc6394a5072`, and
+the internal checksum passed for 20 data or material entries. This does not
+mean the organizer documentation manifest is validated. There is a separate
+organizer-documentation manifest discrepancy: five actual top-level documents
+do not match listed path names; the XLSX is renamed with the same hash, the
+DOCX and two Markdown files differ in content or size, and an unlisted PDF is
+present. The cover and PDF name D01-D13 and a scoring framework, while the
+DOCX body lacks Sections 8 and 13. No missing content is inferred or added.
+
+Release readiness therefore remains a set of independent decisions. Technical
+readiness may become `GO` only after the final post-document SHA receives its
+fresh gates; registration/form submission, receipt/acceptance, official score,
+and visual verification remain `UNKNOWN-HOLD` until separately evidenced.

@@ -1668,3 +1668,18 @@ Do not move or recreate an existing tag.
 ## 20. One-sentence rule for every agent
 
 > Stay on your branch, write only inside your owned directory, archive every verified increment with commit and push, and route every cross-track need through the coordinator instead of editing across the boundary.
+
+## 21. Epoch 4 evidence-only amendment
+
+Sections 1 through 20 are historical coordination instructions, not proof that
+their unchecked release items occurred. Epoch 4 freezes executable SHA
+`58090bc1747d621bc87d698259319a70c34e75f2`, does not rerun the official CSV,
+and uses separate decisions for technical readiness, registration/form
+submission, receipt/acceptance, official score, and visual verification.
+
+The unique integrator records final track SHAs, the final post-document SHA,
+and fresh gates. Until that record exists, every Track A-F finalization field
+is `pending`. Technical evidence must not be promoted into organizer
+submission, receipt, score, deployment code-SHA binding, or visual approval.
+Attempts 1 through 5 remain immutable history; attempt 6 is described only by
+sanitized evidence hashes and its declared technical scope.
