@@ -12,8 +12,10 @@ acceptance.
   1 through 5 remain historical and were not modified.
 - Attempt-6 report SHA-256:
   `8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f`.
-- Submission package SHA-256:
+- Attempt-6 `submission.csv` SHA-256:
   `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
+- Final submission package/archive identity: `UNKNOWN-HOLD`; no final
+  package/archive hash is recorded.
 
 The attempt-6 technical facts are: 104 analysis events; an exported
 submission with 16 columns; and 21 hydrated variables with 172800 points each
@@ -35,9 +37,13 @@ The public hosts were:
 - `https://h2-sentinel-hxrbu0wan-dwwww.vercel.app`
 - `https://204421.xyz`
 
-Remote deep-link checks on both hosts requested the root, Fixture routes with
-and without the trailing slash, Local routes, and an invalid H2 mode. Each
-returned HTTP 200, the SPA shell, and the expected remote JavaScript markers.
+The custom domain `https://204421.xyz` was checked by direct navigation for the
+complete route matrix below. Each request returned HTTP 200 with the H2 SPA
+shell and the expected remote JavaScript asset marker. The Vercel hostname is
+currently `AUTH-REDIRECT/UNKNOWN-HOLD` for direct requests; it has no recorded
+direct H2-shell evidence. A 200 obtained only after following SSO is not
+counted as an H2 shell result.
+
 The checks included direct navigation (not only navigation from the root):
 
 ```text
@@ -49,10 +55,10 @@ The checks included direct navigation (not only navigation from the root):
 /h2-sentinel?mode=invalid
 ```
 
-This proves static hosting and deep-link fallback only. No GUI or visual
-verification was performed for this production deployment. The public site
-serves the static Fixture shell; it cannot run loopback analytics on an
-evaluator's machine without the local launcher.
+This proves static hosting and deep-link fallback for the custom domain only.
+No GUI or visual verification was performed for this production deployment.
+The public site serves the static Fixture shell; it cannot run loopback
+analytics on an evaluator's machine without the local launcher.
 
 ## Reproducible commands
 
@@ -80,12 +86,47 @@ start-h2-sentinel.bat --mode local --ready-json
 $officialDataDir = "<official-data-dir>"
 Get-ChildItem -LiteralPath $officialDataDir -File
 
-# Inspect remote deep links directly; HTTP 200 is the hosting-shell check.
-Invoke-WebRequest -Uri "https://h2-sentinel-hxrbu0wan-dwwww.vercel.app/h2-sentinel?mode=fixture"
-Invoke-WebRequest -Uri "https://h2-sentinel-hxrbu0wan-dwwww.vercel.app/h2-sentinel/?mode=fixture"
-Invoke-WebRequest -Uri "https://204421.xyz/h2-sentinel?mode=local"
+# Inspect every remote deep link without following redirects. Record status,
+# redirect target, observed/final origin, H2 body marker, and JS asset marker.
+$routes = @(
+  "/",
+  "/h2-sentinel?mode=fixture",
+  "/h2-sentinel/?mode=fixture",
+  "/h2-sentinel?mode=local",
+  "/h2-sentinel/?mode=local",
+  "/h2-sentinel?mode=invalid"
+)
+$origins = @(
+  "https://204421.xyz",
+  "https://h2-sentinel-hxrbu0wan-dwwww.vercel.app"
+)
+$handler = [System.Net.Http.HttpClientHandler]::new()
+$handler.AllowAutoRedirect = $false
+$client = [System.Net.Http.HttpClient]::new($handler)
+foreach ($origin in $origins) {
+  foreach ($route in $routes) {
+    $requestedUri = [Uri]::new("$origin$route")
+    $response = $client.GetAsync($requestedUri).GetAwaiter().GetResult()
+    $body = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+    [pscustomobject]@{
+      RequestedUri = $requestedUri.AbsoluteUri
+      Status = [int]$response.StatusCode
+      RedirectDisabled = $true
+      Location = if ($response.Headers.Location) { $response.Headers.Location.AbsoluteUri } else { $null }
+      FinalOrigin = if ($response.IsSuccessStatusCode) { $response.RequestMessage.RequestUri.GetLeftPart([UriPartial]::Authority) } else { "NOT_FOLLOWED" }
+      FinalOriginVerified = $response.IsSuccessStatusCode -and ($response.RequestMessage.RequestUri.GetLeftPart([UriPartial]::Authority) -eq $origin)
+      H2BodyMarker = $body -match "h2-sentinel|H2 Sentinel"
+      RemoteAssetMarker = $body -match 'assets/[^\s"]+\.js'
+    }
+    $response.Dispose()
+  }
+}
+$client.Dispose()
 ```
 
+The command records an un-followed `Location` instead of silently converting
+an auth redirect into a pass. A route is a hosting-shell pass only when its
+status, final origin, H2 body marker, and remote asset marker are all verified.
 The commands above are reproduction instructions, not evidence that an
 evaluator can access local analytics. Local mode is loopback-only and requires
 the launcher and analytics service on that evaluator machine.
@@ -94,9 +135,9 @@ the launcher and analytics service on that evaluator machine.
 
 | Decision | Status | Evidence boundary |
 | --- | --- | --- |
-| Technical executable evidence | GO for SHA `58090bc` as reported by the named CI and attempt-6 artifacts | This is not a submission, receipt, score, or visual approval. |
+| Technical executable evidence | BASE TECHNICAL EVIDENCE RECORDED | Base SHA `58090bc` has the named CI and attempt-6 evidence; final post-document gates and fresh CI remain pending. |
 | Registration/submission | UNKNOWN-HOLD | No organizer form or submission-action evidence is recorded here. |
-| Receipt/acceptance | UNKNOWN-HOLD | No organizer receipt or acceptance tied to the package hash is recorded. |
+| Receipt/acceptance | UNKNOWN-HOLD | No organizer receipt or acceptance evidence is recorded here. |
 | Official score | UNKNOWN-HOLD | No official score is available; technical metrics are not a score. |
 | Visual verification | UNKNOWN-HOLD | No GUI or production desktop/mobile visual verification was performed. |
 
