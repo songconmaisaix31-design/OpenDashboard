@@ -334,7 +334,7 @@ class DiagnosisBuilder:
             "startTime": _timestamp(window.start_time),
             "endTime": _timestamp(window.end_time),
             "firstDetectionTime": _timestamp(window.first_detection_time),
-            "severity": vocabulary.severity_by_code()[window.code],
+            "severity": vocabulary.canonical_severity_for_code(window.code),
             "confidence": window.confidence,
             "primaryControlObject": {
                 "type": vocabulary.control_object_type_by_code()[window.code],

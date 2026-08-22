@@ -7,7 +7,7 @@ from . import vocabulary
 from .settings import CONFIGURATION_VERSION, RULE_VERSION
 
 ANOMALY_CODES = vocabulary.anomaly_codes()
-SEVERITIES = ("中", "高")
+SEVERITIES = ("low", "medium", "high", "critical")
 ANOMALY_SUBTYPES_BY_CODE = vocabulary.subtypes_by_code()
 PRIMARY_IMPACT_METRIC_BY_CODE = vocabulary.primary_impact_metric_by_code()
 ASSISTANT_QUESTION_IDS = vocabulary.assistant_question_ids()

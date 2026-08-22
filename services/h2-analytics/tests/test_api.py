@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 
 from fastapi.routing import APIRoute
@@ -61,6 +62,16 @@ def test_complete_api_golden_flow(valid_csv: str) -> None:
     assert analyzed["ok"] is True
     run_id = analyzed["data"]["runId"]
     assert analyzed["data"]["events"][1]["impact"]["value"] == 120.0
+    severities = ("low", "medium", "high", "critical")
+    event_counts = Counter(
+        event["severity"] for event in analyzed["data"]["events"]
+    )
+    assert analyzed["data"]["eventCountsBySeverity"] == {
+        severity: event_counts[severity] for severity in severities
+    }
+    assert all(
+        event["severity"] in severities for event in analyzed["data"]["events"]
+    )
 
     series = client.post(
         f"{API_NAMESPACE}/runs/series",

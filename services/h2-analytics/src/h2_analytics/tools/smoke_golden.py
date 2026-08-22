@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
+from collections import Counter
 from pathlib import Path
 
 from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
 
+from h2_analytics.contracts import SUBMISSION_COLUMNS
 from h2_analytics.service import AnalyticsService
 from h2_analytics.tools.validate_submission import validate_submission_text
 
@@ -43,15 +47,35 @@ def main() -> None:
         if impact["unit"] != "kWh":
             raise AssertionError(f"{code} impact unit must be kWh")
 
+    analysis_schema = json.loads(
+        (contracts_root / "schema/analysis-run.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    Draft202012Validator(analysis_schema).validate(run)
+    severities = ("low", "medium", "high", "critical")
+    event_counts = Counter(event["severity"] for event in run["events"])
+    expected_counts = {severity: event_counts[severity] for severity in severities}
+    if run["eventCountsBySeverity"] != expected_counts:
+        raise AssertionError("analysis severity counts must match the events")
+
     event_schema = json.loads(
         (contracts_root / "schema/anomaly-event.schema.json").read_text(encoding="utf-8")
     )
-    event_schema["properties"]["severity"]["enum"] = ["低", "中", "高", "危急"]
     for event in run["events"]:
         Draft202012Validator(event_schema).validate(event)
 
     submission = service.export_submission(run["runId"])
     validation = validate_submission_text(submission["content"])
+    if tuple(validation["columns"]) != SUBMISSION_COLUMNS:
+        raise AssertionError("submission columns must remain unchanged")
+    submission_rows = list(csv.DictReader(io.StringIO(submission["content"])))
+    expected_submission_severity = {"C03": "高", "C04": "高"}
+    if any(
+        row["severity"] != expected_submission_severity[row["anomaly_code"]]
+        for row in submission_rows
+    ):
+        raise AssertionError("submission severity must use the official taxonomy")
     report = service.export_report(
         run_id=run["runId"],
         kind="single_event_diagnosis",
@@ -67,6 +91,7 @@ def main() -> None:
         "datasetId": imported["dataset"]["datasetId"],
         "eventIds": [event["eventId"] for event in run["events"]],
         "severities": [event["severity"] for event in run["events"]],
+        "submissionSeverities": [row["severity"] for row in submission_rows],
         "c04ImpactKwh": c04["impact"]["value"],
         "submissionRows": validation["rowCount"],
         "artifacts": [

@@ -24,6 +24,23 @@ _KIND_BY_EQUIPMENT_PREFIX = {
     "AUX": "AUXILIARY_LOAD",
 }
 
+_CANONICAL_ANOMALY_CODES = (
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "C06",
+    "C07",
+)
+_CANONICAL_SEVERITIES = ("low", "medium", "high", "critical")
+_CANONICAL_SEVERITY_BY_OFFICIAL = {
+    "低": "low",
+    "中": "medium",
+    "高": "high",
+    "危急": "critical",
+}
+
 
 class VocabularyError(RuntimeError):
     pass
@@ -173,9 +190,54 @@ def anomaly_codes() -> tuple[str, ...]:
     return tuple(entry["code"] for entry in load_taxonomy())
 
 
-@lru_cache(maxsize=1)
-def severity_by_code() -> dict[str, str]:
-    return {entry["code"]: entry["severity"] for entry in load_taxonomy()}
+def canonical_severity_for_code(code: str) -> str:
+    """Map a frozen taxonomy code to the canonical API severity."""
+    official_by_code = _official_severity_by_code()
+    try:
+        official = official_by_code[code]
+    except KeyError as error:
+        raise VocabularyError("Anomaly code has no severity mapping.") from error
+    return _canonical_severity(official)
+
+
+def official_severity_for_event(code: str, internal_severity: str) -> str:
+    """Render official severity only for a consistent canonical event."""
+    official_by_code = _official_severity_by_code()
+    try:
+        official = official_by_code[code]
+    except KeyError as error:
+        raise VocabularyError("Anomaly code has no severity mapping.") from error
+    expected_internal = _canonical_severity(official)
+    if (
+        internal_severity not in _CANONICAL_SEVERITIES
+        or internal_severity != expected_internal
+    ):
+        raise VocabularyError("Internal severity does not match the anomaly code.")
+    return official
+
+
+def _official_severity_by_code() -> dict[str, str]:
+    expected_codes = set(_CANONICAL_ANOMALY_CODES)
+    result: dict[str, str] = {}
+    for entry in load_taxonomy():
+        code = entry.get("code")
+        official = entry.get("severity")
+        if code not in expected_codes:
+            raise VocabularyError("Taxonomy contains an unknown anomaly code.")
+        if code in result:
+            raise VocabularyError("Taxonomy contains a duplicate anomaly code.")
+        _canonical_severity(official)
+        result[code] = official
+    if set(result) != expected_codes:
+        raise VocabularyError("Taxonomy is missing an anomaly severity mapping.")
+    return result
+
+
+def _canonical_severity(official: Any) -> str:
+    try:
+        return _CANONICAL_SEVERITY_BY_OFFICIAL[official]
+    except (KeyError, TypeError) as error:
+        raise VocabularyError("Official severity has no canonical mapping.") from error
 
 
 @lru_cache(maxsize=1)
