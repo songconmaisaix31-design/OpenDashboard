@@ -167,8 +167,14 @@ test('audits adversarial natural cleanup before failure-only fallback cleanup', 
   assert.ok(naturalPidAudit >= 0)
   assert.ok(fallbackCleanup > naturalPidAudit)
   assert.match(adversarialSmoke, /let auditCompleted = false/)
+  assert.match(smokeSource, /detached: process\.platform !== 'win32'/)
+  assert.match(
+    adversarialSmoke,
+    /descendants\.some\(\(\{ pid \}\) => pid === healthRecord\.analyticsPid\)/,
+  )
+  assert.match(adversarialSmoke, /await cleanupFailureSession\(session, observedPids, webPort, analyticsPort\)/)
   assert.match(adversarialSmoke, /if \(!auditCompleted\)/)
-  assert.match(adversarialSmoke, /if \(primaryError === null/)
+  assert.match(adversarialSmoke, /if \(primaryError !== null/)
 })
 
 test('requires the exact canonical analytics health contract', () => {
