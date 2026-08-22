@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "apps/web/dist",
+  "rewrites": [
+    {
+      "source": "/h2-sentinel",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/h2-sentinel/",
+      "destination": "/index.html"
+    }
+  ]
+}
