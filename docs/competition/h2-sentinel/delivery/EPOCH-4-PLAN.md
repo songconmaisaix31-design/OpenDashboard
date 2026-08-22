@@ -23,7 +23,7 @@ The remote `refs/heads/competition/h2-sentinel` ref must equal that SHA before
 dispatch. Workers may not update that canonical ref or `refs/heads/main`. The
 unique integrator may update `refs/heads/competition/h2-sentinel` only after
 all final gates in Section 6 pass, and only with a normal fast-forward push.
-The local and remote `refs/heads/main` refs are protected and must remain:
+The authoritative remote `refs/heads/main` ref is protected and must remain:
 
 ```text
 7889feb274dac77753fdd323df352c9c1335aebf
@@ -31,7 +31,10 @@ The local and remote `refs/heads/main` refs are protected and must remain:
 
 Epoch 4 may not change `main`, re-run the official CSV, or promote an untested
 code tree. Attempts 1 through 5 are immutable historical records. Attempt 6 is
-the only official-run evidence input for this epoch.
+the only official-run evidence input for this epoch. Coordinator-local refs
+are recorded as an integration-start snapshot and must not move during the
+epoch; their pre-existing SHAs are not publication authority and need not equal
+the frozen remote SHAs.
 
 ## 2. Evidence identities to preserve
 
@@ -112,7 +115,7 @@ Epoch 4 uses separate statuses; one status never implies another:
 
 | Decision | Meaning | Initial policy |
 | --- | --- | --- |
-| Technical GO | The exact executable SHA passes repository, H2, Python, artifact, and release-integrity gates. | May become `GO` only after the final post-document SHA gates pass. |
+| Technical GO | The exact published candidate SHA passes repository, H2, Python, artifact, release-integrity, and required CI gates. | May become `GO` only after every required fresh CI run for that exact published candidate is green. |
 | Registration/submission | Organizer form or submission action completed for the intended submitted artifact/version. | `UNKNOWN-HOLD` until independently evidenced. |
 | Receipt/acceptance | Organizer receipt, acknowledgement, or approval exists and independent evidence binds it to the actual submitted artifact/version, including the final package/archive identity when available. | `UNKNOWN-HOLD`; local validator output and the attempt-6 CSV hash are not receipts. |
 | Official score | An official organizer score/result is available and attributable to this submission. | `UNKNOWN-HOLD`; internal validation metrics are not scores. |
@@ -194,22 +197,54 @@ entry must be inside the union of the accepted track allowlists plus the exact
 plan-author commit. Renames are evaluated as deletion plus addition so that
 both paths are checked.
 
-Protected refs are checked as refs, never as path arguments. Before final
-publication, both local canonical refs and independently observed remote refs
-must still identify the frozen SHAs:
+Protected refs are checked as refs, never as path arguments. Coordinator-local
+`refs/heads/main` and `refs/heads/competition/h2-sentinel` may already differ
+from the remote frozen SHAs. At integration start, record their exact values
+or absence; before and after publication, require that snapshot to be
+unchanged. Do not create, delete, or move either local ref for this plan:
+
+```powershell
+function Get-LocalRefValue {
+  param([string]$RefName)
+  $lines = @(git show-ref --verify --hash $RefName 2>$null)
+  $exitCode = $LASTEXITCODE
+  if ($exitCode -eq 0 -and $lines.Count -eq 1) {
+    return $lines[0].Trim()
+  }
+  if ($exitCode -eq 1 -and $lines.Count -eq 0) { return '<ABSENT>' }
+  throw "Cannot snapshot local ref: $RefName"
+}
+
+$localRefNames = @(
+  'refs/heads/main',
+  'refs/heads/competition/h2-sentinel'
+)
+$localRefSnapshot = @{}
+foreach ($refName in $localRefNames) {
+  $localRefSnapshot[$refName] = Get-LocalRefValue $refName
+}
+
+function Assert-LocalRefSnapshot {
+  foreach ($refName in $localRefNames) {
+    if ((Get-LocalRefValue $refName) -ne $localRefSnapshot[$refName]) {
+      throw "Coordinator-local ref changed: $refName"
+    }
+  }
+}
+```
+
+Publication authority comes only from a live `ls-remote`, never a local or
+cached remote-tracking ref. Immediately before the first publication, the
+remote `main` must equal the protected SHA and the remote competition ref must
+equal the executable base. For a later append-only repair, the expected remote
+competition SHA is the previously published candidate recorded by the
+integrator:
 
 ```powershell
 $expectedMain = '7889feb274dac77753fdd323df352c9c1335aebf'
-$localMain = (git rev-parse --verify refs/heads/main).Trim()
-if ($LASTEXITCODE -ne 0 -or $localMain -ne $expectedMain) {
-  throw 'Local refs/heads/main moved'
-}
-$localCompetition = (
-  git rev-parse --verify refs/heads/competition/h2-sentinel
-).Trim()
-if ($LASTEXITCODE -ne 0 -or $localCompetition -ne $executableSha) {
-  throw 'Local refs/heads/competition/h2-sentinel moved before publication'
-}
+$expectedCompetition = $executableSha # first publication
+# For a repair, use the last independently observed published candidate.
+Assert-LocalRefSnapshot
 
 $remoteMainLines = @(
   git ls-remote --exit-code --heads origin refs/heads/main
@@ -222,7 +257,7 @@ $remoteCompetitionLines = @(
   git ls-remote --exit-code --heads origin refs/heads/competition/h2-sentinel
 )
 if ($LASTEXITCODE -ne 0 -or $remoteCompetitionLines.Count -ne 1 -or
-    ($remoteCompetitionLines[0] -split '\s+')[0] -ne $executableSha) {
+    ($remoteCompetitionLines[0] -split '\s+')[0] -ne $expectedCompetition) {
   throw 'Remote competition ref moved before publication'
 }
 ```
@@ -287,16 +322,18 @@ Pop-Location
 git diff --check <executable-sha> HEAD
 ```
 
-The final post-document SHA must then receive fresh CI verification. A CI run
-from an older SHA, a local-only result, or a result before the final document
-changes is not a pass. Deployment evidence must identify the tested SHA and
-the deep links for both `h2-sentinel-hxrbu0wan-dwwww.vercel.app` and
-`204421.xyz`; a deployment URL alone is insufficient.
+The current workflow cannot produce every required fresh exact-SHA CI result
+before canonical publication: the H2 push workflow is triggered by a push to
+`competition/h2-sentinel`, while PR CI is triggered by an update to PR #2's
+head. Therefore, CI from an older SHA is context only and is never used to
+pre-authorize the candidate.
 
-Only after all required final technical, artifact, path/ref, exact-SHA CI, and
-deployment/deep-link gates pass may the unique integrator publish the final SHA
-to the canonical competition ref. The push must be a normal fast-forward, and
-the remote observation is a separate command from the push:
+After the local exact-SHA commands above and all artifact, path/ref,
+documentation, evidence, and deployment/deep-link gates pass, the unique
+integrator may publish the candidate to the canonical competition ref. The
+push must be a normal fast-forward from the live expected remote predecessor,
+must not move either coordinator-local protected ref, and the remote
+observation is a separate command from the push:
 
 ```powershell
 $finalSha = (git rev-parse HEAD).Trim()
@@ -313,10 +350,30 @@ if ($LASTEXITCODE -ne 0 -or $publishedLines.Count -ne 1 -or
     ($publishedLines[0] -split '\s+')[0] -ne $finalSha) {
   throw 'Independent canonical remote verification failed'
 }
+Assert-LocalRefSnapshot
+
+$postPublishMainLines = @(
+  git ls-remote --exit-code --heads origin refs/heads/main
+)
+if ($LASTEXITCODE -ne 0 -or $postPublishMainLines.Count -ne 1 -or
+    ($postPublishMainLines[0] -split '\s+')[0] -ne $expectedMain) {
+  throw 'Remote refs/heads/main moved during publication'
+}
 ```
 
-After that publication, repeat the local and remote `refs/heads/main` checks;
-both must still equal `7889feb274dac77753fdd323df352c9c1335aebf`.
+After publication, wait for every required fresh push/PR CI run and verify that
+each run is tied to `$finalSha`. Technical GO remains `HOLD` while any required
+run is missing, pending, cancelled, or failing. A failure must not move the
+canonical ref backward or rewrite any branch: append a normal corrective
+commit, repeat every local and evidence gate, normal-fast-forward the next
+candidate from the last independently observed published SHA, and wait for its
+fresh exact-SHA CI.
+
+Technical GO may become `GO` only when all required CI for the exact published
+candidate is green. Registration/submission, receipt/acceptance, official
+score, and visual verification remain independent. The live remote
+`refs/heads/main` must remain
+`7889feb274dac77753fdd323df352c9c1335aebf` throughout.
 
 ## 7. Release handoff and decision record
 
@@ -332,7 +389,8 @@ The coordinator records, in order:
 5. deployment ID, hostnames, deep-link checks, and CI run identities;
 6. technical gate results and the five independent statuses in Section 5; and
 7. the integrator's normal fast-forward push, independently observed canonical
-   remote SHA, and unchanged local/remote `main` ref evidence.
+   remote SHA, unchanged coordinator-local ref snapshot, protected live remote
+   `main` SHA, and fresh exact-candidate CI results.
 
 The release is blocked if any required technical gate fails, if a path gate
 finds an unauthorized edit, if a hash is inconsistent, or if old/new untested
