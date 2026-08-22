@@ -2,14 +2,14 @@
 
 ## 1. Purpose and frozen base
 
-Epoch 2 is a constrained reliability and official-data delivery epoch. It starts from the immutable parent commit `3810c04a50bcacc30172833adff228e10a406ea7`. The parent has already passed the Ubuntu H2, Windows H2, and generic CI checks; those results are prerequisites, not a substitute for the gates defined here.
+Epoch 2 is a constrained reliability and official-data delivery epoch. Its `planParentSha` is the immutable parent commit `3810c04a50bcacc30172833adff228e10a406ea7`. The parent has already passed the Ubuntu H2, Windows H2, and generic CI checks; those results are prerequisites, not a substitute for the gates defined here. Before dispatch, the coordinator must independently observe the final published plan-branch HEAD and freeze that value as `parallelTaskBaseSha`; this document deliberately does not self-reference that future value.
 
-The epoch is a no-contract-change release. The following identities are frozen at the parent and must be recorded by the coordinator before dispatch:
+The epoch is a no-contract-change release. The following identities are frozen and must be recorded by the coordinator before dispatch:
 
-- the complete `packages/h2-contracts/**` tree;
-- the complete `packages/h2-vocabulary/**` tree;
-- the exact `services/h2-analytics/src/h2_analytics/contracts.py` blob;
-- the parent commit `3810c04a50bcacc30172833adff228e10a406ea7`.
+- `packages/h2-contracts/**` tree: `11608e5ff5c0e69c3dd4a18588e5a13027151e82`;
+- `packages/h2-vocabulary/**` tree: `84d3d39a864e25e69e607a0314f3b27aa10c0fe8`;
+- `services/h2-analytics/src/h2_analytics/contracts.py` blob: `3d33f410379339f417f4bc7451483e484124acc6`;
+- `planParentSha`: `3810c04a50bcacc30172833adff228e10a406ea7`.
 
 Workers must verify those object identities with `git rev-parse`/`git rev-parse HEAD:<path>` and must not edit, regenerate, reformat, or indirectly alter them. Any defect in a frozen contract, vocabulary, analytics blob, event schema, field name, provenance value, route envelope, or export column is a handoff to a future contract epoch. It is not an Epoch 2 patch. The coordinator records all verified identities in the final release manifest; a plan document cannot make a contract change acceptable.
 
@@ -32,7 +32,7 @@ The file is external, read-only, and must not be committed, copied into reports,
 
 ### Plan
 
-Six implementation tracks are deliberately independent. Each has one owner, one exact write allowlist, one worktree, and one branch created from the frozen parent. A worker may read other tracks for interface context but may not edit them. Cross-track needs are handoff-only and include the requested path, reason, evidence, and acceptance impact. The coordinator owns assembly and any conflict resolution.
+Six implementation tracks are deliberately independent. Each has one owner, one exact write allowlist, one worktree, and one branch created from the coordinator-frozen `parallelTaskBaseSha`. A worker may read other tracks for interface context but may not edit them. Cross-track needs are handoff-only and include the requested path, reason, evidence, and acceptance impact. The coordinator owns assembly and any conflict resolution.
 
 | Track | Owner / branch | Exact write path | Acceptance focus |
 | --- | --- | --- | --- |
@@ -43,7 +43,7 @@ Six implementation tracks are deliberately independent. Each has one owner, one 
 | T5 Windows CI gate | `epoch2-ci` / `h2-e2-ci` | `.github/workflows/h2-sentinel.yml` | Add a Windows PowerShell 5.1 validator gate; keep existing Ubuntu/Windows H2 and generic gates intact. |
 | T6 official runner | `epoch2-official-e2e` / `h2-e2-official-e2e` | `validation/official-csv-e2e.mjs`, `validation/official-csv-e2e.test.mjs`, `validation/README.md` | Add the same-origin official CSV runner and its dependency-free tests/documentation. |
 
-Every branch starts at the same parent SHA. Each branch has its own isolated worktree and a single owner. No worker may combine two rows of this table in one branch. The coordinator alone performs integration, final run, deployment binding, and release-manifest updates.
+Every branch starts at the same coordinator-observed `parallelTaskBaseSha`, never directly at `planParentSha`. Each branch has its own isolated worktree and a single owner. No worker may combine two rows of this table in one branch. The coordinator alone performs integration, final run, deployment binding, and release-manifest updates.
 
 ### Task
 
@@ -66,7 +66,7 @@ T1 must make the local adapter invocation carry the literal `timeoutMs: 30_000` 
 
 T2 must assert the assembled composition that is otherwise easy to miss: the entry, H2 route, selected analysis page, local adapter request, and report/export boundary. The test must fail against the pre-Epoch-2 assembly before its implementation is accepted, and then pass on the assembled commit. It may import existing test helpers but may not patch product code outside its path.
 
-T3 must choose no more than 32 real curve variables from the official 69-field vocabulary, using the existing workspace-loader/model seam. It must preserve source field identity, units, timestamps, and Fixture/Live provenance; it must reject unknown or duplicated fields and remain bounded for the 172,800-row input. `AnalysisPage` should expose the selected curves without inventing a health score or changing contract names. Tests cover loader selection, empty/unknown input, order stability, and presentation output.
+T3 must choose no more than 32 real curve variables from the official 69-field vocabulary, using the existing workspace-loader/model seam. It must filter unknown evidence variables, deduplicate selected fields, preserve source field identity, units, timestamps, and Fixture/Live provenance, and remain bounded for the 172,800-row input. `AnalysisPage` should expose the selected curves without inventing a health score or changing contract names. Tests cover loader selection, empty/unknown input, order stability, deduplication, and presentation output.
 
 T4 must make the existing validator's em dash matching portable to Windows PowerShell 5.1 by using regex ASCII `\u2014` semantics. It must preserve all current claim/evidence checks and must not turn unavailable official metrics, deployment, visual evidence, eligibility, or organizer receipt into success.
 
@@ -88,7 +88,7 @@ Series hydration is a separate measurement: run it after the import/analyze/expo
 Verification has four layers and must remain auditable:
 
 1. **Unit/task gates.** T1 runs the focused entry/type tests. T2 runs its red-then-green composition test. T3 runs the two loader/presentation test files and strict type checking. T4 runs the validator under Windows PowerShell 5.1 and PowerShell 7 for parity. T5 runs the workflow gate on the actual Windows runner. T6 runs its dependency-free tests with a synthetic representative input and report-sanitization assertions; it does not claim official-data success from synthetic data.
-2. **Unique integration gate.** From a clean assembled worktree based on the frozen parent plus exactly the six task commits, the coordinator runs the repository H2/type/build/check suites and `scripts/h2-sentinel/composition.test.mjs`. The integration result is one gate, bound to the assembled SHA. It includes no unrecorded worker changes.
+2. **Unique integration gate.** From a clean assembled worktree based on the frozen `parallelTaskBaseSha` plus exactly the six task commits, the coordinator runs the repository H2/type/build/check suites and `scripts/h2-sentinel/composition.test.mjs`. The integration result is one gate, bound to the assembled SHA. It includes no unrecorded worker changes.
 3. **Final official run.** The coordinator runs the exact external raw file and records the exact normalized file identity. The expected literal SHA values and counts above must match. The run must pass `normalize -> same-origin import -> analyze -> export -> checker`; a separate series-hydration result is recorded. The final report is sanitized, repository-relative, attempt-preserving, and bound to the assembled/deployed SHA. A missing official file or missing same-origin stage is `pending`/`not-delivered`, never `passed`.
 4. **Release and platform gates.** CI results, deployment SHA binding, submission validator, visual review, eligibility, and organizer acceptance are recorded independently. A successful CI run cannot imply deployment; a deployment URL cannot imply visual review; local validator success cannot imply formal submission. The team registration deadline has passed and the formal submission status is unknown, so Epoch 2 must not describe eligibility or submission as passed without direct evidence.
 
@@ -113,8 +113,8 @@ Official score/metrics, deployment, screenshots, visual review, eligibility, for
 
 ## 5. Coordinator completion checklist
 
-- [ ] Verify the frozen parent SHA, contract tree, vocabulary tree, and analytics blob at dispatch.
-- [ ] Create six isolated worktrees and branches from the same parent, with one owner per exact write path.
+- [ ] Independently observe and record `planParentSha` and the final published plan-branch `parallelTaskBaseSha`, plus the frozen contract, vocabulary, and analytics identities.
+- [ ] Create six isolated worktrees and branches from the same `parallelTaskBaseSha`, with one owner per exact write path.
 - [ ] Record each red/green task gate, local SHA, independently observed remote SHA, and handoff.
 - [ ] Assemble only the accepted task commits and run the unique integration gate.
 - [ ] Run the official file with the exact identity table and 4 GiB heap/8 GiB RAM preflight.
