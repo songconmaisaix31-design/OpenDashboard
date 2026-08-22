@@ -639,7 +639,7 @@
         "reportSha256": { "$ref": "#/$defs/sha256" },
         "testedCodeSha": { "$ref": "#/$defs/sha" },
         "submissionPath": { "$ref": "#/$defs/repoPath" },
-        "submissionSha256": { "$ref": "#/$defs/sha256" },
+        "submissionCsvSha256": { "$ref": "#/$defs/sha256" },
         "facts": { "$ref": "#/$defs/officialAttemptFacts" },
         "reason": { "$ref": "#/$defs/reason" }
       },
@@ -647,11 +647,11 @@
         {
           "if": { "properties": { "attempt": { "const": 6 } } },
           "then": {
-            "required": ["testedCodeSha", "submissionPath", "submissionSha256", "facts"],
+            "required": ["testedCodeSha", "submissionPath", "submissionCsvSha256", "facts"],
             "properties": {
               "testedCodeSha": {},
               "submissionPath": {},
-              "submissionSha256": {},
+              "submissionCsvSha256": {},
               "facts": {},
               "status": { "const": "passed" }
             }

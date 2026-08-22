@@ -46,7 +46,7 @@ The sanitized attempt-6 technical record is bound to executable SHA
   and a passed cleanup status;
 - report SHA-256
   `8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f` and
-  submission SHA-256
+  attempt-6 `submission.csv` SHA-256
   `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
 
 That evidence is technical only. It does not establish organizer submission,
