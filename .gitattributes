@@ -1,0 +1,6 @@
+validation/reports/** text eol=lf
+validation/reports/**/*.json text eol=lf
+validation/reports/**/*.csv text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
