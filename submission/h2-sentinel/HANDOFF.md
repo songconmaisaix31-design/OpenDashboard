@@ -2,56 +2,55 @@
 
 ## Identity and scope
 
-- Submission working branch: `competition/h2-sentinel`.
-- Original H6 integration gate: `8bcc8d59e352def535c26504683975959ff7f18d`.
-- Current coordinator-verified assembled snapshot; final candidate SHA is pending coordinator handoff.
-- Owned write path: `submission/h2-sentinel/**`.
-- Scope: current H6 evidence packaging only. No product code, contracts, root manifests, CI, launcher, tests, `MEMORY.md`, or `main` branch was modified.
+- Submission track branch: `songconmaisaix31-design/h2-e4-submission`.
+- Executable attempt-6 base: `58090bc1747d621bc87d698259319a70c34e75f2`.
+- Frozen plan: `30f8f36ff936b295596c5515f15d2a8d17cebaff`.
+- Owned write path: `submission/h2-sentinel/**` only.
+- No application code, contracts, CI, deployment configuration, scripts outside
+  this package, or `MEMORY.md` were changed by this track.
 
-## Delivered documentation
+## Corrected evidence
 
-- Updated README, claims ledger, runtime checklist, demo/fallback script, judge checklist, ten-page narrative, architecture narrative, screenshot plan, and license checklist for the assembled H6 candidate.
-- Kept explicit distinctions among current runtime checks, sanitized Fixture evidence, Local deterministic results, manual Chrome observations, and unverified or undelivered evidence.
-- Kept the package validator in `scripts/validate-submission.ps1` unchanged.
+Attempt-6 is the only official-run input described here. It is bound to
+`58090bc` and records raw 77,865,257 bytes / 172,800 rows / 69 fields
+(`88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9`),
+normalized 78,038,054 bytes
+(`4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169`),
+104 events, a 104-row by 16-column output, 21 variables by 172,800 points, and
+passed cleanup. The report path is
+`validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json`
+with SHA-256 `8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f`.
+The submission package SHA-256 is
+`af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
 
-## Evidence basis
+Deployment evidence is `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` at
+`h2-sentinel-hxrbu0wan-dwwww.vercel.app`, with explicit alias `204421.xyz`.
+The named root/mode routes returned 200 SPA shells, and remote JavaScript
+contained H2, invalid-mode, and Chinese-brand markers. This is not a visual or
+interactive pass. Visual desktop/mobile and interactive verification remain
+`UNKNOWN-HOLD` because computer control was prohibited.
 
-- [H6 integration handoff](../../scripts/h2-sentinel/HANDOFF.md)
-- [H2 contracts handoff](../../packages/h2-contracts/HANDOFF.md)
-- [H2 analytics handoff](../../services/h2-analytics/HANDOFF.md)
-- [H2 plugin handoff](../../plugins/h2-ems/HANDOFF.md)
-- [H2 Web handoff](../../apps/web/src/features/h2-sentinel/HANDOFF.md)
-- [H2 QA matrix](../../tests/h2-sentinel/ACCEPTANCE_MATRIX.md)
+Remote CI is green for exact SHA `58090bc`: push H2 `32591314579`, PR H2
+`32591315711`, and generic PR `32591315735`. It must not be reused as CI proof
+for any later document or integration SHA.
 
-The assembled verification recorded 92 repository tests, 60 focused H2 tests, 32 Python pytest cases, nine launcher tests, five assembled QA groups, and nine H2 smoke scenarios. Its production build processed 684 modules and emitted 900.01 kB minified JavaScript (297.15 kB gzip) plus 47.44 kB CSS, with the expected greater-than-500-kB warning. Manual Chrome review covered desktop and 390x844 Fixture flows without document-width overflow; no screenshot asset or automated visual suite is claimed.
+## Explicit holds
 
-## Resolved report-format correction
-
-Plugin source `92f7b78027b9492a5a5fe8ced2e851ed4199aeaa`, integrated by the coordinator as `abe454b`, resolves the H6-discovered Fixture mismatch. Single-event diagnosis, period summary, and quality reports now produce deterministic safe HTML with matching media types and filenames. JSON and CSV report kinds retain their corresponding formats. The Local C03 HTML report and two-row, exact-16-column `submission.csv` remain separate Local deterministic evidence; neither output is official-data, score, or deployment proof.
+Registration/submission, organizer receipt/acceptance/approval, and official
+score/rank are all `UNKNOWN-HOLD`. Historical internal numbers 0.2168 and
+0.9517 lack immutable `testedCodeSha` binding, so they are historical/unbound
+and are not current F1, precision, recall, or accuracy claims.
 
 ## Verification commands
 
 ```powershell
 pwsh -NoProfile -File submission/h2-sentinel/scripts/validate-submission.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File submission/h2-sentinel/scripts/validate-submission.ps1
 git diff --check -- submission/h2-sentinel
 ```
 
-The validator covers ten required documents, ten narrative pages, local links, and placeholder language. It does not validate runtime behavior, official data, validation metrics, deployment, remote CI, screenshots, or network isolation.
-
-## Track D update (2026-08-22, branch `h2/track-d-qa`)
-
-- `IMPLEMENTATION_BOUNDARY.md` now carries the verified evaluation snapshot:
-  validation-set event F1 0.2168 (precision 0.1265, recall 0.7571),
-  classification accuracy 0.3088, overfit sentinel GREEN (gap 0.0321).
-- `CLAIMS_LEDGER.md` reclassifies C11/C12 (official data imported and analyzed;
-  validation metrics with the frozen matching contract) and adds C16
-  (export-format claim prohibited until the `affected_equipment` defect is
-  fixed).
-- Submission-format authority lives in `validation/check-submission.mjs`
-  (official comma-separated equipment tokens, Chinese severity 高/中,
-  16 columns, UTF-8, boolean confirmation flag).
-- Open cross-track blocker: backend `submissions:export` still emits
-  `equipment_id:名称;` (see `tests/h2-sentinel/DEFECT_LOG.md` H2-QA-003).
+The validator checks document-package structure, not runtime, organizer action,
+visual quality, or exact-SHA CI.
 
 ## Project memory
 

@@ -6,6 +6,7 @@ $packageRoot = Split-Path -Parent $PSScriptRoot
 $requiredFiles = @(
   'README.md',
   'PRODUCT_AND_ARCHITECTURE.md',
+  'IMPLEMENTATION_BOUNDARY.md',
   'TEN_PAGE_PROJECT_NARRATIVE.md',
   'DEMO_SCRIPT.md',
   'SCREENSHOT_SHOT_LIST.md',
