@@ -139,9 +139,17 @@ the analysis run, text/csv media type, and matching content hash. The checker
 must be valid, have 16 columns, and return the analysis event count. A checker
 or cleanup failure returns exit code 1.
 
-This runner deliberately does not claim or synthesize series hydration. The
-coordinator records that separate, bounded measurement only after the assembled
-T3 curve-selection handoff provides its selected variables and time range.
+After checker success, the runner invokes the existing read-only
+`hydrateH2Workspace` seam with the imported dataset. Its top-level
+`seriesHydration` result is independent from the main chain: a passed result
+records only duration, run ID, selected-variable count (1–32), and point count;
+it never records variables or point values. It rejects a missing series,
+non-null series error, mismatched run dataset/fingerprint, duplicate or
+out-of-bound variables, and a point count that differs from normalized rows.
+If hydration fails, the main import/analyze/export/checker status remains
+passed, but `seriesHydration` records only a stable error code. The final Epoch
+2 release gate remains `HOLD` until that separate measurement is independently
+delivered and accepted.
 
 The test suite uses only injected synthetic data and faked dependencies. It
 does not read or execute the official CSV:
