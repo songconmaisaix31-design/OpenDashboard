@@ -4,7 +4,8 @@ import type {
 } from '../../../../../../packages/h2-contracts/src/index.ts'
 import type { H2Workspace } from './view-state.ts'
 
-export const H2_CSV_MAX_BYTES = 5 * 1024 * 1024
+/** Matches the local analytics import boundary before browser content is read. */
+export const H2_CSV_MAX_BYTES = 300 * 1024 * 1024
 
 export interface H2CsvFileInput {
   readonly name: string
