@@ -32,27 +32,32 @@ SHA:
 - [Run 32591315735](https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32591315735)
 
 The tested deployment identity was `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf`.
-The public hosts were:
+The recorded deployment origins and identities were:
 
-- `https://h2-sentinel-hxrbu0wan-dwwww.vercel.app`
-- `https://204421.xyz`
+- Vercel deployment origin (protected/authenticated, not classified as public):
+  `https://h2-sentinel-hxrbu0wan-dwwww.vercel.app`
+- Custom deployment origin: `https://204421.xyz`
 
 The custom domain `https://204421.xyz` was checked by direct navigation for the
-complete route matrix below. Each request returned HTTP 200 with the H2 SPA
-shell and the expected remote JavaScript asset marker. The Vercel hostname is
-currently `AUTH-REDIRECT/UNKNOWN-HOLD` for direct requests; it has no recorded
-direct H2-shell evidence. A 200 obtained only after following SSO is not
-counted as an H2 shell result.
+complete eight-route matrix below. Each request returned HTTP 200 with the H2
+SPA shell. The HTML itself did not contain H2 text; the marker evidence comes
+from the same-origin JavaScript asset `/assets/index-C2wmhv_n.js`, which
+returned HTTP 200 with 935592 bytes and contained both `H2 Sentinel` and `氢哨`.
+Direct Vercel root/Fixture requests returned 302 SSO redirects and remain
+`AUTH-REDIRECT/UNKNOWN-HOLD`; they have no recorded direct H2-shell evidence.
+A 200 obtained only after following SSO is not counted as an H2 shell result.
 
 The checks included direct navigation (not only navigation from the root):
 
 ```text
 /
+/?mode=fixture
 /h2-sentinel?mode=fixture
 /h2-sentinel/?mode=fixture
 /h2-sentinel?mode=local
 /h2-sentinel/?mode=local
 /h2-sentinel?mode=invalid
+/h2-sentinel/?mode=invalid
 ```
 
 This proves static hosting and deep-link fallback for the custom domain only.
@@ -86,15 +91,19 @@ start-h2-sentinel.bat --mode local --ready-json
 $officialDataDir = "<official-data-dir>"
 Get-ChildItem -LiteralPath $officialDataDir -File
 
-# Inspect every remote deep link without following redirects. Record status,
-# redirect target, observed/final origin, H2 body marker, and JS asset marker.
+# Inspect every remote deep link without following redirects. Extract only
+# same-origin /assets/*.js paths from HTML, then fetch each asset explicitly.
+# Record status, redirect target, observed/final origin, asset bytes, and JS
+# markers from the fetched asset body.
 $routes = @(
   "/",
+  "/?mode=fixture",
   "/h2-sentinel?mode=fixture",
   "/h2-sentinel/?mode=fixture",
   "/h2-sentinel?mode=local",
   "/h2-sentinel/?mode=local",
-  "/h2-sentinel?mode=invalid"
+  "/h2-sentinel?mode=invalid",
+  "/h2-sentinel/?mode=invalid"
 )
 $origins = @(
   "https://204421.xyz",
@@ -103,30 +112,55 @@ $origins = @(
 $handler = [System.Net.Http.HttpClientHandler]::new()
 $handler.AllowAutoRedirect = $false
 $client = [System.Net.Http.HttpClient]::new($handler)
+$routeResults = @()
+$assetResults = @()
 foreach ($origin in $origins) {
   foreach ($route in $routes) {
     $requestedUri = [Uri]::new("$origin$route")
     $response = $client.GetAsync($requestedUri).GetAwaiter().GetResult()
     $body = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-    [pscustomobject]@{
+    $assetMatches = [regex]::Matches($body, '/assets/[^"''\s]+\.js')
+    $assetPaths = @($assetMatches | ForEach-Object { $_.Value } | Select-Object -Unique)
+    $routeResults += [pscustomobject]@{
       RequestedUri = $requestedUri.AbsoluteUri
       Status = [int]$response.StatusCode
       RedirectDisabled = $true
       Location = if ($response.Headers.Location) { $response.Headers.Location.AbsoluteUri } else { $null }
       FinalOrigin = if ($response.IsSuccessStatusCode) { $response.RequestMessage.RequestUri.GetLeftPart([UriPartial]::Authority) } else { "NOT_FOLLOWED" }
       FinalOriginVerified = $response.IsSuccessStatusCode -and ($response.RequestMessage.RequestUri.GetLeftPart([UriPartial]::Authority) -eq $origin)
-      H2BodyMarker = $body -match "h2-sentinel|H2 Sentinel"
-      RemoteAssetMarker = $body -match 'assets/[^\s"]+\.js'
+      HtmlAssetPaths = $assetPaths -join ","
     }
     $response.Dispose()
+    foreach ($assetPath in $assetPaths) {
+      $assetUri = [Uri]::new("$origin$assetPath")
+      $assetResponse = $client.GetAsync($assetUri).GetAwaiter().GetResult()
+      $assetBytes = $assetResponse.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult()
+      $assetBody = [System.Text.Encoding]::UTF8.GetString($assetBytes)
+      $assetResults += [pscustomobject]@{
+        RequestedUri = $assetUri.AbsoluteUri
+        Status = [int]$assetResponse.StatusCode
+        Bytes = $assetBytes.Length
+        RedirectDisabled = $true
+        Location = if ($assetResponse.Headers.Location) { $assetResponse.Headers.Location.AbsoluteUri } else { $null }
+        FinalOrigin = if ($assetResponse.IsSuccessStatusCode) { $assetResponse.RequestMessage.RequestUri.GetLeftPart([UriPartial]::Authority) } else { "NOT_FOLLOWED" }
+        FinalOriginVerified = $assetResponse.IsSuccessStatusCode -and ($assetResponse.RequestMessage.RequestUri.GetLeftPart([UriPartial]::Authority) -eq $origin)
+        H2SentinelMarker = $assetBody -match 'H2 Sentinel'
+        ChineseMarker = $assetBody -match '氢哨'
+      }
+      $assetResponse.Dispose()
+    }
   }
 }
+$routeResults
+$assetResults
 $client.Dispose()
 ```
 
 The command records an un-followed `Location` instead of silently converting
 an auth redirect into a pass. A route is a hosting-shell pass only when its
-status, final origin, H2 body marker, and remote asset marker are all verified.
+status, final origin, same-origin asset path, fetched asset status/bytes, and
+both JavaScript markers are verified. It does not treat HTML text as the H2
+marker source.
 The commands above are reproduction instructions, not evidence that an
 evaluator can access local analytics. Local mode is loopback-only and requires
 the launcher and analytics service on that evaluator machine.
