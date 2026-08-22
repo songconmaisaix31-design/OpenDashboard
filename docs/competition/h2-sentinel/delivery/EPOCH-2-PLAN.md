@@ -121,3 +121,59 @@ Official score/metrics, deployment, screenshots, visual review, eligibility, for
 - [ ] Record import/analyze/export/checker and separate series-hydration results in sanitized, attempt-preserving reports.
 - [ ] Run CI, bind deployment to the tested SHA, and record submission/visual/eligibility/organizer states independently.
 - [ ] Run `git diff --check` and validate the release manifest; publish only with normal push and independently observed remote SHA.
+
+## 6. Post-dispatch T7 addendum: canonical severity boundary
+
+This addendum records a sanitized failure discovered after T1-T6 were dispatched. Import and analyze both returned HTTP `200`, but the strict canonical consumer rejected all `104` returned events. The responses used the official Chinese severity labels `中` and `高` inside the internal API event objects, while the frozen canonical contract accepts only `low`, `medium`, `high`, or `critical`. Transport success therefore did not constitute contract success.
+
+T7 repairs that boundary without changing the frozen contracts or broadening the taxonomy. For the official labels observed in this run, the internal mapping is exactly `中 -> medium` and `高 -> high`. Internal event objects, summaries, and API envelopes use canonical English severity values. Chinese severity values remain only at the external official-input and official-submission boundaries; the submission writer maps the canonical internal values back to the required official Chinese representation. Unknown values fail closed. T7 must not edit the frozen contract or vocabulary trees, `services/h2-analytics/src/h2_analytics/contracts.py`, Web UI, Live adapter, or any submission column or route schema. Tests must validate the frozen canonical enum directly and must not relax or rewrite it to accept Chinese API values.
+
+### T7 dispatch contract
+
+| Field | Frozen value |
+| --- | --- |
+| Task | `T7 severity contract boundary` |
+| Base | `a6e497b62063918367ca962bb43fb14a91e6edc5` |
+| Branch | `songconmaisaix31-design/h2-e2-severity-contract` |
+| Worktree | `h2-e2-severity-contract` |
+| Exact write allowlist | `services/h2-analytics/**` |
+
+The coordinator-frozen `parallelTaskBaseSha` remains `a6e497b62063918367ca962bb43fb14a91e6edc5`. This addendum does not create a new parallel base and does not re-dispatch, rebase, recreate, or reassign T1-T6. T7 is the only additional post-dispatch task and starts from that unchanged base. Its worker stages only the exact allowlist, creates one focused English commit, pushes normally, and reports both the local SHA and the independently observed remote SHA. The original six-track text remains the record of the initial dispatch; the unique integration gate now assembles the six accepted original task commits plus the accepted T7 commit.
+
+### T7 acceptance
+
+T7 is accepted only when all of the following are true:
+
+1. A failing-first analytics regression reproduces the Chinese-internal/API severity mismatch without embedding official CSV rows or raw responses.
+2. Import and analyze still return HTTP `200`, and every event returned by analyze uses only the frozen canonical English severity enum.
+3. The sanitized official replay returns the same `104` events and the strict canonical consumer accepts all `104`; HTTP status alone is not sufficient.
+4. Internal event summaries and API filtering use the same canonical English values, with no mixed Chinese/English identity.
+5. The external official submission retains the required Chinese severity representation, and the checker still accepts it.
+6. Unknown or unmapped severity values fail closed rather than being guessed, dropped, or converted to a new taxonomy member.
+7. The frozen object identities in Section 1 are unchanged, no dependency is added, and no file outside `services/h2-analytics/**` is modified.
+8. Test output and handoff evidence remain sanitized: no private path, runtime port, CSV content, URL, environment value, credential, or raw request/response body is recorded.
+
+### T7 verification and handoff
+
+The T7 worker runs the task-local gates from `services/h2-analytics`:
+
+```powershell
+uv lock --check
+uv sync --locked --extra dev
+uv run --locked --extra dev python -m pytest tests/test_contract_validation.py tests/test_detection_pipeline.py tests/test_api.py tests/test_assistant_reports.py
+uv run --locked --extra dev python -m pytest
+```
+
+From the repository root, the worker verifies scope and frozen identities:
+
+```powershell
+git diff --check
+git diff --name-only a6e497b62063918367ca962bb43fb14a91e6edc5...HEAD
+git rev-parse HEAD:packages/h2-contracts
+git rev-parse HEAD:packages/h2-vocabulary
+git rev-parse HEAD:services/h2-analytics/src/h2_analytics/contracts.py
+git push origin HEAD:songconmaisaix31-design/h2-e2-severity-contract
+git ls-remote --heads origin refs/heads/songconmaisaix31-design/h2-e2-severity-contract
+```
+
+After T7 is assembled with the already-dispatched tasks, the coordinator runs `npm run h2:check` and repeats the sanitized T6 official runner command from its handoff. The coordinator records import, analyze, strict-contract acceptance, export, and checker as separate stages; the integration remains `HOLD` unless all required stages pass. T7 does not upgrade deployment, visual review, eligibility, formal submission, organizer receipt, or acceptance.
