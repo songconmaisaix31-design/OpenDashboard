@@ -213,6 +213,28 @@ describe('H2 Sentinel presentation', () => {
     assert.match(markup, /电量配额/)
   })
 
+  it('only offers returned series variables in the variable explorer', () => {
+    const markup = renderView(
+      {
+        ...readyState,
+        workspace: {
+          ...readyState.workspace,
+          series: {
+            runId: H2_WEB_FIXTURE_RUN.runId,
+            variables: ['pcc_power_actual_kw'],
+            points: [],
+          },
+        },
+      },
+      { route: 'analysis' },
+    )
+    const variableExplorer = markup.match(/<select[^>]*>.*?<\/select>/)?.[0] ?? ''
+
+    assert.match(variableExplorer, /value="pcc_power_actual_kw"/)
+    assert.doesNotMatch(variableExplorer, /value="pv_actual_kw"/)
+    assert.doesNotMatch(variableExplorer, /value="bess_power_cmd_kw"/)
+  })
+
   it('marks every recommendation as needing human confirmation without closing the loop', () => {
     const diagnosisMarkup = renderView(readyState, {
       route: 'diagnosis',

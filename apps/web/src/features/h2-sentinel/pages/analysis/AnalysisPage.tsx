@@ -45,8 +45,15 @@ export interface AnalysisPageProps {
 
 export function AnalysisPage({ importError, importNotice, importPending, onImport, workspace }: AnalysisPageProps) {
   const chartableFields = useMemo(
-    () => workspace.run.dataset.fields.filter((field) => field.role === 'measurement' || field.role === 'constraint'),
-    [workspace.run.dataset.fields],
+    () => {
+      const returnedVariables = new Set(workspace.series?.variables ?? [])
+      return workspace.run.dataset.fields.filter(
+        (field) =>
+          (field.role === 'measurement' || field.role === 'constraint') &&
+          returnedVariables.has(field.name),
+      )
+    },
+    [workspace.run.dataset.fields, workspace.series],
   )
   const [selectedVariable, setSelectedVariable] = useState(chartableFields[0]?.name ?? '')
   const [dedicatedView, setDedicatedView] = useState<DedicatedView>('pcc')
