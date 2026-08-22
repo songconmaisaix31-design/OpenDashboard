@@ -1,0 +1,95 @@
+name: H2 Sentinel CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - competition/h2-sentinel
+      - songconmaisaix31-design/h2-integration
+
+permissions:
+  contents: read
+
+jobs:
+  repository-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+
+      - name: Install locked npm dependencies
+        run: npm ci
+
+      - name: Verify generic repository entry
+        run: npm run check
+
+  h2-sentinel-check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: python -m pip install uv==0.11.26
+
+      - name: Install locked npm dependencies
+        run: npm ci
+
+      - name: Verify H2 Web, contracts, adapters, QA, and build
+        run: npm run h2:check
+
+      - name: Check uv lock
+        working-directory: services/h2-analytics
+        run: uv lock --check
+
+      - name: Sync locked analytics environment
+        working-directory: services/h2-analytics
+        run: uv sync --locked --extra dev
+
+      - name: Run analytics tests
+        working-directory: services/h2-analytics
+        run: uv run --locked --extra dev python -m pytest
+
+      - name: Verify analytics golden artifacts
+        working-directory: services/h2-analytics
+        run: |
+          uv run --locked --extra dev python -m h2_analytics.tools.smoke_golden
+          uv run --locked --extra dev python -m h2_analytics.tools.validate_submission artifacts/submission.csv
+
+      - name: Run assembled launcher and proxy smoke
+        run: npm run h2:smoke
+
+      - name: Validate submission documents
+        shell: pwsh
+        run: ./submission/h2-sentinel/scripts/validate-submission.ps1
+
+      - name: Validate submission documents with Windows PowerShell 5.1
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: ./submission/h2-sentinel/scripts/validate-submission.ps1

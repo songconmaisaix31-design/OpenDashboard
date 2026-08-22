@@ -1,0 +1,174 @@
+{
+  "contract": "h2-sentinel-official-validation-evaluation-v1",
+  "mode": "fixture",
+  "set": "validation",
+  "parameters": {
+    "graceMinutes": 10,
+    "limitDays": 0,
+    "minDay": null,
+    "mergeGapMinutes": 2,
+    "matching": "greedy event-level: same anomaly_code and interval overlap with a 10-minute grace window",
+    "preprocessing": {
+      "local": [
+        "official timeseries chunked by UTC calendar day",
+        "official 69 field names passed through unchanged to the analytics service",
+        "naive \"YYYY-MM-DD HH:MM:SS\" timestamps normalized to ISO-8601 UTC (Z)"
+      ],
+      "fixture": [
+        "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv",
+        "missing official fields padded with zero at import time (the fixture predates the 69-field schema)"
+      ]
+    }
+  },
+  "dataset": {
+    "source": "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv",
+    "chunks": [
+      {
+        "day": "fixture",
+        "rows": 22,
+        "events": 1
+      }
+    ]
+  },
+  "groundTruth": {
+    "count": 2,
+    "totalCount": 2,
+    "dayWindow": "all days",
+    "byCode": {
+      "C03": 1,
+      "C04": 1
+    }
+  },
+  "predictions": {
+    "rawCount": 1,
+    "mergedCount": 1,
+    "detectorVersion": "deterministic-c01-c07-v2",
+    "byCode": {
+      "C03": 1
+    }
+  },
+  "metrics": {
+    "overall": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1,
+      "recall": 0.5,
+      "f1": 0.6666666666666666
+    },
+    "classification": {
+      "definition": "code-agnostic temporal overlap; classification accuracy = code-correct / matched pairs",
+      "matches": 1,
+      "correctCode": 1,
+      "detectionPrecision": 1,
+      "detectionRecall": 0.5,
+      "detectionF1": 0.6666666666666666,
+      "classificationAccuracy": 1,
+      "eventAccuracy": 0.5
+    },
+    "byCode": {
+      "C01": {
+        "code": "C01",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C02": {
+        "code": "C02",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C03": {
+        "code": "C03",
+        "groundTruth": 1,
+        "predictions": 1,
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "C04": {
+        "code": "C04",
+        "groundTruth": 1,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C05": {
+        "code": "C05",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C06": {
+        "code": "C06",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "C07": {
+        "code": "C07",
+        "groundTruth": 0,
+        "predictions": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      }
+    }
+  },
+  "matches": [
+    {
+      "groundTruthId": "C03-20260105-001",
+      "predictionId": "C03-20260105-001",
+      "code": "C03",
+      "groundTruthStart": "2026-01-05T10:20:00Z",
+      "groundTruthEnd": "2026-01-05T10:41:00Z",
+      "predictionStart": "2026-01-05T10:20:00Z",
+      "predictionEnd": "2026-01-05T10:41:00Z"
+    }
+  ],
+  "unmatchedGroundTruth": [
+    "C04-20260105-001"
+  ],
+  "unmatchedPredictions": [],
+  "provenance": {
+    "generatedAt": "2026-08-21T17:34:09.717Z",
+    "tool": "validation/evaluate.mjs",
+    "limitations": [
+      "Event-level evaluation contract, not the organizer score.",
+      "Rule detection covers the official C01-C07 field mappings.",
+      "Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged.",
+      "With --limit-days, labels are restricted to the imported UTC day window; a truncated run is not comparable to a full-window run."
+    ]
+  }
+}

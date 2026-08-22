@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>H2 Sentinel {{ event.eventId if event else run.runId }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; color: #172033; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #cbd2dc; padding: 0.5rem; text-align: left; }
+    .notice { border-left: 4px solid #c47d00; padding: 0.75rem; background: #fff8e8; }
+  </style>
+</head>
+<body>
+  <h1>H2 Sentinel {{ "Diagnosis" if event else "Data Quality Report" if kind == "quality_report" else "Period Summary" }}</h1>
+  <p>Run: {{ run.runId }} · Dataset: {{ run.dataset.name }} · Mode: {{ run.dataset.mode }}</p>
+  <p>Dataset fingerprint: {{ run.dataset.fingerprint }}</p>
+  {% if event %}
+  <h2>{{ event.eventId }} — {{ event.title }}</h2>
+  <p>{{ event.startTime }} to {{ event.endTime }}; first detected {{ event.firstDetectionTime }}.</p>
+  <h3>Evidence</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Claim</th><th>Conclusion</th></tr></thead>
+    <tbody>
+    {% for item in event.evidence %}
+      <tr><td>{{ item.evidenceId }}</td><td>{{ item.claimKind }}</td><td>{{ item.conclusion }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h3>Impact</h3>
+  <p>{{ event.impact.metric }}: {{ event.impact.value }} {{ event.impact.unit }} ({{ event.impact.formulaVersion }})</p>
+  <h3>Likely cause</h3><p>{{ event.rootCause }}</p>
+  <h3>Safety and recommendation</h3>
+  <ul>{% for check in event.safetyChecks %}<li>{{ check.status }} — {{ check.message }}</li>{% endfor %}</ul>
+  <ul>{% for item in event.recommendations %}<li>{{ item.summary }}</li>{% endfor %}</ul>
+  {% elif kind == "quality_report" %}
+  <h2>Quality status: {{ run.quality.status }}</h2>
+  <p>Report ID: {{ run.quality.reportId }} · Generated at: {{ run.quality.generatedAt }}</p>
+  <dl>
+    <dt>Rows</dt><dd>{{ run.dataset.rowCount }}</dd>
+    <dt>Time range</dt><dd>{{ run.dataset.timeRange.startTime }} to {{ run.dataset.timeRange.endTime }}</dd>
+    <dt>Provenance mode</dt><dd>{{ run.provenance.mode }}</dd>
+    <dt>Provenance source</dt><dd>{{ run.provenance.source }}</dd>
+    <dt>Rule version</dt><dd>{{ run.provenance.ruleVersion }}</dd>
+  </dl>
+  <table>
+    <thead><tr><th>Check</th><th>Status</th><th>Severity</th><th>Message</th></tr></thead>
+    <tbody>
+    {% for check in run.quality.checks %}
+      <tr><td>{{ check.code }}</td><td>{{ check.status }}</td><td>{{ check.severity }}</td><td>{{ check.message }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if run.quality.warnings %}<h3>Warnings</h3><ul>{% for warning in run.quality.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>{% endif %}
+  {% if run.quality.blockingReasons %}<h3>Blocking reasons</h3><ul>{% for reason in run.quality.blockingReasons %}<li>{{ reason }}</li>{% endfor %}</ul>{% endif %}
+  <h3>Limitations</h3><ul>{% for limitation in run.provenance.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+  {% elif kind == "period_summary" %}
+  <h2>PCC 合规日报</h2>
+  <dl>
+    <dt>数据集指纹</dt><dd>{{ period.datasetFingerprint }}</dd>
+    <dt>事件数量</dt><dd>{{ events|length }}</dd>
+  </dl>
+  <h3>符号约定</h3>
+  <table>
+    <thead><tr><th>对象</th><th>参数</th><th>约定</th></tr></thead>
+    <tbody>
+    {% for item in period.signConventions %}
+      <tr><td>{{ item.objectId }}</td><td>{{ item.parameter }}</td><td>{{ item.value }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h3>功率边界区间</h3>
+  {% if period.boundaryIntervals %}
+  <table>
+    <thead><tr><th>起始</th><th>结束</th><th>子类型</th></tr></thead>
+    <tbody>
+    {% for item in period.boundaryIntervals %}
+      <tr><td>{{ item.startTime }}</td><td>{{ item.endTime }}</td><td>{{ item.subtype }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p>越限时长：{{ period.violationDurationMinutes }} 分钟；越限电量：{{ period.violationEnergyKwh }} kWh。</p>
+  {% else %}
+  <p>本次周期未检测到 PCC 功率越限事件。</p>
+  {% endif %}
+  <h3>生效约束</h3>
+  <table>
+    <thead><tr><th>对象</th><th>参数</th><th>值</th><th>单位</th></tr></thead>
+    <tbody>
+    {% for item in period.constraints %}
+      <tr><td>{{ item.objectId }}</td><td>{{ item.parameter }}</td><td>{{ item.value }}</td><td>{{ item.unit }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h3>未决事件</h3>
+  {% if period.unresolvedEventIds %}
+  <ul>{% for event_id in period.unresolvedEventIds %}<li>{{ event_id }}</li>{% endfor %}</ul>
+  {% else %}
+  <p>无未决事件。</p>
+  {% endif %}
+  {% else %}
+  <p>Events in this deterministic summary: {{ events|length }}.</p>
+  {% if time_range %}<p>Requested time range: {{ time_range.startTime }} to {{ time_range.endTime }}.</p>{% endif %}
+  <ul>{% for item in events %}<li>{{ item.eventId }} — {{ item.title }}</li>{% endfor %}</ul>
+  {% endif %}
+  <p class="notice">{{ disclaimer }}</p>
+</body>
+</html>

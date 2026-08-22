@@ -1,0 +1,1252 @@
+{
+  "contract": "h2-sentinel-official-validation-evaluation-v1",
+  "mode": "local",
+  "set": "validation",
+  "parameters": {
+    "graceMinutes": 10,
+    "limitDays": 0,
+    "minDay": null,
+    "mergeGapMinutes": 2,
+    "matching": "greedy event-level: same anomaly_code and interval overlap with a 10-minute grace window",
+    "preprocessing": {
+      "local": [
+        "official timeseries chunked by UTC calendar day",
+        "official 69 field names passed through unchanged to the analytics service",
+        "naive \"YYYY-MM-DD HH:MM:SS\" timestamps normalized to ISO-8601 UTC (Z)"
+      ],
+      "fixture": [
+        "packages/h2-contracts/fixtures/tiny-valid-timeseries.csv",
+        "missing official fields padded with zero at import time (the fixture predates the 69-field schema)"
+      ]
+    }
+  },
+  "dataset": {
+    "source": "02_validation_timeseries.csv",
+    "labelsSource": "05_validation_event_labels.csv",
+    "fingerprintSha256": "sha256:182728b3a4c5326503a90a04325adcf97fddc290c59ed1e319fa7e8be97d9666",
+    "labelsFingerprintSha256": "sha256:47989467020fad5499168179716ce93da4585e8204dad80b71cfd803231d0cf4",
+    "chunks": [
+      {
+        "day": "2026-01-01",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-02",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-03",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-04",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-05",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-06",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-07",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-08",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-09",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-10",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-11",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-12",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-13",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-14",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-15",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-16",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-17",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-18",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-19",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-01-20",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-21",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-22",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-23",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-24",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-01-25",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-26",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-27",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-28",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-29",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-30",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-01-31",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-02-01",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-02",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-03",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-04",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-05",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-06",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-07",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-08",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-09",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-10",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-11",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-12",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-02-13",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-14",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-15",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-16",
+        "rows": 1440,
+        "events": 6
+      },
+      {
+        "day": "2026-02-17",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-18",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-19",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-20",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-21",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-22",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-23",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-24",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-25",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-02-26",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-27",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-02-28",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-01",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-02",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-03",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-04",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-05",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-06",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-07",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-08",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-09",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-10",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-11",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-12",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-13",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-14",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-15",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-16",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-17",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-18",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-19",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-20",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-21",
+        "rows": 1440,
+        "events": 2
+      },
+      {
+        "day": "2026-03-22",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-23",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-24",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-25",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-26",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-27",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-28",
+        "rows": 1440,
+        "events": 1
+      },
+      {
+        "day": "2026-03-29",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-30",
+        "rows": 1440,
+        "events": 0
+      },
+      {
+        "day": "2026-03-31",
+        "rows": 1440,
+        "events": 0
+      }
+    ]
+  },
+  "groundTruth": {
+    "count": 70,
+    "totalCount": 70,
+    "dayWindow": "all days",
+    "byCode": {
+      "C06": 10,
+      "C02": 10,
+      "C07": 10,
+      "C05": 10,
+      "C03": 10,
+      "C01": 10,
+      "C04": 10
+    }
+  },
+  "predictions": {
+    "rawCount": 81,
+    "mergedCount": 75,
+    "detectorVersion": "deterministic-c01-c07-v2",
+    "byCode": {
+      "C01": 11,
+      "C02": 10,
+      "C03": 11,
+      "C04": 12,
+      "C05": 10,
+      "C06": 11,
+      "C07": 10
+    }
+  },
+  "metrics": {
+    "overall": {
+      "tp": 69,
+      "fp": 6,
+      "fn": 1,
+      "precision": 0.92,
+      "recall": 0.9857142857142858,
+      "f1": 0.9517241379310346
+    },
+    "classification": {
+      "definition": "code-agnostic temporal overlap; classification accuracy = code-correct / matched pairs",
+      "matches": 69,
+      "correctCode": 69,
+      "detectionPrecision": 0.92,
+      "detectionRecall": 0.9857142857142858,
+      "detectionF1": 0.9517241379310346,
+      "classificationAccuracy": 1,
+      "eventAccuracy": 0.9857142857142858
+    },
+    "byCode": {
+      "C01": {
+        "code": "C01",
+        "groundTruth": 10,
+        "predictions": 11,
+        "tp": 9,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.8181818181818182,
+        "recall": 0.9,
+        "f1": 0.8571428571428572
+      },
+      "C02": {
+        "code": "C02",
+        "groundTruth": 10,
+        "predictions": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "C03": {
+        "code": "C03",
+        "groundTruth": 10,
+        "predictions": 11,
+        "tp": 10,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.9090909090909091,
+        "recall": 1,
+        "f1": 0.9523809523809523
+      },
+      "C04": {
+        "code": "C04",
+        "groundTruth": 10,
+        "predictions": 12,
+        "tp": 10,
+        "fp": 2,
+        "fn": 0,
+        "precision": 0.8333333333333334,
+        "recall": 1,
+        "f1": 0.9090909090909091
+      },
+      "C05": {
+        "code": "C05",
+        "groundTruth": 10,
+        "predictions": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "C06": {
+        "code": "C06",
+        "groundTruth": 10,
+        "predictions": 11,
+        "tp": 10,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.9090909090909091,
+        "recall": 1,
+        "f1": 0.9523809523809523
+      },
+      "C07": {
+        "code": "C07",
+        "groundTruth": 10,
+        "predictions": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      }
+    }
+  },
+  "matches": [
+    {
+      "groundTruthId": "VA0051",
+      "predictionId": "C06-20260101-001",
+      "code": "C06",
+      "groundTruthStart": "2026-01-01 11:33:00",
+      "groundTruthEnd": "2026-01-01 14:17:00",
+      "predictionStart": "2026-01-01T11:33:00Z",
+      "predictionEnd": "2026-01-01T14:17:00Z"
+    },
+    {
+      "groundTruthId": "VA0014",
+      "predictionId": "C02-20260102-001",
+      "code": "C02",
+      "groundTruthStart": "2026-01-02 07:07:00",
+      "groundTruthEnd": "2026-01-02 08:59:00",
+      "predictionStart": "2026-01-02T07:07:00Z",
+      "predictionEnd": "2026-01-02T08:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0053",
+      "predictionId": "C06-20260103-001",
+      "code": "C06",
+      "groundTruthStart": "2026-01-03 17:44:00",
+      "groundTruthEnd": "2026-01-03 20:32:00",
+      "predictionStart": "2026-01-03T18:00:00Z",
+      "predictionEnd": "2026-01-03T18:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0066",
+      "predictionId": "C07-20260104-001",
+      "code": "C07",
+      "groundTruthStart": "2026-01-04 09:00:00",
+      "groundTruthEnd": "2026-01-04 18:28:00",
+      "predictionStart": "2026-01-04T09:00:00Z",
+      "predictionEnd": "2026-01-04T15:44:00Z"
+    },
+    {
+      "groundTruthId": "VA0048",
+      "predictionId": "C05-20260105-001",
+      "code": "C05",
+      "groundTruthStart": "2026-01-05 07:07:00",
+      "groundTruthEnd": "2026-01-05 19:29:00",
+      "predictionStart": "2026-01-05T17:19:00Z",
+      "predictionEnd": "2026-01-05T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0042",
+      "predictionId": "C05-20260106-001",
+      "code": "C05",
+      "groundTruthStart": "2026-01-06 07:04:00",
+      "groundTruthEnd": "2026-01-06 21:55:00",
+      "predictionStart": "2026-01-06T17:35:00Z",
+      "predictionEnd": "2026-01-06T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0024",
+      "predictionId": "C03-20260108-001",
+      "code": "C03",
+      "groundTruthStart": "2026-01-08 10:28:00",
+      "groundTruthEnd": "2026-01-08 11:22:00",
+      "predictionStart": "2026-01-08T10:28:00Z",
+      "predictionEnd": "2026-01-08T11:22:00Z"
+    },
+    {
+      "groundTruthId": "VA0013",
+      "predictionId": "C02-20260110-001",
+      "code": "C02",
+      "groundTruthStart": "2026-01-10 12:36:00",
+      "groundTruthEnd": "2026-01-10 14:12:00",
+      "predictionStart": "2026-01-10T12:36:00Z",
+      "predictionEnd": "2026-01-10T14:12:00Z"
+    },
+    {
+      "groundTruthId": "VA0011",
+      "predictionId": "C02-20260112-001",
+      "code": "C02",
+      "groundTruthStart": "2026-01-12 17:12:00",
+      "groundTruthEnd": "2026-01-12 19:05:00",
+      "predictionStart": "2026-01-12T17:12:00Z",
+      "predictionEnd": "2026-01-12T19:05:00Z"
+    },
+    {
+      "groundTruthId": "VA0049",
+      "predictionId": "C05-20260113-001",
+      "code": "C05",
+      "groundTruthStart": "2026-01-13 07:08:00",
+      "groundTruthEnd": "2026-01-13 21:30:00",
+      "predictionStart": "2026-01-13T11:03:00Z",
+      "predictionEnd": "2026-01-13T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0058",
+      "predictionId": "C06-20260114-001",
+      "code": "C06",
+      "groundTruthStart": "2026-01-14 11:42:00",
+      "groundTruthEnd": "2026-01-14 13:59:00",
+      "predictionStart": "2026-01-14T11:42:00Z",
+      "predictionEnd": "2026-01-14T13:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0019",
+      "predictionId": "C02-20260116-001",
+      "code": "C02",
+      "groundTruthStart": "2026-01-16 16:13:00",
+      "groundTruthEnd": "2026-01-16 18:21:00",
+      "predictionStart": "2026-01-16T16:13:00Z",
+      "predictionEnd": "2026-01-16T18:21:00Z"
+    },
+    {
+      "groundTruthId": "VA0010",
+      "predictionId": "C01-20260117-001",
+      "code": "C01",
+      "groundTruthStart": "2026-01-17 13:40:00",
+      "groundTruthEnd": "2026-01-17 14:26:00",
+      "predictionStart": "2026-01-17T14:02:00Z",
+      "predictionEnd": "2026-01-17T14:41:00Z"
+    },
+    {
+      "groundTruthId": "VA0025",
+      "predictionId": "C03-20260118-001",
+      "code": "C03",
+      "groundTruthStart": "2026-01-18 14:03:00",
+      "groundTruthEnd": "2026-01-18 15:23:00",
+      "predictionStart": "2026-01-18T14:03:00Z",
+      "predictionEnd": "2026-01-18T15:23:00Z"
+    },
+    {
+      "groundTruthId": "VA0052",
+      "predictionId": "C06-20260119-001",
+      "code": "C06",
+      "groundTruthStart": "2026-01-19 07:36:00",
+      "groundTruthEnd": "2026-01-19 09:06:00",
+      "predictionStart": "2026-01-19T07:36:00Z",
+      "predictionEnd": "2026-01-19T09:06:00Z"
+    },
+    {
+      "groundTruthId": "VA0063",
+      "predictionId": "C07-20260120-001",
+      "code": "C07",
+      "groundTruthStart": "2026-01-20 12:00:00",
+      "groundTruthEnd": "2026-01-20 23:18:00",
+      "predictionStart": "2026-01-20T12:00:00Z",
+      "predictionEnd": "2026-01-20T12:05:00Z"
+    },
+    {
+      "groundTruthId": "VA0068",
+      "predictionId": "C07-20260121-001",
+      "code": "C07",
+      "groundTruthStart": "2026-01-21 06:17:00",
+      "groundTruthEnd": "2026-01-21 16:40:00",
+      "predictionStart": "2026-01-21T06:17:00Z",
+      "predictionEnd": "2026-01-21T13:53:00Z"
+    },
+    {
+      "groundTruthId": "VA0034",
+      "predictionId": "C04-20260122-001",
+      "code": "C04",
+      "groundTruthStart": "2026-01-22 11:19:00",
+      "groundTruthEnd": "2026-01-22 12:15:00",
+      "predictionStart": "2026-01-22T11:19:00Z",
+      "predictionEnd": "2026-01-22T12:15:00Z"
+    },
+    {
+      "groundTruthId": "VA0044",
+      "predictionId": "C05-20260125-001",
+      "code": "C05",
+      "groundTruthStart": "2026-01-25 07:25:00",
+      "groundTruthEnd": "2026-01-25 21:48:00",
+      "predictionStart": "2026-01-25T18:12:00Z",
+      "predictionEnd": "2026-01-25T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0012",
+      "predictionId": "C02-20260126-001",
+      "code": "C02",
+      "groundTruthStart": "2026-01-26 07:29:00",
+      "groundTruthEnd": "2026-01-26 09:20:00",
+      "predictionStart": "2026-01-26T07:29:00Z",
+      "predictionEnd": "2026-01-26T09:20:00Z"
+    },
+    {
+      "groundTruthId": "VA0008",
+      "predictionId": "C01-20260127-001",
+      "code": "C01",
+      "groundTruthStart": "2026-01-27 09:52:00",
+      "groundTruthEnd": "2026-01-27 10:55:00",
+      "predictionStart": "2026-01-27T10:26:00Z",
+      "predictionEnd": "2026-01-27T10:53:00Z"
+    },
+    {
+      "groundTruthId": "VA0062",
+      "predictionId": "C07-20260128-001",
+      "code": "C07",
+      "groundTruthStart": "2026-01-28 09:20:00",
+      "groundTruthEnd": "2026-01-28 16:31:00",
+      "predictionStart": "2026-01-28T09:20:00Z",
+      "predictionEnd": "2026-01-28T14:43:00Z"
+    },
+    {
+      "groundTruthId": "VA0029",
+      "predictionId": "C03-20260129-001",
+      "code": "C03",
+      "groundTruthStart": "2026-01-29 07:36:00",
+      "groundTruthEnd": "2026-01-29 08:34:00",
+      "predictionStart": "2026-01-29T07:36:00Z",
+      "predictionEnd": "2026-01-29T08:34:00Z"
+    },
+    {
+      "groundTruthId": "VA0056",
+      "predictionId": "C06-20260130-001",
+      "code": "C06",
+      "groundTruthStart": "2026-01-30 11:37:00",
+      "groundTruthEnd": "2026-01-30 15:06:00",
+      "predictionStart": "2026-01-30T11:37:00Z",
+      "predictionEnd": "2026-01-30T15:06:00Z"
+    },
+    {
+      "groundTruthId": "VA0003",
+      "predictionId": "C01-20260131-001",
+      "code": "C01",
+      "groundTruthStart": "2026-01-31 16:41:00",
+      "groundTruthEnd": "2026-01-31 18:18:00",
+      "predictionStart": "2026-01-31T16:57:00Z",
+      "predictionEnd": "2026-01-31T17:58:00Z"
+    },
+    {
+      "groundTruthId": "VA0033",
+      "predictionId": "C04-20260201-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-01 11:08:00",
+      "groundTruthEnd": "2026-02-01 12:55:00",
+      "predictionStart": "2026-02-01T11:08:00Z",
+      "predictionEnd": "2026-02-01T12:55:00Z"
+    },
+    {
+      "groundTruthId": "VA0057",
+      "predictionId": "C06-20260202-001",
+      "code": "C06",
+      "groundTruthStart": "2026-02-02 16:21:00",
+      "groundTruthEnd": "2026-02-02 17:59:00",
+      "predictionStart": "2026-02-02T16:21:00Z",
+      "predictionEnd": "2026-02-02T17:20:00Z"
+    },
+    {
+      "groundTruthId": "VA0002",
+      "predictionId": "C01-20260203-001",
+      "code": "C01",
+      "groundTruthStart": "2026-02-03 07:14:00",
+      "groundTruthEnd": "2026-02-03 07:56:00",
+      "predictionStart": "2026-02-03T07:30:00Z",
+      "predictionEnd": "2026-02-03T08:06:00Z"
+    },
+    {
+      "groundTruthId": "VA0064",
+      "predictionId": "C07-20260204-001",
+      "code": "C07",
+      "groundTruthStart": "2026-02-04 12:24:00",
+      "groundTruthEnd": "2026-02-04 20:50:00",
+      "predictionStart": "2026-02-04T12:24:00Z",
+      "predictionEnd": "2026-02-04T19:01:00Z"
+    },
+    {
+      "groundTruthId": "VA0001",
+      "predictionId": "C01-20260206-001",
+      "code": "C01",
+      "groundTruthStart": "2026-02-06 14:34:00",
+      "groundTruthEnd": "2026-02-06 15:47:00",
+      "predictionStart": "2026-02-06T14:56:00Z",
+      "predictionEnd": "2026-02-06T15:25:00Z"
+    },
+    {
+      "groundTruthId": "VA0004",
+      "predictionId": "C01-20260208-001",
+      "code": "C01",
+      "groundTruthStart": "2026-02-08 10:57:00",
+      "groundTruthEnd": "2026-02-08 12:05:00",
+      "predictionStart": "2026-02-08T11:19:00Z",
+      "predictionEnd": "2026-02-08T12:12:00Z"
+    },
+    {
+      "groundTruthId": "VA0020",
+      "predictionId": "C02-20260209-001",
+      "code": "C02",
+      "groundTruthStart": "2026-02-09 17:10:00",
+      "groundTruthEnd": "2026-02-09 19:12:00",
+      "predictionStart": "2026-02-09T17:10:00Z",
+      "predictionEnd": "2026-02-09T19:12:00Z"
+    },
+    {
+      "groundTruthId": "VA0047",
+      "predictionId": "C05-20260210-001",
+      "code": "C05",
+      "groundTruthStart": "2026-02-10 07:06:00",
+      "groundTruthEnd": "2026-02-10 19:22:00",
+      "predictionStart": "2026-02-10T09:55:00Z",
+      "predictionEnd": "2026-02-10T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0039",
+      "predictionId": "C04-20260211-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-11 10:18:00",
+      "groundTruthEnd": "2026-02-11 12:16:00",
+      "predictionStart": "2026-02-11T10:18:00Z",
+      "predictionEnd": "2026-02-11T12:16:00Z"
+    },
+    {
+      "groundTruthId": "VA0028",
+      "predictionId": "C03-20260212-001",
+      "code": "C03",
+      "groundTruthStart": "2026-02-12 09:41:00",
+      "groundTruthEnd": "2026-02-12 11:07:00",
+      "predictionStart": "2026-02-12T09:41:00Z",
+      "predictionEnd": "2026-02-12T10:01:00Z"
+    },
+    {
+      "groundTruthId": "VA0007",
+      "predictionId": "C01-20260213-001",
+      "code": "C01",
+      "groundTruthStart": "2026-02-13 16:39:00",
+      "groundTruthEnd": "2026-02-13 17:52:00",
+      "predictionStart": "2026-02-13T16:55:00Z",
+      "predictionEnd": "2026-02-13T17:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0069",
+      "predictionId": "C07-20260215-001",
+      "code": "C07",
+      "groundTruthStart": "2026-02-15 12:24:00",
+      "groundTruthEnd": "2026-02-15 18:43:00",
+      "predictionStart": "2026-02-15T12:24:00Z",
+      "predictionEnd": "2026-02-15T13:30:00Z"
+    },
+    {
+      "groundTruthId": "VA0036",
+      "predictionId": "C04-20260216-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-16 10:03:00",
+      "groundTruthEnd": "2026-02-16 11:51:00",
+      "predictionStart": "2026-02-16T10:03:00Z",
+      "predictionEnd": "2026-02-16T10:56:00Z"
+    },
+    {
+      "groundTruthId": "VA0009",
+      "predictionId": "C01-20260217-001",
+      "code": "C01",
+      "groundTruthStart": "2026-02-17 13:18:00",
+      "groundTruthEnd": "2026-02-17 14:23:00",
+      "predictionStart": "2026-02-17T13:40:00Z",
+      "predictionEnd": "2026-02-17T13:57:00Z"
+    },
+    {
+      "groundTruthId": "VA0016",
+      "predictionId": "C02-20260218-001",
+      "code": "C02",
+      "groundTruthStart": "2026-02-18 12:10:00",
+      "groundTruthEnd": "2026-02-18 14:43:00",
+      "predictionStart": "2026-02-18T12:10:00Z",
+      "predictionEnd": "2026-02-18T14:43:00Z"
+    },
+    {
+      "groundTruthId": "VA0017",
+      "predictionId": "C02-20260219-001",
+      "code": "C02",
+      "groundTruthStart": "2026-02-19 13:15:00",
+      "groundTruthEnd": "2026-02-19 15:51:00",
+      "predictionStart": "2026-02-19T13:15:00Z",
+      "predictionEnd": "2026-02-19T15:51:00Z"
+    },
+    {
+      "groundTruthId": "VA0040",
+      "predictionId": "C04-20260220-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-20 11:06:00",
+      "groundTruthEnd": "2026-02-20 13:01:00",
+      "predictionStart": "2026-02-20T11:16:00Z",
+      "predictionEnd": "2026-02-20T13:01:00Z"
+    },
+    {
+      "groundTruthId": "VA0027",
+      "predictionId": "C03-20260221-001",
+      "code": "C03",
+      "groundTruthStart": "2026-02-21 17:47:00",
+      "groundTruthEnd": "2026-02-21 18:24:00",
+      "predictionStart": "2026-02-21T17:47:00Z",
+      "predictionEnd": "2026-02-21T18:24:00Z"
+    },
+    {
+      "groundTruthId": "VA0046",
+      "predictionId": "C05-20260222-001",
+      "code": "C05",
+      "groundTruthStart": "2026-02-22 07:37:00",
+      "groundTruthEnd": "2026-02-22 20:02:00",
+      "predictionStart": "2026-02-22T17:19:00Z",
+      "predictionEnd": "2026-02-22T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0032",
+      "predictionId": "C04-20260223-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-23 18:06:00",
+      "groundTruthEnd": "2026-02-23 19:48:00",
+      "predictionStart": "2026-02-23T18:06:00Z",
+      "predictionEnd": "2026-02-23T19:48:00Z"
+    },
+    {
+      "groundTruthId": "VA0026",
+      "predictionId": "C03-20260226-001",
+      "code": "C03",
+      "groundTruthStart": "2026-02-26 15:21:00",
+      "groundTruthEnd": "2026-02-26 16:12:00",
+      "predictionStart": "2026-02-26T15:21:00Z",
+      "predictionEnd": "2026-02-26T16:12:00Z"
+    },
+    {
+      "groundTruthId": "VA0037",
+      "predictionId": "C04-20260227-001",
+      "code": "C04",
+      "groundTruthStart": "2026-02-27 10:29:00",
+      "groundTruthEnd": "2026-02-27 11:15:00",
+      "predictionStart": "2026-02-27T10:29:00Z",
+      "predictionEnd": "2026-02-27T11:15:00Z"
+    },
+    {
+      "groundTruthId": "VA0055",
+      "predictionId": "C06-20260228-001",
+      "code": "C06",
+      "groundTruthStart": "2026-02-28 16:52:00",
+      "groundTruthEnd": "2026-02-28 20:35:00",
+      "predictionStart": "2026-02-28T16:52:00Z",
+      "predictionEnd": "2026-02-28T17:48:00Z"
+    },
+    {
+      "groundTruthId": "VA0041",
+      "predictionId": "C05-20260302-001",
+      "code": "C05",
+      "groundTruthStart": "2026-03-02 07:23:00",
+      "groundTruthEnd": "2026-03-02 19:36:00",
+      "predictionStart": "2026-03-02T10:04:00Z",
+      "predictionEnd": "2026-03-02T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0035",
+      "predictionId": "C04-20260303-001",
+      "code": "C04",
+      "groundTruthStart": "2026-03-03 17:05:00",
+      "groundTruthEnd": "2026-03-03 17:50:00",
+      "predictionStart": "2026-03-03T17:05:00Z",
+      "predictionEnd": "2026-03-03T17:50:00Z"
+    },
+    {
+      "groundTruthId": "VA0050",
+      "predictionId": "C05-20260304-001",
+      "code": "C05",
+      "groundTruthStart": "2026-03-04 07:36:00",
+      "groundTruthEnd": "2026-03-04 20:50:00",
+      "predictionStart": "2026-03-04T16:42:00Z",
+      "predictionEnd": "2026-03-04T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0023",
+      "predictionId": "C03-20260305-001",
+      "code": "C03",
+      "groundTruthStart": "2026-03-05 15:30:00",
+      "groundTruthEnd": "2026-03-05 16:14:00",
+      "predictionStart": "2026-03-05T15:30:00Z",
+      "predictionEnd": "2026-03-05T16:14:00Z"
+    },
+    {
+      "groundTruthId": "VA0065",
+      "predictionId": "C07-20260306-001",
+      "code": "C07",
+      "groundTruthStart": "2026-03-06 12:00:00",
+      "groundTruthEnd": "2026-03-06 18:32:00",
+      "predictionStart": "2026-03-06T12:00:00Z",
+      "predictionEnd": "2026-03-06T13:42:00Z"
+    },
+    {
+      "groundTruthId": "VA0038",
+      "predictionId": "C04-20260308-001",
+      "code": "C04",
+      "groundTruthStart": "2026-03-08 17:01:00",
+      "groundTruthEnd": "2026-03-08 18:53:00",
+      "predictionStart": "2026-03-08T17:01:00Z",
+      "predictionEnd": "2026-03-08T18:53:00Z"
+    },
+    {
+      "groundTruthId": "VA0015",
+      "predictionId": "C02-20260309-001",
+      "code": "C02",
+      "groundTruthStart": "2026-03-09 09:06:00",
+      "groundTruthEnd": "2026-03-09 11:17:00",
+      "predictionStart": "2026-03-09T09:06:00Z",
+      "predictionEnd": "2026-03-09T11:17:00Z"
+    },
+    {
+      "groundTruthId": "VA0070",
+      "predictionId": "C07-20260310-001",
+      "code": "C07",
+      "groundTruthStart": "2026-03-10 09:24:00",
+      "groundTruthEnd": "2026-03-10 16:53:00",
+      "predictionStart": "2026-03-10T09:24:00Z",
+      "predictionEnd": "2026-03-10T14:49:00Z"
+    },
+    {
+      "groundTruthId": "VA0031",
+      "predictionId": "C04-20260311-001",
+      "code": "C04",
+      "groundTruthStart": "2026-03-11 11:18:00",
+      "groundTruthEnd": "2026-03-11 12:42:00",
+      "predictionStart": "2026-03-11T11:18:00Z",
+      "predictionEnd": "2026-03-11T12:42:00Z"
+    },
+    {
+      "groundTruthId": "VA0043",
+      "predictionId": "C05-20260314-001",
+      "code": "C05",
+      "groundTruthStart": "2026-03-14 07:00:00",
+      "groundTruthEnd": "2026-03-14 21:43:00",
+      "predictionStart": "2026-03-14T09:54:00Z",
+      "predictionEnd": "2026-03-14T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0030",
+      "predictionId": "C03-20260315-001",
+      "code": "C03",
+      "groundTruthStart": "2026-03-15 07:06:00",
+      "groundTruthEnd": "2026-03-15 07:56:00",
+      "predictionStart": "2026-03-15T07:06:00Z",
+      "predictionEnd": "2026-03-15T07:56:00Z"
+    },
+    {
+      "groundTruthId": "VA0060",
+      "predictionId": "C06-20260316-001",
+      "code": "C06",
+      "groundTruthStart": "2026-03-16 10:08:00",
+      "groundTruthEnd": "2026-03-16 13:52:00",
+      "predictionStart": "2026-03-16T10:08:00Z",
+      "predictionEnd": "2026-03-16T13:52:00Z"
+    },
+    {
+      "groundTruthId": "VA0067",
+      "predictionId": "C07-20260317-001",
+      "code": "C07",
+      "groundTruthStart": "2026-03-17 06:12:00",
+      "groundTruthEnd": "2026-03-17 17:42:00",
+      "predictionStart": "2026-03-17T06:12:00Z",
+      "predictionEnd": "2026-03-17T10:33:00Z"
+    },
+    {
+      "groundTruthId": "VA0006",
+      "predictionId": "C01-20260318-001",
+      "code": "C01",
+      "groundTruthStart": "2026-03-18 09:08:00",
+      "groundTruthEnd": "2026-03-18 10:40:00",
+      "predictionStart": "2026-03-18T09:30:00Z",
+      "predictionEnd": "2026-03-18T09:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0021",
+      "predictionId": "C03-20260319-001",
+      "code": "C03",
+      "groundTruthStart": "2026-03-19 08:38:00",
+      "groundTruthEnd": "2026-03-19 09:53:00",
+      "predictionStart": "2026-03-19T08:38:00Z",
+      "predictionEnd": "2026-03-19T09:53:00Z"
+    },
+    {
+      "groundTruthId": "VA0054",
+      "predictionId": "C06-20260321-001",
+      "code": "C06",
+      "groundTruthStart": "2026-03-21 09:28:00",
+      "groundTruthEnd": "2026-03-21 12:33:00",
+      "predictionStart": "2026-03-21T09:28:00Z",
+      "predictionEnd": "2026-03-21T12:33:00Z"
+    },
+    {
+      "groundTruthId": "VA0022",
+      "predictionId": "C03-20260322-001",
+      "code": "C03",
+      "groundTruthStart": "2026-03-22 07:19:00",
+      "groundTruthEnd": "2026-03-22 08:31:00",
+      "predictionStart": "2026-03-22T07:19:00Z",
+      "predictionEnd": "2026-03-22T08:31:00Z"
+    },
+    {
+      "groundTruthId": "VA0045",
+      "predictionId": "C05-20260323-001",
+      "code": "C05",
+      "groundTruthStart": "2026-03-23 07:01:00",
+      "groundTruthEnd": "2026-03-23 20:21:00",
+      "predictionStart": "2026-03-23T11:08:00Z",
+      "predictionEnd": "2026-03-23T23:59:00Z"
+    },
+    {
+      "groundTruthId": "VA0061",
+      "predictionId": "C07-20260324-001",
+      "code": "C07",
+      "groundTruthStart": "2026-03-24 12:06:00",
+      "groundTruthEnd": "2026-03-24 20:50:00",
+      "predictionStart": "2026-03-24T12:06:00Z",
+      "predictionEnd": "2026-03-24T14:58:00Z"
+    },
+    {
+      "groundTruthId": "VA0018",
+      "predictionId": "C02-20260326-001",
+      "code": "C02",
+      "groundTruthStart": "2026-03-26 15:48:00",
+      "groundTruthEnd": "2026-03-26 17:38:00",
+      "predictionStart": "2026-03-26T15:48:00Z",
+      "predictionEnd": "2026-03-26T17:38:00Z"
+    },
+    {
+      "groundTruthId": "VA0059",
+      "predictionId": "C06-20260328-001",
+      "code": "C06",
+      "groundTruthStart": "2026-03-28 10:36:00",
+      "groundTruthEnd": "2026-03-28 12:13:00",
+      "predictionStart": "2026-03-28T10:36:00Z",
+      "predictionEnd": "2026-03-28T12:13:00Z"
+    }
+  ],
+  "unmatchedGroundTruth": [
+    "VA0005"
+  ],
+  "unmatchedPredictions": [
+    "C01-20260131-002",
+    "C01-20260318-002",
+    "C03-20260212-002",
+    "C04-20260216-005",
+    "C04-20260216-006",
+    "C06-20260228-002"
+  ],
+  "provenance": {
+    "generatedAt": "2026-08-21T17:34:02.776Z",
+    "tool": "validation/evaluate.mjs",
+    "limitations": [
+      "Event-level evaluation contract, not the organizer score.",
+      "Rule detection covers the official C01-C07 field mappings.",
+      "Chunking may split predictions that straddle a UTC midnight boundary; adjacent same-code predictions are merged.",
+      "With --limit-days, labels are restricted to the imported UTC day window; a truncated run is not comparable to a full-window run."
+    ]
+  }
+}

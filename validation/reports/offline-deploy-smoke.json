@@ -1,0 +1,64 @@
+{
+  "contract": "h2-sentinel-offline-deploy-smoke-v1",
+  "verdict": "passed",
+  "prerequisites": [],
+  "ports": {
+    "web": 51315,
+    "analytics": 51316,
+    "webUrl": "http://127.0.0.1:51315/h2-sentinel/?mode=local",
+    "analyticsUrl": "http://127.0.0.1:51316/"
+  },
+  "dataset": {
+    "source": "03_test_timeseries.csv",
+    "absolutePath": "C:\\Users\\DW\\Desktop\\T03_设备故障排查与智能运维助手\\T03_设备故障排查与智能运维助手\\企业资料包04_雷动\\数据与材料\\03_test_timeseries.csv",
+    "rows": 172800
+  },
+  "steps": [
+    {
+      "step": "normalize",
+      "rows": 172800,
+      "headerColumns": 69,
+      "officialFieldCount": 69,
+      "missingFields": [],
+      "status": "passed"
+    },
+    {
+      "step": "import",
+      "datasetId": "live-h2-4407495ad75299f2",
+      "rowCount": 172800,
+      "fingerprint": "sha256:4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169",
+      "durationMs": 6315,
+      "status": "passed"
+    },
+    {
+      "step": "analyze",
+      "runId": "run-live-h2-4407495ad75299f2",
+      "events": 104,
+      "detectorVersion": "deterministic-c01-c07-v2",
+      "durationMs": 6264,
+      "status": "passed"
+    },
+    {
+      "step": "export",
+      "mediaType": "text/csv",
+      "rows": 104,
+      "artifactPath": "C:\\Users\\DW\\orca\\workspaces\\OpenDashboard\\H2_Sentinel\\scripts\\h2-sentinel\\artifacts\\submission-testset.csv",
+      "checkerValid": true,
+      "checkerIssues": [],
+      "checkerRowCount": 104,
+      "status": "passed"
+    }
+  ],
+  "notes": [
+    "The exported affected_equipment uses equipment-master id:name tokens (backend reports/submission.py); the official format is comma-separated tokens. The checker verdict reflects the official format (D3) and stays failed until the backend export is fixed.",
+    "Artifact directory is gitignored; the JSON report is the committed evidence."
+  ],
+  "provenance": {
+    "generatedAt": "2026-08-22T11:06:31.121Z",
+    "tool": "scripts/h2-sentinel/offline-deploy-smoke.mjs",
+    "environment": {
+      "node": "v24.16.0",
+      "platform": "win32"
+    }
+  }
+}

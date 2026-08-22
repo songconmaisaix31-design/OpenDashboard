@@ -1,0 +1,271 @@
+import assert from 'node:assert/strict'
+import { describe, it } from 'node:test'
+import { renderToStaticMarkup } from 'react-dom/server'
+
+import {
+  H2_FIXTURE_REPORT_DESCRIPTOR,
+  type H2AnomalyEvent,
+} from '../../../../../../packages/h2-contracts/src/index.ts'
+import { H2SentinelView } from '../H2SentinelView.tsx'
+import {
+  INITIAL_H2_COMMAND_STATE,
+  type H2WorkspaceState,
+} from '../model/view-state.ts'
+import {
+  filterH2Events,
+  formatH2Duration,
+  INITIAL_EVENT_FILTERS,
+} from '../model/presentation.ts'
+import {
+  parseH2SentinelHash,
+  toH2SentinelHash,
+  type H2NavigationTarget,
+} from '../routes.ts'
+import {
+  CORRECTED_C04_IMPACT_KWH,
+  H2_WEB_FIXTURE_C04_EVENT,
+  H2_WEB_FIXTURE_EVENTS,
+  H2_WEB_FIXTURE_RUN,
+} from './fixture-data-source.ts'
+
+const noop = () => undefined
+
+const readyState: H2WorkspaceState = {
+  status: 'ready',
+  workspace: {
+    mode: 'FIXTURE',
+    datasets: [H2_WEB_FIXTURE_RUN.dataset],
+    run: H2_WEB_FIXTURE_RUN,
+    events: H2_WEB_FIXTURE_EVENTS,
+    series: null,
+    seriesError: 'Focused SSR test does not render a chart instance.',
+  },
+}
+
+describe('H2 Sentinel presentation', () => {
+  it('keeps all six top-level views directly addressable', () => {
+    const expectations = [
+      [{ route: 'overview' }, '弱电网绿氢系统，异常一眼可查'],
+      [{ route: 'events' }, '异常事件中心'],
+      [{ route: 'diagnosis', eventId: H2_WEB_FIXTURE_EVENTS[0].eventId }, '证据链'],
+      [{ route: 'analysis' }, '字段字典'],
+      [{ route: 'assistant' }, '十个运行问题'],
+      [{ route: 'reports' }, '竞赛提交结果'],
+    ] as const satisfies readonly [H2NavigationTarget, string][]
+
+    for (const [navigation, expectedText] of expectations) {
+      assert.match(renderView(readyState, navigation), new RegExp(expectedText))
+    }
+  })
+
+  it('shows truthful Fixture provenance and the corrected C04 impact', () => {
+    const markup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_C04_EVENT.eventId,
+    })
+
+    assert.equal(H2_WEB_FIXTURE_C04_EVENT.impact.value, CORRECTED_C04_IMPACT_KWH)
+    assert.match(markup, /FIXTURE · 固定样例/)
+    assert.match(markup, /29\.33/)
+    assert.doesNotMatch(markup, /86\.5/)
+    assert.match(markup, /必须人工确认/)
+  })
+
+  it('distinguishes loading, empty, error, and unknown safety states', () => {
+    assert.match(
+      renderView({ status: 'loading', message: 'loading fixture' }, { route: 'overview' }),
+      /正在加载可核验运行/,
+    )
+    assert.match(
+      renderView({ status: 'empty', mode: 'LIVE_ANALYSIS' }, { route: 'overview' }),
+      /导入第一份本地数据/,
+    )
+    assert.match(
+      renderView({ status: 'error', message: 'redacted failure' }, { route: 'overview' }),
+      /数据源暂不可用/,
+    )
+
+    const unknownEvent = {
+      ...H2_WEB_FIXTURE_EVENTS[0],
+      safetyChecks: [
+        {
+          ...H2_WEB_FIXTURE_EVENTS[0].safetyChecks[0],
+          status: 'unknown',
+          message: 'Required evidence is unavailable.',
+        },
+      ],
+    } as H2AnomalyEvent
+    const unknownState: H2WorkspaceState = {
+      ...readyState,
+      workspace: {
+        ...readyState.workspace,
+        run: { ...H2_WEB_FIXTURE_RUN, events: [unknownEvent] },
+        events: [unknownEvent],
+      },
+    }
+    assert.match(
+      renderView(unknownState, { route: 'diagnosis', eventId: unknownEvent.eventId }),
+      /证据不足/,
+    )
+  })
+
+  it('filters without mutating the source event collection', () => {
+    const original = [...H2_WEB_FIXTURE_EVENTS]
+    const filtered = filterH2Events(H2_WEB_FIXTURE_EVENTS, {
+      ...INITIAL_EVENT_FILTERS,
+      code: 'C04',
+      minConfidence: 0.9,
+    })
+
+    assert.deepEqual(H2_WEB_FIXTURE_EVENTS, original)
+    assert.deepEqual(filtered.map(({ code }) => code), ['C04'])
+    assert.equal(formatH2Duration('2026-01-05T10:32:00Z', '2026-01-05T10:39:00Z'), '8 分钟')
+  })
+
+  it('round-trips diagnosis hashes and falls back for unknown or malformed hashes', () => {
+    const target = { route: 'diagnosis', eventId: 'C04-20260105-001' } as const
+    assert.deepEqual(parseH2SentinelHash(toH2SentinelHash(target)), target)
+    assert.deepEqual(parseH2SentinelHash('#h2/not-real'), { route: 'overview' })
+    assert.deepEqual(parseH2SentinelHash('#h2/diagnosis/%E0%A4%A'), {
+      route: 'overview',
+    })
+  })
+
+  it('shows the complete content hash for the latest artifact', () => {
+    const markup = renderView(
+      readyState,
+      { route: 'reports' },
+      {
+        ...INITIAL_H2_COMMAND_STATE,
+        artifact: {
+          descriptor: H2_FIXTURE_REPORT_DESCRIPTOR,
+          mediaType: 'text/html',
+          content: '<main>Fixture report</main>',
+        },
+      },
+    )
+
+    assert.match(markup, new RegExp(H2_FIXTURE_REPORT_DESCRIPTOR.contentHash))
+  })
+
+  it('shows official Chinese severity, control object, and equipment names', () => {
+    const c03Markup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_EVENTS[0].eventId,
+    })
+
+    assert.match(c03Markup, /高风险/)
+    assert.match(c03Markup, /EMS储能功率控制与接口映射模块/)
+    assert.match(c03Markup, /储能系统、并网点/)
+    assert.match(c03Markup, /异常电网交换电量/)
+
+    const eventsMarkup = renderView(readyState, { route: 'events' })
+    assert.match(eventsMarkup, /储能系统、并网点/)
+    assert.match(eventsMarkup, /EMS并网点功率边界控制模块/)
+  })
+
+  it('keeps event data visible when the time series degrade', () => {
+    const markup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_C04_EVENT.eventId,
+    })
+
+    assert.match(markup, /趋势数据暂不可用/)
+    assert.match(markup, /证据链/)
+    assert.match(markup, /定位到趋势图/)
+    assert.match(markup, /影响量化/)
+    assert.match(markup, /安全检查与建议/)
+    assert.match(markup, /29\.33/)
+  })
+
+  it('renders the ten official assistant questions in Chinese', () => {
+    const markup = renderView(readyState, { route: 'assistant' })
+
+    assert.match(markup, /PCC正值和负值分别代表什么？/)
+    assert.match(markup, /如何评价多台电解槽负荷分配？/)
+    assert.match(markup, /PCC合规日报包含哪些内容？/)
+  })
+
+  it('forces the official sign conventions on charts and diagnosis details', () => {
+    const diagnosisMarkup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_EVENTS[0].eventId,
+    })
+    assert.match(diagnosisMarkup, /正值上网（送出），负值下网（受电）/)
+    assert.match(diagnosisMarkup, /正值放电，负值充电/)
+    assert.match(diagnosisMarkup, /符号约定/)
+
+    const overviewMarkup = renderView(readyState, { route: 'overview' })
+    assert.match(overviewMarkup, /正值上网（送出），负值下网（受电）/)
+    assert.match(overviewMarkup, /正值放电，负值充电/)
+
+    const analysisMarkup = renderView(readyState, { route: 'analysis' })
+    assert.match(analysisMarkup, /正值上网（送出），负值下网（受电）/)
+    assert.match(analysisMarkup, /正值放电，负值充电/)
+  })
+
+  it('offers the three dedicated views on the analysis page', () => {
+    const markup = renderView(readyState, { route: 'analysis' })
+
+    assert.match(markup, /专用视图/)
+    assert.match(markup, /PCC 功率边界线/)
+    assert.match(markup, /SOC 目标轨迹/)
+    assert.match(markup, /电量配额/)
+  })
+
+  it('only offers returned series variables in the variable explorer', () => {
+    const markup = renderView(
+      {
+        ...readyState,
+        workspace: {
+          ...readyState.workspace,
+          series: {
+            runId: H2_WEB_FIXTURE_RUN.runId,
+            variables: ['pcc_power_actual_kw'],
+            points: [],
+          },
+        },
+      },
+      { route: 'analysis' },
+    )
+    const variableExplorer = markup.match(/<select[^>]*>.*?<\/select>/)?.[0] ?? ''
+
+    assert.match(variableExplorer, /value="pcc_power_actual_kw"/)
+    assert.doesNotMatch(variableExplorer, /value="pv_actual_kw"/)
+    assert.doesNotMatch(variableExplorer, /value="bess_power_cmd_kw"/)
+  })
+
+  it('marks every recommendation as needing human confirmation without closing the loop', () => {
+    const diagnosisMarkup = renderView(readyState, {
+      route: 'diagnosis',
+      eventId: H2_WEB_FIXTURE_EVENTS[0].eventId,
+    })
+    assert.match(diagnosisMarkup, /需人工确认/)
+    assert.match(diagnosisMarkup, /不闭环下发/)
+    assert.match(diagnosisMarkup, /任何建议都需人工确认/)
+
+    const reportsMarkup = renderView(readyState, { route: 'reports' })
+    assert.match(reportsMarkup, /均需人工确认/)
+    assert.match(reportsMarkup, /不闭环下发/)
+  })
+})
+
+function renderView(
+  workspaceState: H2WorkspaceState,
+  navigation: H2NavigationTarget,
+  commandState = INITIAL_H2_COMMAND_STATE,
+): string {
+  return renderToStaticMarkup(
+    <H2SentinelView
+      commandState={commandState}
+      navigation={navigation}
+      onAsk={noop}
+      onDownload={noop}
+      onExport={noop}
+      onImport={noop}
+      onNavigate={noop}
+      onRetry={noop}
+      workspaceState={workspaceState}
+    />,
+  )
+}

@@ -1,0 +1,4 @@
+timestamp,pv_actual_kw,bess_power_actual_kw,pcc_power_actual_kw,elz1_power_actual_kw,elz2_power_actual_kw,elz3_power_actual_kw,aux_load_kw,soc_target_pct,bess_soc_pct,grid_export_power_limit_kw,grid_import_power_limit_kw,bess_power_cmd_kw
+2026-01-05T10:20:00Z,820,-180,120,200,180,120,140,57,55,500,450,-180
+2026-01-05T10:20:00Z,815,not-a-number,,200,180,120,135,58,105,500,450,-175
+2026-01-05T10:23:00Z,810,-170,130,200,180,120,140,57,-5,500,450,-170
