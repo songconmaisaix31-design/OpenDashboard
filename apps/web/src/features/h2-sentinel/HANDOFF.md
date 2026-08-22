@@ -85,17 +85,20 @@ cannot contain its own final object ID without rewriting history.
 - `H2SentinelView` for deterministic presentation tests.
 - Hash-route helpers for six directly accessible views.
 
-## Integration changes required outside this track
+## Current composition and integration boundary
 
-H6 must statically register the accepted H2 EMS plugin, resolve its
-`H2SentinelDataSource`, and render:
+The current Epoch 1 source already statically registers the accepted H2 EMS
+plugin, resolves its `H2SentinelDataSource`, and renders:
 
 ```tsx
 <H2SentinelApp dataSource={dataSource} />
 ```
 
-No root, `main.tsx`, plugin, contract, CI, launcher, or lockfile change is part
-of this worker branch.
+This CSV track did not edit `main.tsx` or independently re-prove root runtime,
+full-file integration, or deployment. The earlier requirement for H6 to mount
+the app is retained only as historical handoff context; it is not a current
+composition blocker. No root, `main.tsx`, plugin, contract, CI, launcher, or
+lockfile change is part of this worker branch.
 
 ## Archived Wave 1 verification evidence
 
@@ -131,13 +134,15 @@ worker evidence.
 
 ## Known limitations
 
-- The feature cannot prove plugin composition or Live Analysis behavior until
-  H6 mounts accepted worker modules.
+- Current source composition exists, but this CSV track did not independently
+  re-prove root runtime or full-file Live Analysis behavior.
 - Browser screenshot control was not available in this worker session. Static
   SSR rendering, responsive CSS review, Vite transform checks, and the
-  feature-only production build passed, but desktop/mobile screenshot QA is not
-  claimed. H6 must capture the mounted Fixture flow at representative desktop
-  and 390×844 mobile widths, including C03 and C04.
+  feature-only production build passed, but desktop/mobile visual QA is not
+  claimed. Final integration must capture the mounted Fixture flow at
+  representative desktop and 390×844 mobile widths, including C03 and C04.
+- Official full-file E2E, Ubuntu CI, final integration, and deployment remain
+  pending.
 - Fixture preview is sanitized demonstration evidence, not an official dataset
   or score artifact.
 - Report download behavior depends on the browser environment; server-rendered
@@ -159,9 +164,11 @@ vendor source copy was introduced.
 
 ## Golden-path risk
 
-Composition remains the only cross-track dependency. C03/C04, deterministic
-assistant, reports, responsive layout, empty Live import, and safe degraded
-states are implemented within this subtree.
+The feature-local C03/C04, deterministic assistant, reports, responsive layout,
+empty Live import, and safe degraded states are implemented within this subtree.
+Current source composition exists, but official full-file E2E, Ubuntu CI,
+visual QA, final integration, and deployment remain the pending cross-track
+risks; this CSV track did not independently re-prove them.
 
 ## MEMORY.md
 
