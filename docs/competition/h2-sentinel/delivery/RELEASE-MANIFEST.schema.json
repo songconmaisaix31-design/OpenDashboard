@@ -70,13 +70,56 @@
               "submission": { "type": "object", "properties": { "status": { "const": "passed" } } },
               "integration": { "type": "object", "properties": { "status": { "const": "passed" } } }
             }
-          }
+          },
+          "publication": {
+            "type": "object",
+            "properties": {
+              "integrationBranch": { "type": "object", "properties": { "status": { "const": "passed" } } },
+              "canonical": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          },
+          "deployment": { "type": "object", "properties": { "status": { "const": "passed" } } },
+          "submission": { "type": "object", "properties": { "status": { "const": "passed" } } }
         }
       }
     },
     {
       "if": { "properties": { "verdict": { "enum": ["HOLD", "FAIL"] } } },
       "then": { "properties": { "blockingGateIds": { "type": "array", "minItems": 1 } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "deployment": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "deployment": { "type": "object", "properties": { "status": { "const": "passed" } } }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "submission": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "submission": { "type": "object", "properties": { "status": { "const": "passed" } } }
+        }
+      }
     }
   ],
   "$defs": {
