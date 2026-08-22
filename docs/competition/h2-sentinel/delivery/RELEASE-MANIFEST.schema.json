@@ -106,7 +106,10 @@
           "organizerRuleSource": {},
           "finalSubmissionArchive": {},
           "staticAssetBinding": {}
-        }
+        },
+        "allOf": [
+          { "$ref": "#/$defs/epoch4SealedCandidate" }
+        ]
       }
     },
     {
@@ -773,6 +776,158 @@
         "dataIntegrity": { "$ref": "#/$defs/inputDataIntegrity" },
         "organizerDocumentationManifest": { "$ref": "#/$defs/organizerDocumentationManifest" }
       }
+    },
+    "epoch4SealedCandidate": {
+      "type": "object",
+      "$comment": "Schema version 2 seals the Epoch 4 pre-publication candidate facts. Schema version 1 remains unconstrained by this release-specific gate.",
+      "allOf": [
+        {
+          "properties": {
+            "planParentSha": { "const": "7f02c938d37b06b49109fa9e5020cb345a851897" },
+            "parallelTaskBaseSha": { "const": "58090bc1747d621bc87d698259319a70c34e75f2" },
+            "planSha": { "const": "ce53fbec9634c9f8720351dc2d9913fb158fdee3" },
+            "testedCodeSha": { "const": "58090bc1747d621bc87d698259319a70c34e75f2" },
+            "acceptedIntegrationInputs": {
+              "const": {
+                "plan": {
+                  "parentSha": "7f02c938d37b06b49109fa9e5020cb345a851897",
+                  "sourceRef": "refs/heads/songconmaisaix31-design/h2-delivery-plan-e4",
+                  "remoteTip": "ce53fbec9634c9f8720351dc2d9913fb158fdee3",
+                  "commitSequence": ["ce53fbec9634c9f8720351dc2d9913fb158fdee3"],
+                  "observedAt": "2026-08-22T19:55:34Z"
+                },
+                "tracks": [
+                  { "track": "A", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-eol", "remoteTip": "9e84227692bb4c1ec4d160e254240e9c6f636256", "commitSequence": ["2b7b416c23e611b9c12fe66f4bb92a80805f984a", "9e84227692bb4c1ec4d160e254240e9c6f636256"], "observedAt": "2026-08-22T19:55:34Z" },
+                  { "track": "B", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-evidence", "remoteTip": "7d925d009802b81c6b14e7cc41f82898206b7a88", "commitSequence": ["7d925d009802b81c6b14e7cc41f82898206b7a88"], "observedAt": "2026-08-22T19:55:34Z" },
+                  { "track": "C", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-submission", "remoteTip": "ad313acf004a0755d18ec3ffd85158b71054aeb8", "commitSequence": ["65acf2f1c4c5d99b265f527011111c2ba3db5e4b", "6eaf89d37ca65254ce884d5c15ea88b12955bf0e", "f8dcfb2ef2e72137d219e476e85955a9345b3e17", "ad313acf004a0755d18ec3ffd85158b71054aeb8"], "observedAt": "2026-08-22T19:55:34Z" },
+                  { "track": "D", "sourceRef": "refs/heads/songconmaisaix31-design/h2-delivery-integrate-e3", "remoteTip": "9ee96da739a54a84072b162cc496f75412997acc", "commitSequence": ["7c7b2d0e6ea76b73862228da31d26fcda3905a29", "b505277c46feaac6314ad780bb6ed0f7df1b7311", "9ee96da739a54a84072b162cc496f75412997acc"], "observedAt": "2026-08-22T19:55:34Z" },
+                  { "track": "E", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-handoff", "remoteTip": "5b25ce362e55a7c9097f07b94a0c04e25610e3e2", "commitSequence": ["f9f8bd045cea85905fbbaac3b3085484cbc347ba", "4ddd5d3ba8926057660fc2ad20973fdc2351d80f", "5b25ce362e55a7c9097f07b94a0c04e25610e3e2"], "observedAt": "2026-08-22T19:55:34Z" },
+                  { "track": "F", "sourceRef": "refs/heads/songconmaisaix31-design/h2-e4-memory", "remoteTip": "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa", "commitSequence": ["39f7b59c155d7aa89604f61d5af3799f30962181", "b179464193bb2dda1ff9353fa6f2d671ac52559e", "6b3def669909d9bddeaf8c4d7c1b44160ed3f700", "2e7cc75e0a7486722f84b7a2a3ae18605060a7f5", "baa4a435f159a5f0f9cc85048e1021ccdbe9d5fa"], "observedAt": "2026-08-22T19:55:34Z" }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "deploymentObservation": {
+              "const": {
+                "deploymentId": "dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf",
+                "origins": [
+                  {
+                    "origin": "https://204421.xyz",
+                    "status": "SPA_SHELL_200",
+                    "routeChecks": [
+                      { "routePath": "/", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+                      { "routePath": "/?mode=fixture", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+                      { "routePath": "/h2-sentinel?mode=fixture", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+                      { "routePath": "/h2-sentinel/?mode=fixture", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+                      { "routePath": "/h2-sentinel?mode=local", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+                      { "routePath": "/h2-sentinel/?mode=local", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+                      { "routePath": "/h2-sentinel?mode=invalid", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" },
+                      { "routePath": "/h2-sentinel/?mode=invalid", "httpStatus": 200, "classification": "SPA_SHELL_200", "redirectsFollowed": false, "responseContentType": "text/html; charset=utf-8" }
+                    ]
+                  },
+                  {
+                    "origin": "https://h2-sentinel-hxrbu0wan-dwwww.vercel.app",
+                    "status": "AUTH-REDIRECT/UNKNOWN-HOLD",
+                    "routeChecks": [
+                      { "routePath": "/", "httpStatus": 302, "classification": "AUTH-REDIRECT/UNKNOWN-HOLD", "redirectsFollowed": false, "responseContentType": "text/plain", "location": "https://vercel.com/sso-api" },
+                      { "routePath": "/?mode=fixture", "httpStatus": 302, "classification": "AUTH-REDIRECT/UNKNOWN-HOLD", "redirectsFollowed": false, "responseContentType": "text/plain", "location": "https://vercel.com/sso-api" }
+                    ],
+                    "reason": "Redirects were not followed; this origin is not H2 shell evidence."
+                  }
+                ],
+                "asset": {
+                  "origin": "https://204421.xyz",
+                  "assetPath": "/assets/index-C2wmhv_n.js",
+                  "httpStatus": 200,
+                  "bytes": 935592,
+                  "sha256": "b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6",
+                  "markersPresent": ["H2 Sentinel", "氢哨"],
+                  "markersAbsent": ["invalid-mode"]
+                },
+                "evidenceScope": "transport-and-static-assets-only"
+              }
+            },
+            "staticAssetBinding": {
+              "const": {
+                "status": "passed",
+                "testedCodeSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+                "localAssetPath": "apps/web/dist/assets/index-C2wmhv_n.js",
+                "localAssetBytes": 935592,
+                "localAssetSha256": "b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6",
+                "remoteAssetOrigin": "https://204421.xyz",
+                "remoteAssetPath": "/assets/index-C2wmhv_n.js",
+                "remoteAssetBytes": 935592,
+                "remoteAssetSha256": "b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6",
+                "deploymentId": "dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf",
+                "scope": "static-asset-only",
+                "reason": "Local production output and the custom-domain asset match exactly. This establishes only a static asset binding to the frozen executable base; it does not establish visual or interactive behavior."
+              }
+            },
+            "organizerRuleSource": {
+              "const": {
+                "url": "https://explorneo.feishu.cn/docx/OwAodS0VxoDUsGxsEFGcRgEtn2f",
+                "revision": "146",
+                "reviewedOn": "2026-08-23",
+                "status": "reviewed",
+                "reason": "The rule source describes requirements and deadlines only; it is not evidence of a completed form, receipt, acceptance, score, or visual review."
+              }
+            },
+            "finalSubmissionArchive": {
+              "const": {
+                "status": "UNKNOWN-HOLD",
+                "actualSubmittedArtifactBinding": "UNKNOWN-HOLD",
+                "finalArchiveSha256": "UNKNOWN-HOLD",
+                "organizerReceiptBinding": "UNKNOWN-HOLD",
+                "redistributionAndLicensing": "UNKNOWN-HOLD",
+                "reason": "No final organizer submission archive, submitted-artifact version binding, receipt binding, or redistribution and licensing record is available. The attempt-6 submission.csv SHA-256 and the input ZIP SHA-256 are not substitutes."
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "decisions": {
+              "const": {
+                "technicalReadiness": { "status": "PENDING", "reason": "The frozen executable base and static asset have evidence, but the release-candidate commit and fresh exact-SHA gates are not yet recorded." },
+                "registrationOrFormSubmission": { "status": "UNKNOWN-HOLD", "reason": "Revision 146 requires the captain's one-time team submission; no form evidence is available after the 2026-08-21 online-work deadline." },
+                "receiptOrAcceptance": { "status": "UNKNOWN-HOLD", "reason": "No organizer receipt, acknowledgement, or acceptance is bound to the actual submitted artifact and version." },
+                "officialScore": { "status": "UNKNOWN-HOLD", "reason": "No organizer score attributable to this submission is available; historical 0.2168 and 0.9517 values are unbound and are not official scores." },
+                "visualVerification": { "status": "UNKNOWN-HOLD", "reason": "Current transport and static-asset checks are not desktop/mobile visual or interactive verification." },
+                "overallCompetition": { "status": "HOLD", "reason": "Technical finalization is pending and registration, receipt, official score, and visual verification remain independently unknown." }
+              }
+            },
+            "gates": {
+              "type": "object",
+              "properties": {
+                "deployment": { "type": "object", "properties": { "status": { "const": "pending" } } },
+                "submission": { "type": "object", "properties": { "status": { "const": "pending" } } },
+                "integration": { "type": "object", "properties": { "status": { "const": "pending" } } }
+              }
+            },
+            "publication": {
+              "const": {
+                "integrationBranch": { "status": "pending", "reason": "The release-candidate commit and remote observation are not yet recorded." },
+                "canonical": { "status": "pending", "reason": "Canonical publication of the release-candidate SHA is not yet recorded." }
+              }
+            },
+            "deployment": { "type": "object", "properties": { "status": { "const": "pending" } } },
+            "submission": { "type": "object", "properties": { "status": { "const": "pending" } } },
+            "verdict": { "const": "HOLD" },
+            "blockingGateIds": { "const": ["deployment", "submission", "integration"] },
+            "finalization": {
+              "type": "object",
+              "properties": {
+                "postDocumentationIntegration": {
+                  "const": { "status": "pending", "reason": "The unique integrator must record the release-candidate SHA and fresh gates after this manifest is committed." }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "acceptedIntegrationInputs": {
       "type": "object",
