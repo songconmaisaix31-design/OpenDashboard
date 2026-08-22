@@ -61,6 +61,16 @@ def test_complete_api_golden_flow(valid_csv: str) -> None:
     assert analyzed["ok"] is True
     run_id = analyzed["data"]["runId"]
     assert analyzed["data"]["events"][1]["impact"]["value"] == 120.0
+    assert [event["severity"] for event in analyzed["data"]["events"]] == [
+        "high",
+        "high",
+    ]
+    assert analyzed["data"]["eventCountsBySeverity"] == {
+        "low": 0,
+        "medium": 0,
+        "high": 2,
+        "critical": 0,
+    }
 
     series = client.post(
         f"{API_NAMESPACE}/runs/series",

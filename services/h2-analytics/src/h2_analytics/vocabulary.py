@@ -24,6 +24,13 @@ _KIND_BY_EQUIPMENT_PREFIX = {
     "AUX": "AUXILIARY_LOAD",
 }
 
+_CANONICAL_SEVERITY_BY_OFFICIAL = {
+    "低": "low",
+    "中": "medium",
+    "高": "high",
+    "危急": "critical",
+}
+
 
 class VocabularyError(RuntimeError):
     pass
@@ -174,8 +181,16 @@ def anomaly_codes() -> tuple[str, ...]:
 
 
 @lru_cache(maxsize=1)
-def severity_by_code() -> dict[str, str]:
+def official_severity_by_code() -> dict[str, str]:
     return {entry["code"]: entry["severity"] for entry in load_taxonomy()}
+
+
+@lru_cache(maxsize=1)
+def canonical_severity_by_code() -> dict[str, str]:
+    return {
+        code: _CANONICAL_SEVERITY_BY_OFFICIAL[severity]
+        for code, severity in official_severity_by_code().items()
+    }
 
 
 @lru_cache(maxsize=1)

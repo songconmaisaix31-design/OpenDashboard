@@ -8,11 +8,30 @@ from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator
 
 from h2_analytics.api import create_app
+from h2_analytics import vocabulary
 from h2_analytics.reports import submission_rows
 from h2_analytics.service import AnalyticsService
 from h2_analytics.settings import API_NAMESPACE
 
-_OFFICIAL_SEVERITIES = ["中", "高"]
+_CANONICAL_SEVERITIES = ["low", "medium", "high", "critical"]
+_CANONICAL_SEVERITY_BY_CODE = {
+    "C01": "medium",
+    "C02": "high",
+    "C03": "high",
+    "C04": "high",
+    "C05": "high",
+    "C06": "medium",
+    "C07": "high",
+}
+_OFFICIAL_SEVERITY_BY_CODE = {
+    "C01": "中",
+    "C02": "高",
+    "C03": "高",
+    "C04": "高",
+    "C05": "高",
+    "C06": "中",
+    "C07": "高",
+}
 
 
 def _schema(repository_root, name: str) -> dict[str, Any]:
@@ -23,30 +42,18 @@ def _schema(repository_root, name: str) -> dict[str, Any]:
     )
 
 
-def _relax_official_values(schema: dict[str, Any]) -> dict[str, Any]:
-    """Return a copy whose severity enums reflect the official vocabulary.
+def _official_submission_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Adapt only the external competition severity column to its taxonomy."""
+    official = copy.deepcopy(schema)
+    official["properties"]["severity"]["enum"] = sorted(
+        set(_OFFICIAL_SEVERITY_BY_CODE.values())
+    )
+    return official
 
-    The frozen contract schemas predate the official Chinese severity values
-    from `anomaly-taxonomy.json`; this helper relaxes only the conflicting
-    enums so the pipeline can still be validated end to end.
 
-    `questionId` is deliberately NOT relaxed. Rewriting that enum here is what let
-    the contract schema drift to a locally prefixed spelling while the sidecar
-    accepted the official ids, so this test passed even though every Local-mode
-    `assistant:ask` failed. The schema must now match the official ids on its own.
-    """
-    relaxed = copy.deepcopy(schema)
-    properties = relaxed.get("properties", {})
-    if isinstance(properties.get("severity"), dict):
-        properties["severity"]["enum"] = list(_OFFICIAL_SEVERITIES)
-    counts = properties.get("eventCountsBySeverity")
-    if isinstance(counts, dict):
-        counts["required"] = list(_OFFICIAL_SEVERITIES)
-        counts["properties"] = {
-            severity: {"type": "integer", "minimum": 0}
-            for severity in _OFFICIAL_SEVERITIES
-        }
-    return relaxed
+def test_severity_boundaries_cover_all_anomaly_codes() -> None:
+    assert vocabulary.canonical_severity_by_code() == _CANONICAL_SEVERITY_BY_CODE
+    assert vocabulary.official_severity_by_code() == _OFFICIAL_SEVERITY_BY_CODE
 
 
 def test_pipeline_outputs_validate_against_frozen_contract_schemas(
@@ -64,15 +71,19 @@ def test_pipeline_outputs_validate_against_frozen_contract_schemas(
     Draft202012Validator(
         _schema(repository_root, "data-quality-report.schema.json")
     ).validate(run["quality"])
-    Draft202012Validator(
-        _relax_official_values(_schema(repository_root, "analysis-run.schema.json"))
-    ).validate(run)
-    event_schema = _relax_official_values(
-        _schema(repository_root, "anomaly-event.schema.json")
+    Draft202012Validator(_schema(repository_root, "analysis-run.schema.json")).validate(
+        run
     )
+    assert run["eventCountsBySeverity"] == {
+        "low": 0,
+        "medium": 0,
+        "high": 2,
+        "critical": 0,
+    }
+    event_schema = _schema(repository_root, "anomaly-event.schema.json")
     for event in run["events"]:
         Draft202012Validator(event_schema).validate(event)
-        assert event["severity"] in _OFFICIAL_SEVERITIES
+        assert event["severity"] in _CANONICAL_SEVERITIES
         assert event["primaryControlObject"]["displayName"]
         assert all(":" in _eq(event) for event in event["affectedEquipment"])
     assert run["events"][1]["impact"]["value"] == 120.0
@@ -83,9 +94,9 @@ def test_pipeline_outputs_validate_against_frozen_contract_schemas(
         event_id=run["events"][0]["eventId"],
         allow_llm_rendering=False,
     )
-    Draft202012Validator(
-        _relax_official_values(_schema(repository_root, "assistant-answer.schema.json"))
-    ).validate(answer)
+    Draft202012Validator(_schema(repository_root, "assistant-answer.schema.json")).validate(
+        answer
+    )
     artifact = service.export_report(
         run_id=run["runId"],
         kind="single_event_diagnosis",
@@ -94,12 +105,12 @@ def test_pipeline_outputs_validate_against_frozen_contract_schemas(
     Draft202012Validator(_schema(repository_root, "report-descriptor.schema.json")).validate(
         artifact["descriptor"]
     )
-    submission_schema = _relax_official_values(
+    submission_schema = _official_submission_schema(
         _schema(repository_root, "submission-row.schema.json")
     )
     for row in submission_rows(run["events"]):
         Draft202012Validator(submission_schema).validate(row)
-        assert row["severity"] in _OFFICIAL_SEVERITIES
+        assert row["severity"] == _OFFICIAL_SEVERITY_BY_CODE[row["anomaly_code"]]
         assert "," in row["affected_equipment"]
         assert ":" not in row["affected_equipment"]
         assert " " not in row["affected_equipment"]

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
 from pathlib import Path
 
@@ -43,15 +45,31 @@ def main() -> None:
         if impact["unit"] != "kWh":
             raise AssertionError(f"{code} impact unit must be kWh")
 
+    analysis_schema = json.loads(
+        (contracts_root / "schema/analysis-run.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    Draft202012Validator(analysis_schema).validate(run)
+    if set(run["eventCountsBySeverity"]) != {
+        "low",
+        "medium",
+        "high",
+        "critical",
+    }:
+        raise AssertionError("analysis severity counts must include the canonical keys")
+
     event_schema = json.loads(
         (contracts_root / "schema/anomaly-event.schema.json").read_text(encoding="utf-8")
     )
-    event_schema["properties"]["severity"]["enum"] = ["低", "中", "高", "危急"]
     for event in run["events"]:
         Draft202012Validator(event_schema).validate(event)
 
     submission = service.export_submission(run["runId"])
     validation = validate_submission_text(submission["content"])
+    submission_rows = list(csv.DictReader(io.StringIO(submission["content"])))
+    if [row["severity"] for row in submission_rows] != ["高", "高"]:
+        raise AssertionError("submission severity must use the official taxonomy")
     report = service.export_report(
         run_id=run["runId"],
         kind="single_event_diagnosis",
@@ -67,6 +85,7 @@ def main() -> None:
         "datasetId": imported["dataset"]["datasetId"],
         "eventIds": [event["eventId"] for event in run["events"]],
         "severities": [event["severity"] for event in run["events"]],
+        "submissionSeverities": [row["severity"] for row in submission_rows],
         "c04ImpactKwh": c04["impact"]["value"],
         "submissionRows": validation["rowCount"],
         "artifacts": [

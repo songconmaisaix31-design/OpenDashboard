@@ -43,7 +43,7 @@ def _submission_row(event: dict[str, Any]) -> dict[str, Any]:
         "end_time": event["endTime"],
         "anomaly_code": event["code"],
         "anomaly_subtype": event["subtype"],
-        "severity": event["severity"],
+        "severity": vocabulary.official_severity_by_code()[event["code"]],
         "primary_control_object": event["primaryControlObject"]["displayName"],
         "affected_equipment": ",".join(
             vocabulary.affected_equipment_tokens_by_code()[event["code"]]

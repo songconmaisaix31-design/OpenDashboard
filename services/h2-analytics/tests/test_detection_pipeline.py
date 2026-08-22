@@ -34,8 +34,8 @@ def test_rule_detector_and_aggregation_produce_golden_boundaries(valid_csv: str)
         "2026-01-05T10:34:00Z",
         "2026-01-05T10:39:00Z",
     )
-    assert c03["severity"] == "高"
-    assert c04["severity"] == "高"
+    assert c03["severity"] == "high"
+    assert c04["severity"] == "high"
     # Both values are computed from the fixture, not pinned by dataset fingerprint.
     # C03 integrates |BESS actual| (the anomalous BESS contribution) and C04
     # integrates the export excess, so the two metrics are numerically distinct.
