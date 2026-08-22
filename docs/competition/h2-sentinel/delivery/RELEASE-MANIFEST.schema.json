@@ -120,6 +120,118 @@
           "submission": { "type": "object", "properties": { "status": { "const": "passed" } } }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "deployment": { "type": "object", "properties": { "status": { "const": "passed" } } }
+        }
+      },
+      "then": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "deployment": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "submission": { "type": "object", "properties": { "status": { "const": "passed" } } }
+        }
+      },
+      "then": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "submission": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "webOfficialCsvE2E": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      },
+      "then": { "properties": { "blockingGateIds": { "not": { "type": "array", "contains": { "const": "webOfficialCsvE2E" } } } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "ubuntuSmoke": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      },
+      "then": { "properties": { "blockingGateIds": { "not": { "type": "array", "contains": { "const": "ubuntuSmoke" } } } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "officialDataValidation": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      },
+      "then": { "properties": { "blockingGateIds": { "not": { "type": "array", "contains": { "const": "officialDataValidation" } } } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "deployment": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      },
+      "then": { "properties": { "blockingGateIds": { "not": { "type": "array", "contains": { "const": "deployment" } } } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "submission": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      },
+      "then": { "properties": { "blockingGateIds": { "not": { "type": "array", "contains": { "const": "submission" } } } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "gates": {
+            "type": "object",
+            "properties": {
+              "integration": { "type": "object", "properties": { "status": { "const": "passed" } } }
+            }
+          }
+        }
+      },
+      "then": { "properties": { "blockingGateIds": { "not": { "type": "array", "contains": { "const": "integration" } } } } }
     }
   ],
   "$defs": {
