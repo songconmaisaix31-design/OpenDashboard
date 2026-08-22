@@ -2,11 +2,12 @@
 
 ## 1. Frozen inputs and scope
 
-This plan is an Epoch 1 delivery freeze. It starts from `f5646486f3912d1f97052bc9ee08f9c48053346e` (`h2(coord): point local golden smoke at the 69-field fixture`) and must not silently rebase. The contract gate is immutable for this epoch:
+This plan is an Epoch 1 delivery freeze. `planParentSha` is `f5646486f3912d1f97052bc9ee08f9c48053346e` (the planning parent), while `parallelTaskBaseSha` and the frozen `planSha` are `2e809854422230f5afaca4776d6ec56e5c8507be` (`docs(h2): freeze delivery epoch 1 plan`). Integration must not silently rebase. The final `testedCodeSha` is the later coordinator-doc commit that follows the accepted track commits; it is not either frozen planning SHA. The contract gate is immutable for this epoch:
 
 | Gate | Frozen identity |
 | --- | --- |
-| Base SHA | `f5646486f3912d1f97052bc9ee08f9c48053346e` |
+| Plan parent SHA | `f5646486f3912d1f97052bc9ee08f9c48053346e` |
+| Parallel task base / plan SHA | `2e809854422230f5afaca4776d6ec56e5c8507be` |
 | `packages/h2-contracts` tree | `11608e5ff5c0e69c3dd4a18588e5a13027151e82` |
 | `packages/h2-vocabulary` tree | `84d3d39a864e25e69e607a0314f3b27aa10c0fe8` |
 | `services/h2-analytics/src/h2_analytics/contracts.py` blob | `3d33f410379339f417f4bc7451483e484124acc6` |
@@ -17,7 +18,7 @@ No Epoch 1 task may change a contract, vocabulary, or the frozen analytics contr
 
 The following are recorded facts, not completion claims:
 
-1. The Web import guard is **5 MiB**, while the official test CSV is **77,865,257 bytes** (172,800 rows and 69 columns). The official full-dataset path is therefore not accepted by the current Web path; a later implementation must address size and memory behavior before claiming official import.
+1. At freeze time, the Web import guard was **5 MiB**, while the official test CSV is **77,865,257 bytes** (172,800 rows and 69 columns). The accepted Web metadata/pre-read fix updates this path, but a real full official-file end-to-end run remains pending; no plan or fixture evidence upgrades it to official-data success.
 2. The current deployed artifact/path evidence has drift: the committed smoke report records an artifact path under a different checkout (`H2_Sentinel`) and an ignored generated artifact, so it is not release-location proof. Deployment remains unverified until a fresh run records the actual release artifact and URL from the final commit.
 3. Ubuntu smoke is not complete: the recorded smoke attempt timed out. A Windows-local pass cannot substitute for an Ubuntu result; the Ubuntu gate remains pending until it completes within the declared timeout and records sanitized evidence.
 4. Existing evidence is stale or conflicting across snapshots (including prior PASS/SKIP rows and superseded artifact paths). Evidence must be bound to the exact run, task, dispatch, commit, and test result in the final manifest; a planning document or historical report cannot upgrade a stale result.

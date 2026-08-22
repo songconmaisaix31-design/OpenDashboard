@@ -1,54 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://opendashboard.local/schemas/h2-sentinel/release-manifest.schema.json",
-  "title": "H2 Sentinel Epoch Release Manifest",
+  "title": "H2 Sentinel Epoch 1 Release Manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["baseSha", "contractGate", "runId", "tasks", "dispatches", "commits", "tests", "deployment", "submission", "verdict"],
+  "required": ["schemaVersion", "runId", "planParentSha", "parallelTaskBaseSha", "planSha", "testedCodeSha", "contractGate", "tasks", "dispatches", "commits", "attempts", "gates", "publication", "verdict", "blockingGateIds"],
   "properties": {
-    "baseSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-    "contractGate": {
-      "type": "object", "additionalProperties": false,
-      "required": ["contractsTree", "vocabularyTree", "analyticsContractsBlob"],
-      "properties": {
-        "contractsTree": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-        "vocabularyTree": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-        "analyticsContractsBlob": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
-      }
-    },
-    "runId": { "type": "string", "minLength": 1, "maxLength": 160 },
-    "tasks": {
-      "type": "array", "minItems": 1,
-      "items": { "$ref": "#/$defs/task" }
-    },
-    "dispatches": {
-      "type": "array",
-      "items": { "type": "object", "additionalProperties": false, "required": ["dispatchId", "taskId", "status"], "properties": { "dispatchId": { "type": "string", "minLength": 1 }, "taskId": { "type": "string", "minLength": 1 }, "status": { "$ref": "#/$defs/status" }, "evidence": { "type": "array", "items": { "$ref": "#/$defs/path" } } } }
-    },
-    "commits": {
-      "type": "array",
-      "items": { "type": "object", "additionalProperties": false, "required": ["taskId", "localSha", "remoteSha", "status"], "properties": { "taskId": { "type": "string", "minLength": 1 }, "localSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" }, "remoteSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" }, "status": { "$ref": "#/$defs/status" } } }
-    },
-    "tests": {
-      "type": "array",
-      "items": { "type": "object", "additionalProperties": false, "required": ["taskId", "command", "status"], "properties": { "taskId": { "type": "string", "minLength": 1 }, "command": { "type": "string", "minLength": 1, "maxLength": 500 }, "status": { "$ref": "#/$defs/status" }, "evidence": { "type": "array", "items": { "$ref": "#/$defs/path" } } } }
-    },
-    "deployment": { "$ref": "#/$defs/releaseArea" },
-    "submission": { "$ref": "#/$defs/releaseArea" },
-    "verdict": { "type": "string", "enum": ["PASS", "HOLD", "FAIL"] }
+    "schemaVersion": { "const": "1.0" }, "runId": { "$ref": "#/$defs/id" }, "planParentSha": { "$ref": "#/$defs/sha" }, "parallelTaskBaseSha": { "$ref": "#/$defs/sha" }, "planSha": { "$ref": "#/$defs/sha" }, "testedCodeSha": { "$ref": "#/$defs/sha" }, "contractGate": { "$ref": "#/$defs/contractGate" },
+    "tasks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/task" } }, "dispatches": { "type": "array", "items": { "$ref": "#/$defs/dispatch" } }, "commits": { "type": "array", "items": { "$ref": "#/$defs/commit" } }, "attempts": { "type": "array", "items": { "$ref": "#/$defs/attempt" } },
+    "gates": { "type": "object", "additionalProperties": false, "required": ["webOfficialCsvE2E", "ubuntuSmoke", "officialDataValidation", "deployment", "submission", "integration"], "properties": { "webOfficialCsvE2E": { "$ref": "#/$defs/gate" }, "ubuntuSmoke": { "$ref": "#/$defs/gate" }, "officialDataValidation": { "$ref": "#/$defs/gate" }, "deployment": { "$ref": "#/$defs/gate" }, "submission": { "$ref": "#/$defs/gate" }, "integration": { "$ref": "#/$defs/gate" } } },
+    "publication": { "$ref": "#/$defs/publication" }, "verdict": { "enum": ["PASS", "HOLD", "FAIL"] }, "blockingGateIds": { "type": "array", "items": { "$ref": "#/$defs/gateId" }, "uniqueItems": true }
   },
+  "allOf": [{ "if": { "properties": { "verdict": { "const": "PASS" } } }, "then": { "properties": { "blockingGateIds": { "maxItems": 0 } } } }, { "if": { "properties": { "verdict": { "enum": ["HOLD", "FAIL"] } } }, "then": { "properties": { "blockingGateIds": { "minItems": 1 } } } }],
   "$defs": {
-    "status": { "type": "string", "enum": ["passed", "failed", "pending", "not-delivered"] },
-    "path": { "type": "string", "pattern": "^(?![A-Za-z]:)(?!/)(?!\\\\)[^\\r\\n]+$" },
-    "releaseArea": {
-      "type": "object", "additionalProperties": false,
-      "required": ["status", "evidence"],
-      "properties": { "status": { "$ref": "#/$defs/status" }, "evidence": { "type": "array", "items": { "$ref": "#/$defs/path" } }, "url": { "type": "string", "format": "uri", "maxLength": 500 }, "reason": { "type": "string", "maxLength": 1000 } }
-    },
-    "task": {
-      "type": "object", "additionalProperties": false,
-      "required": ["taskId", "owner", "writePaths", "status"],
-      "properties": { "taskId": { "type": "string", "minLength": 1 }, "owner": { "type": "string", "minLength": 1 }, "writePaths": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }, "status": { "$ref": "#/$defs/status" }, "evidence": { "type": "array", "items": { "$ref": "#/$defs/path" } } }
-    }
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" }, "id": { "type": "string", "minLength": 1, "maxLength": 240, "pattern": "^[^\\r\\n]+$" }, "gateId": { "enum": ["webOfficialCsvE2E", "ubuntuSmoke", "officialDataValidation", "deployment", "submission", "integration"] }, "status": { "enum": ["passed", "failed", "pending", "not-delivered"] }, "path": { "type": "string", "minLength": 1, "pattern": "^(?![A-Za-z]:)(?!/)(?!\\\\)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))[^\\r\\n]+$" }, "evidence": { "type": "array", "items": { "$ref": "#/$defs/path" } },
+    "contractGate": { "type": "object", "additionalProperties": false, "required": ["contractsTree", "vocabularyTree", "analyticsContractsBlob"], "properties": { "contractsTree": { "$ref": "#/$defs/sha" }, "vocabularyTree": { "$ref": "#/$defs/sha" }, "analyticsContractsBlob": { "$ref": "#/$defs/sha" } } },
+    "task": { "type": "object", "additionalProperties": false, "required": ["taskId", "owner", "writePaths", "commitSha", "status"], "properties": { "taskId": { "$ref": "#/$defs/id" }, "owner": { "$ref": "#/$defs/id" }, "writePaths": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/path" } }, "commitSha": { "$ref": "#/$defs/sha" }, "status": { "$ref": "#/$defs/status" }, "evidence": { "$ref": "#/$defs/evidence" } } },
+    "dispatch": { "type": "object", "additionalProperties": false, "required": ["dispatchId", "taskId", "status"], "properties": { "dispatchId": { "$ref": "#/$defs/id" }, "taskId": { "$ref": "#/$defs/id" }, "status": { "$ref": "#/$defs/status" }, "evidence": { "$ref": "#/$defs/evidence" } } },
+    "commit": { "type": "object", "additionalProperties": false, "required": ["taskId", "localSha", "status"], "properties": { "taskId": { "$ref": "#/$defs/id" }, "localSha": { "$ref": "#/$defs/sha" }, "remoteRef": { "$ref": "#/$defs/id" }, "remoteSha": { "$ref": "#/$defs/sha" }, "status": { "$ref": "#/$defs/status" }, "evidence": { "$ref": "#/$defs/evidence" }, "reason": { "type": "string", "minLength": 1 } } },
+    "attempt": { "type": "object", "additionalProperties": false, "required": ["gateId", "attempt", "runId", "commitSha", "runnerOS", "environment", "command", "status"], "properties": { "gateId": { "$ref": "#/$defs/gateId" }, "attempt": { "type": "integer", "minimum": 1 }, "runId": { "$ref": "#/$defs/id" }, "dispatchId": { "$ref": "#/$defs/id" }, "commitSha": { "$ref": "#/$defs/sha" }, "runnerOS": { "$ref": "#/$defs/id" }, "environment": { "$ref": "#/$defs/id" }, "command": { "$ref": "#/$defs/id" }, "status": { "$ref": "#/$defs/status" }, "evidence": { "$ref": "#/$defs/evidence" }, "reason": { "type": "string", "minLength": 1 } }, "allOf": [{ "if": { "properties": { "status": { "const": "passed" } } }, "then": { "required": ["evidence"], "properties": { "evidence": { "minItems": 1 } } } }, { "if": { "properties": { "status": { "enum": ["pending", "not-delivered", "failed"] } } }, "then": { "required": ["reason"] } }] },
+    "gate": { "type": "object", "additionalProperties": false, "required": ["status"], "properties": { "status": { "$ref": "#/$defs/status" }, "evidence": { "$ref": "#/$defs/evidence" }, "reason": { "type": "string", "minLength": 1 }, "attempts": { "type": "array", "items": { "type": "integer", "minimum": 1 } } }, "allOf": [{ "if": { "properties": { "status": { "const": "passed" } } }, "then": { "required": ["evidence"], "properties": { "evidence": { "minItems": 1 } } } }, { "if": { "properties": { "status": { "enum": ["pending", "not-delivered", "failed"] } } }, "then": { "required": ["reason"] } }] },
+    "publication": { "type": "object", "additionalProperties": false, "required": ["status"], "properties": { "status": { "$ref": "#/$defs/status" }, "localSha": { "$ref": "#/$defs/sha" }, "remoteRef": { "$ref": "#/$defs/id" }, "remoteSha": { "$ref": "#/$defs/sha" }, "observedAt": { "$ref": "#/$defs/id" }, "evidence": { "$ref": "#/$defs/evidence" }, "reason": { "type": "string", "minLength": 1 }, "url": { "type": "string", "pattern": "^https://[^\\s]+$" }, "deployedCommitSha": { "$ref": "#/$defs/sha" } }, "allOf": [{ "if": { "properties": { "status": { "const": "passed" } } }, "then": { "required": ["localSha", "remoteRef", "remoteSha", "observedAt", "evidence"] } }, { "if": { "properties": { "status": { "enum": ["pending", "not-delivered", "failed"] } } }, "then": { "required": ["reason"] } }] }
   }
 }
