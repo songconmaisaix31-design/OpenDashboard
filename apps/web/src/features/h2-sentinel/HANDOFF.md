@@ -1,11 +1,48 @@
 # H2 Sentinel Web Handoff
 
-- Branch: `songconmaisaix31-design/h2-web`
-- Worktree: `C:\Users\DW\orca\workspaces\OpenDashboard\h2-web`
-- Immutable Wave 1 base SHA: `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4`
-- Contract correction design input: `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`
-- Owned write path: `apps/web/src/features/h2-sentinel/**`
-- Current implementation head before handoff: `ed306f98b287adc094271083668f9722f511f31d`
+## Epoch 1 CSV boundary update
+
+This update is the current evidence for the Web CSV boundary task. It is
+bound to the following identities and exact scope:
+
+- Branch: `songconmaisaix31-design/h2-e1-web-csv`
+- Execution base: `2e809854422230f5afaca4776d6ec56e5c8507be`
+- Implementation commit: `64a5b2d3f5da40e2be48e542e44edebef92cb1cd`
+- Remote branch match: `origin/songconmaisaix31-design/h2-e1-web-csv` matched
+  `64a5b2d3f5da40e2be48e542e44edebef92cb1cd` before this documentation repair.
+- Exact allowed scope: `apps/web/src/features/h2-sentinel/HANDOFF.md` only.
+- Frozen contract gate: contracts `11608e5ff5c0e69c3dd4a18588e5a13027151e82`,
+  vocabulary `84d3d39a864e25e69e607a0314f3b27aa10c0fe8`, and analytics
+  contract blob `3d33f410379339f417f4bc7451483e484124acc6`.
+
+The Web local analytics pre-read boundary is **300 MiB** (`314,572,800`
+bytes). The accepted official metadata size is **77,865,257 bytes**. Current
+feature tests cover the exact limit and the `+1` rejection, and verify that an
+invalid or oversized file fails closed before content is read or the injected
+data source is called. Metadata acceptance is not a full 77.9 MB browser or
+analytics end-to-end proof: official-data validation and visual QA remain
+pending.
+
+Current gates, all independently rerun in this worktree, are:
+
+- `npm run typecheck` — passed.
+- Feature tests — passed: 24 tests, 0 failures.
+- `npm run h2:test` — passed: 74 tests, 0 failures.
+- `npm run test` — passed: 106 tests, 0 failures.
+- `npm run build` — passed as worker-reported evidence from the implementation
+  gate; it was not independently rerun in this documentation-only repair.
+
+## Historical/archive evidence
+
+The following identity and counts belong to the archived h2-web Wave 1
+snapshot and are not current-worker or current-head assertions:
+
+- Archived branch: `songconmaisaix31-design/h2-web`
+- Archived worktree: `C:\Users\DW\orca\workspaces\OpenDashboard\h2-web`
+- Archived Wave 1 base SHA: `f9dd7df83a81da57fdaa2b03cd67470c8c7a22c4`
+- Archived implementation head: `ed306f98b287adc094271083668f9722f511f31d`
+- Archived focused evidence: 7 tests; archived repository evidence: 53 tests.
+- Archived contract correction design input: `4f2a8a3156a96a7670f4ee9830ff1c560faf1c94`
 
 ## Pushed archive commits
 
@@ -60,19 +97,23 @@ H6 must statically register the accepted H2 EMS plugin, resolve its
 No root, `main.tsx`, plugin, contract, CI, launcher, or lockfile change is part
 of this worker branch.
 
-## Verification evidence
+## Archived Wave 1 verification evidence
+
+The following checks are retained only as historical/archive evidence for the
+snapshot identified above; use the Epoch 1 CSV boundary update for current
+worker evidence.
 
 - `npm ci` — passed from the frozen lockfile; 31 packages installed. The first
   sandboxed attempt could not access the npm cache/network, then the approved
   retry completed without manifest or lockfile edits.
 - `node --import tsx --test
-  "apps/web/src/features/h2-sentinel/test/*.test.ts*"` — passed: 7 tests, 0
+  "apps/web/src/features/h2-sentinel/test/*.test.ts*"` — archived result: 7 tests, 0
   failures. Coverage includes all six views, loading/empty/error/unknown safety,
   corrected C04 impact, hash routing, immutable filtering, 300 MiB/type bounds,
   and clean `LIVE_ANALYSIS` empty → import → ready hydration.
 - `npm run typecheck` — passed with strict TypeScript.
-- `npm run test` — passed: 53 tests, 0 failures across the repository.
-- `npm run build` — passed for the current production entry: 51 modules. This
+- `npm run test` — archived result: 53 tests, 0 failures across the repository.
+- `npm run build` — archived result: 51 modules. This
   does not prove H2 runtime composition because `main.tsx` is H6-owned.
 - `npm run check` — passed after the final accessible-state correction;
   typecheck, all 53 repository tests, and the production build completed.
@@ -101,8 +142,8 @@ of this worker branch.
   or score artifact.
 - Report download behavior depends on the browser environment; server-rendered
   tests verify presentation, not a native download dialog.
-- The current worker base still contains the pre-correction contract fixture;
-  H3 does not modify or merge contracts. Its owned Fixture preview overrides
+- The archived Wave 1 worker base contained the pre-correction contract
+  fixture; H3 did not modify or merge contracts. Its owned Fixture preview overrides
   C04 to `29.333333333333332 kWh`; H6 must compose from accepted Contract Gate
   correction `4f2a8a3` so the injected provider supplies the same value.
 - The feature-only bundle includes ECharts and triggers Vite's 500 kB chunk
