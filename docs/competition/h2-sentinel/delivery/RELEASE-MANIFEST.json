@@ -377,8 +377,8 @@
         "origin": "https://h2-sentinel-hxrbu0wan-dwwww.vercel.app",
         "status": "AUTH-REDIRECT/UNKNOWN-HOLD",
         "routeChecks": [
-          { "routePath": "/", "httpStatus": 302, "classification": "AUTH-REDIRECT/UNKNOWN-HOLD", "redirectsFollowed": false, "responseContentType": "text/plain", "location": "https://vercel.com/sso-api" },
-          { "routePath": "/?mode=fixture", "httpStatus": 302, "classification": "AUTH-REDIRECT/UNKNOWN-HOLD", "redirectsFollowed": false, "responseContentType": "text/plain", "location": "https://vercel.com/sso-api" }
+          { "routePath": "/", "httpStatus": 302, "classification": "AUTH-REDIRECT/UNKNOWN-HOLD", "redirectsFollowed": false, "responseContentType": "text/plain", "locationSsoEndpoint": "https://vercel.com/sso-api" },
+          { "routePath": "/?mode=fixture", "httpStatus": 302, "classification": "AUTH-REDIRECT/UNKNOWN-HOLD", "redirectsFollowed": false, "responseContentType": "text/plain", "locationSsoEndpoint": "https://vercel.com/sso-api" }
         ],
         "reason": "Redirects were not followed; this origin is not H2 shell evidence."
       }
