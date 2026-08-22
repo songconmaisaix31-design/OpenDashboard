@@ -122,58 +122,36 @@ Official score/metrics, deployment, screenshots, visual review, eligibility, for
 - [ ] Run CI, bind deployment to the tested SHA, and record submission/visual/eligibility/organizer states independently.
 - [ ] Run `git diff --check` and validate the release manifest; publish only with normal push and independently observed remote SHA.
 
-## 6. Post-dispatch T7 addendum: canonical severity boundary
+## 6. Post-dispatch finding and Epoch 3 handoff
 
-This addendum records a sanitized failure discovered after T1-T6 were dispatched. Import and analyze both returned HTTP `200`, but the strict canonical consumer rejected all `104` returned events. The responses used the official Chinese severity labels `中` and `高` inside the internal API event objects, while the frozen canonical contract accepts only `low`, `medium`, `high`, or `critical`. Transport success therefore did not constitute contract success.
+This section supersedes the earlier interpretation that treated the severity repair as an additional Epoch 2 task. Sanitized post-dispatch evidence showed that import and analyze both returned HTTP `200`, but the strict canonical consumer rejected all `104` returned events. The internal API event objects carried the official Chinese severity labels `中` and `高`, while the canonical contract accepts only `low`, `medium`, `high`, or `critical`. Transport success therefore did not constitute contract success.
 
-T7 repairs that boundary without changing the frozen contracts or broadening the taxonomy. For the official labels observed in this run, the internal mapping is exactly `中 -> medium` and `高 -> high`. Internal event objects, summaries, and API envelopes use canonical English severity values. Chinese severity values remain only at the external official-input and official-submission boundaries; the submission writer maps the canonical internal values back to the required official Chinese representation. Unknown values fail closed. T7 must not edit the frozen contract or vocabulary trees, `services/h2-analytics/src/h2_analytics/contracts.py`, Web UI, Live adapter, or any submission column or route schema. Tests must validate the frozen canonical enum directly and must not relax or rewrite it to accept Chinese API values.
+Section 1 controls this finding. The mismatch crosses the frozen analytics contract blob, event contract, and vocabulary boundary, so it is a future contract-epoch defect under the rule in Section 1, not an Epoch 2 implementation patch. Epoch 2 must not alter, bypass, reinterpret, or test-relax those frozen identities to make the official run pass.
 
-### T7 dispatch contract
+### Historical experiment status
 
-| Field | Frozen value |
-| --- | --- |
-| Task | `T7 severity contract boundary` |
-| Base | `a6e497b62063918367ca962bb43fb14a91e6edc5` |
-| Branch | `songconmaisaix31-design/h2-e2-severity-contract` |
-| Worktree | `h2-e2-severity-contract` |
-| Exact write allowlist | `services/h2-analytics/**` |
+Commit `1ff32c6d6ce88d26ff6e3602ee149c4b3eed7482` is retained only as a history-preserving experiment and source patch. It is not an accepted Epoch 2 task commit, is not integrated into the Epoch 2 assembly, and is not release, contract, official-run, or validation evidence. Its existence and local test results do not override the frozen-base rule, and the coordinator must not cherry-pick or otherwise promote it into Epoch 2.
 
-The coordinator-frozen `parallelTaskBaseSha` remains `a6e497b62063918367ca962bb43fb14a91e6edc5`. This addendum does not create a new parallel base and does not re-dispatch, rebase, recreate, or reassign T1-T6. T7 is the only additional post-dispatch task and starts from that unchanged base. Its worker stages only the exact allowlist, creates one focused English commit, pushes normally, and reports both the local SHA and the independently observed remote SHA. The original six-track text remains the record of the initial dispatch; the unique integration gate now assembles the six accepted original task commits plus the accepted T7 commit.
+The original T1-T6 dispatch and the already-frozen Epoch 2 `parallelTaskBaseSha` remain unchanged. There is no Epoch 2 T7. The unique Epoch 2 integration gate continues to assemble exactly the six accepted original task commits defined in Section 2.
 
-### T7 acceptance
+### Epoch 2 closure
 
-T7 is accepted only when all of the following are true:
+Epoch 2 may retain only the T6 runner's sanitized error code for this failed attempt. The HTTP statuses and event count above are diagnostic context, not an accepted gate result. Epoch 2 must not record private paths, runtime connection details, CSV content, URLs, environment values, credentials, or raw request/response bodies. The contract rejection stops the official path: no severity source patch is accepted, no retry is promoted, and the Epoch 2 final verdict remains `HOLD`.
 
-1. A failing-first analytics regression reproduces the Chinese-internal/API severity mismatch without embedding official CSV rows or raw responses.
-2. Import and analyze still return HTTP `200`, and every event returned by analyze uses only the frozen canonical English severity enum.
-3. The sanitized official replay returns the same `104` events and the strict canonical consumer accepts all `104`; HTTP status alone is not sufficient.
-4. Internal event summaries and API filtering use the same canonical English values, with no mixed Chinese/English identity.
-5. The external official submission retains the required Chinese severity representation, and the checker still accepts it.
-6. Unknown or unmapped severity values fail closed rather than being guessed, dropped, or converted to a new taxonomy member.
-7. The frozen object identities in Section 1 are unchanged, no dependency is added, and no file outside `services/h2-analytics/**` is modified.
-8. Test output and handoff evidence remain sanitized: no private path, runtime port, CSV content, URL, environment value, credential, or raw request/response body is recorded.
-
-### T7 verification and handoff
-
-The T7 worker runs the task-local gates from `services/h2-analytics`:
+The coordinator verifies that the Epoch 2 assembly still matches the frozen identities and that the accepted six-task assembly remains otherwise healthy:
 
 ```powershell
-uv lock --check
-uv sync --locked --extra dev
-uv run --locked --extra dev python -m pytest tests/test_contract_validation.py tests/test_detection_pipeline.py tests/test_api.py tests/test_assistant_reports.py
-uv run --locked --extra dev python -m pytest
-```
-
-From the repository root, the worker verifies scope and frozen identities:
-
-```powershell
-git diff --check
-git diff --name-only a6e497b62063918367ca962bb43fb14a91e6edc5...HEAD
 git rev-parse HEAD:packages/h2-contracts
 git rev-parse HEAD:packages/h2-vocabulary
 git rev-parse HEAD:services/h2-analytics/src/h2_analytics/contracts.py
-git push origin HEAD:songconmaisaix31-design/h2-e2-severity-contract
-git ls-remote --heads origin refs/heads/songconmaisaix31-design/h2-e2-severity-contract
+git diff --check
+npm run h2:check
 ```
 
-After T7 is assembled with the already-dispatched tasks, the coordinator runs `npm run h2:check` and repeats the sanitized T6 official runner command from its handoff. The coordinator records import, analyze, strict-contract acceptance, export, and checker as separate stages; the integration remains `HOLD` unless all required stages pass. T7 does not upgrade deployment, visual review, eligibility, formal submission, organizer receipt, or acceptance.
+Passing those commands does not clear the contract failure or upgrade the `HOLD` verdict.
+
+### Required Epoch 3 handoff
+
+The severity boundary repair requires a new `EPOCH-3-PLAN.md` that explicitly authorizes and freezes the contract-epoch scope. That plan must be published first; the coordinator then independently observes a new plan-branch HEAD as a new `parallelTaskBaseSha`, freezes the Epoch 3 contract, vocabulary, analytics, ownership, and write-path identities, and dispatches a new worker from that base. The Epoch 3 design must keep internal/API severity canonical in English and preserve the required Chinese severity representation only at the external official-submission boundary.
+
+The worker commit and the unique Epoch 3 integration commit must each be published normally and independently verified on their remote refs. Only after the new worker and integration gates pass against the new frozen base may the coordinator run the official input again. Exact worker, integration, and official-run commands belong to the new Epoch 3 plan; this Epoch 2 finding authorizes none of them.
