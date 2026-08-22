@@ -18,10 +18,11 @@ No Epoch 1 task may change a contract, vocabulary, or the frozen analytics contr
 
 The following are recorded facts, not completion claims:
 
-1. At freeze time, the Web import guard was **5 MiB**, while the official test CSV is **77,865,257 bytes** (172,800 rows and 69 columns). The accepted Web metadata/pre-read fix updates this path, but a real full official-file end-to-end run remains pending; no plan or fixture evidence upgrades it to official-data success.
+1. At freeze time, the Web import guard was **5 MiB**, while the official test CSV is **77,865,257 bytes** (172,800 rows and 69 fields). The accepted Web change raises the metadata/pre-read ceiling to **300 MiB** and avoids reading file contents before metadata checks. That change is necessary, not sufficient. The official gate passes only when that exact authorized file completes `normalize -> same-origin Web import -> analyze -> export -> checker` on `testedCodeSha`. The current product Live request timeout still defaults to **5,000 ms**; an older unbound full-file import/analyze observation exceeded six seconds, and the older smoke import/analyze path bypassed the Web same-origin proxy. Those observations remain unresolved and cannot establish official-file E2E success.
 2. The current deployed artifact/path evidence has drift: the committed smoke report records an artifact path under a different checkout (`H2_Sentinel`) and an ignored generated artifact, so it is not release-location proof. Deployment remains unverified until a fresh run records the actual release artifact and URL from the final commit.
-3. Ubuntu smoke is not complete: the recorded smoke attempt timed out. A Windows-local pass cannot substitute for an Ubuntu result; the Ubuntu gate remains pending until it completes within the declared timeout and records sanitized evidence.
+3. Ubuntu smoke is not complete. Both recorded GitHub Actions attempts failed on the frozen plan commit: [run 32581403575 / job 97051221180](https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32581403575/job/97051221180) and [run 32581406281 / job 97051227728](https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32581406281/job/97051227728), each against `2e809854422230f5afaca4776d6ec56e5c8507be`. A Windows-local pass cannot substitute for an Ubuntu result; the Ubuntu gate remains pending until a fresh Ubuntu attempt against `testedCodeSha` passes and records sanitized evidence.
 4. Existing evidence is stale or conflicting across snapshots (including prior PASS/SKIP rows and superseded artifact paths). Evidence must be bound to the exact run, task, dispatch, commit, and test result in the final manifest; a planning document or historical report cannot upgrade a stale result.
+5. Submission validation is environment-sensitive. The historical wrong script path failed, Windows PowerShell 5.1 reaches the real script but fails to parse it, and PowerShell 7.6.5 can pass the repository validator. The passing PowerShell 7 result does not prove organizer form receipt, approval, deployment, visual review, or official-data acceptance, so the submission gate remains pending.
 
 Relevant current evidence includes `docs/plans/2026-08-21-h2-solo-execution-brief.md`, `tests/h2-sentinel/DEFECT_LOG.md`, `validation/reports/offline-deploy-smoke.json`, and `submission/h2-sentinel/RUNTIME_EVIDENCE_CHECKLIST.md`. These references are audit inputs only; they do not establish official score, deployment, Ubuntu success, or release approval.
 
@@ -47,7 +48,7 @@ Epoch 1 is complete only when all of the following are proven against the final 
 - The Fixture golden path runs offline, identifies its provenance as Fixture/synthetic, exposes the six H2 views, and does not require analytics or an API key.
 - The Live path is explicitly opt-in and loopback-only; it does not imply official-data success until the later validation gate passes.
 - Reports and submission exports preserve the frozen contract, provenance, safety disclaimer, content identity, and human-confirmation boundary. No export may claim an organizer score.
-- The Web path does not claim acceptance of the 77,865,257-byte official CSV while the 5 MiB guard remains in force.
+- The 300 MiB metadata/pre-read change is not official-data proof. The Web official CSV gate remains pending until the exact 77,865,257-byte, 172,800-row, 69-field authorized file completes `normalize -> same-origin Web import -> analyze -> export -> checker` on `testedCodeSha`. The 5,000 ms Live timeout and the older proxy-bypassing/unbound observations must be resolved or replaced by this bound run.
 - Deployment, Ubuntu smoke, official-data validation, and submission evidence are each independently labelled `passed`, `failed`, `pending`, or `not-delivered`; an unavailable artifact is never represented as PASS.
 - Every acceptance result is reproducible from a run ID and points to sanitized evidence, with no secrets, absolute private paths, PIDs, or raw credentials.
 
@@ -66,7 +67,20 @@ Track gates are run in the owning worktree and recorded against the commit under
 
 Visual review is a manual gate unless a committed automated visual artifact exists. It must name viewport, URL, commit, and observed result.
 
-## 6. Handoff, commits, and remote completion
+## 6. Closed release gates
+
+The release manifest contains exactly six current gates. Task completion and historical attempts never silently upgrade a gate:
+
+1. `webOfficialCsvE2E`
+2. `ubuntuSmoke`
+3. `officialDataValidation`
+4. `deployment`
+5. `submission`
+6. `integration`
+
+A failed attempt remains in chronological order after a retry. In particular, the historical cold smoke failure precedes service-directory `uv sync`, and the later warm smoke pass does not erase that failure. Root-level `uv` failure is separate from the passing service-directory lock, sync, and 47-test records. A blocker must reference a non-passed gate. `PASS` requires all six gates to be `passed` and no blockers; otherwise the verdict is `HOLD`, or `FAIL` for a reproducible regression.
+
+## 7. Handoff, commits, and remote completion
 
 Cross-track work is handoff-only. A worker that discovers a required edit outside its allowlist stops, records the requested path, reason, evidence, and acceptance impact in its handoff, and leaves the other path untouched. The coordinator assigns the owner or schedules unique integration; workers must not solve cross-track needs by convenience edits.
 
@@ -74,12 +88,27 @@ Each task produces one small focused commit after its local gate. Stage explicit
 
 Epoch 1 does not change contracts. Any request touching the frozen gate is blocked and escalated as a contract change for a new epoch.
 
-## 7. Required evidence chain and final manifest
+## 8. Orchestration identity ledger
+
+The following identities are the actual Epoch 1 orchestration records. A missing dispatch is left absent rather than invented:
+
+| Task | Dispatch | Purpose | Recorded outcome |
+| --- | --- | --- | --- |
+| `task_dab68d3285f0` | `ctx_5ba11eeea8a6` | Web metadata/pre-read implementation | passed task; not official-file E2E proof |
+| `task_6e6cc9448893` | `ctx_9dd1d5e68d8a` | Web evidence handoff refresh | passed |
+| `task_9036d70dac77` | `ctx_fc32646f5c0a` | Web composition evidence correction | passed |
+| `task_655e51c62e42` | `ctx_0f820c611d98` | Cross-platform smoke stabilization | passed |
+| `task_e9362a97d703` | `ctx_0371109f5120` | Smoke process ownership | passed |
+| `task_100bb1a1be7a` | `ctx_3afaf16bcc10` | Vercel route configuration | passed config task; not deployment proof |
+| `task_80c5a51b18c3` | `ctx_7a5d29219bc7` | Earlier integration attempt | failed; retain its cold-smoke, root-uv, and remote-verification failures |
+| `task_985faa3dfa4a` | none | Coordinator evidence-gate reconciliation (`collaboration:/root/rules_audit`) | current task; no dispatch is fabricated |
+
+## 9. Required evidence chain and final manifest
 
 The release record must preserve this chain for every task and gate:
 
 `Plan → Run → Task → Dispatch → Commit → Test → Release Manifest`
 
-The final manifest must identify the frozen base and contract gate, each task owner and write path, dispatch identity, local and remote commit SHAs, exact test commands and statuses, deployment identity and URL (or an explicit unavailable status), submission status, and the final verdict. Manifest entries must reference existing local evidence only; a future placeholder must use a non-success status and a reason. The closed schema is `RELEASE-MANIFEST.schema.json` in this directory.
+The final manifest must identify the frozen base and contract gate, each task owner and write path, real dispatch identity when one exists, local and independently observed remote commit SHAs, exact test commands and statuses, the integration-branch and canonical publication states, deployment identity and URL (or an explicit unavailable status), submission status, and the final verdict. Manifest entries may reference normalized repository-relative evidence paths or complete HTTPS evidence URLs. Absolute paths, any `..` traversal, credentials, private paths, PIDs, and runtime ports are forbidden. A future placeholder must use a non-success status and a reason. The closed schema is `RELEASE-MANIFEST.schema.json` in this directory.
 
 The final verdict is `PASS` only if all required release gates are green and no audited blocker remains unresolved. Otherwise it is `HOLD` (or `FAIL` for a reproducible regression), with the blocking evidence named. Historical evidence may explain context but cannot satisfy a current gate.
