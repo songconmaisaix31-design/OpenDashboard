@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
+import { H2EmsAdapterError } from '../plugins/h2-ems/src/index.ts'
 import {
   inspectCsvIdentity,
   parseOfficialCsvE2eArgs,
@@ -34,7 +35,7 @@ async function withTempDir(run) {
   }
 }
 
-function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', events, check, mutate = {}, readyWebUrl = 'http://127.0.0.1:4100/h2-sentinel/?mode=local', stopResult = { code: 0, signal: null, timedOut: false } } = {}) {
+function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', events, errors = {}, check, mutate = {}, readyWebUrl = 'http://127.0.0.1:4100/h2-sentinel/?mode=local', stopResult = { code: 0, signal: null, timedOut: false } } = {}) {
   const calls = []
   const hydrationInputs = []
   let metadataCalls = 0
@@ -106,6 +107,7 @@ function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', eve
     },
     async runAnalysis(datasetId) {
       calls.push(['analysis', datasetId])
+      if (errors.analysis) throw errors.analysis
       if (events?.analysis) throw new Error('analysis body must not be recorded')
       return analysis
     },
@@ -507,6 +509,43 @@ for (const stage of ['import', 'analysis', 'export', 'source']) {
     })
   })
 }
+
+for (const [adapterCode, expectedCode] of [
+  ['remote_request_failed', 'E_ANALYSIS_REMOTE_REQUEST_FAILED'],
+  ['remote_response_invalid', 'E_ANALYSIS_REMOTE_RESPONSE_INVALID'],
+  ['request_timeout', 'E_ANALYSIS_REQUEST_TIMEOUT'],
+]) {
+  test(`retains the stable analysis adapter code for ${adapterCode}`, async () => {
+    await withTempDir(async (directory) => {
+      const adapterError = new H2EmsAdapterError(adapterCode, false)
+      adapterError.message = 'http://127.0.0.1:4100/hidden?body=adapter-secret'
+      adapterError.stack = 'adapter-stack-must-not-be-reported'
+      const fixture = depsFor({ errors: { analysis: adapterError } })
+      const result = await runFixture(directory, fixture)
+      const report = await readFile(result.reportPath, 'utf8')
+      assert.equal(result.status, 'failed')
+      assert.equal(result.errorCode, expectedCode)
+      assert.match(report, new RegExp(expectedCode))
+      assert.doesNotMatch(report, /127\.0\.0\.1|adapter-secret|adapter-stack-must-not-be-reported/i)
+      assert.equal(fixture.stopped(), 1)
+    })
+  })
+}
+
+test('keeps arbitrary analysis errors at the existing generic code and redacts their details', async () => {
+  await withTempDir(async (directory) => {
+    const arbitraryError = new Error('http://127.0.0.1:4100/hidden?body=arbitrary-secret')
+    arbitraryError.stack = 'arbitrary-stack-must-not-be-reported'
+    const fixture = depsFor({ errors: { analysis: arbitraryError } })
+    const result = await runFixture(directory, fixture)
+    const report = await readFile(result.reportPath, 'utf8')
+    assert.equal(result.status, 'failed')
+    assert.equal(result.errorCode, 'E_ANALYSIS_FAILED')
+    assert.match(report, /E_ANALYSIS_FAILED/)
+    assert.doesNotMatch(report, /127\.0\.0\.1|arbitrary-secret|arbitrary-stack-must-not-be-reported/i)
+    assert.equal(fixture.stopped(), 1)
+  })
+})
 
 test('treats an invalid checker result as a nonzero runner failure', async () => {
   await withTempDir(async (directory) => {

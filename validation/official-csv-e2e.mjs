@@ -8,7 +8,7 @@ import { getHeapStatistics } from 'node:v8'
 import { resourceUsage, memoryUsage } from 'node:process'
 
 import { hydrateH2Workspace } from '../apps/web/src/features/h2-sentinel/model/workspace-loader.ts'
-import { createLiveH2EmsDataSource } from '../plugins/h2-ems/src/index.ts'
+import { createLiveH2EmsDataSource, H2EmsAdapterError } from '../plugins/h2-ems/src/index.ts'
 import { validateSubmissionFile } from './check-submission.mjs'
 import { splitCsvLine } from './lib/csv.mjs'
 import { normalizeOfficialCsv, OFFICIAL_FIELDS } from './lib/fields.mjs'
@@ -35,6 +35,17 @@ const REPORT_SCHEMA = 'h2-sentinel-official-csv-e2e-v1'
 const SAFE_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/
 const COMMIT_PATTERN = /^[0-9a-f]{40}$/
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', '[::1]', '::1'])
+const H2_EMS_ADAPTER_ERROR_CODES = new Set([
+  'fixture_import_disabled',
+  'invalid_fixture_request',
+  'invalid_loopback_url',
+  'live_adapter_disabled',
+  'remote_error',
+  'remote_request_failed',
+  'remote_response_invalid',
+  'request_aborted',
+  'request_timeout',
+])
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const DEFAULT_REPORT_ROOT = resolve(scriptDirectory, 'reports/epoch-2')
 
@@ -217,6 +228,9 @@ function stageRecord(stage, status, startedAt, extra = {}) {
 
 function stableStageError(stage, error) {
   if (error instanceof RunnerError) return error
+  if (error instanceof H2EmsAdapterError && H2_EMS_ADAPTER_ERROR_CODES.has(error.code)) {
+    return new RunnerError(`E_${stage.toUpperCase()}_${error.code.toUpperCase()}`)
+  }
   return new RunnerError(`E_${stage.toUpperCase()}_FAILED`)
 }
 
