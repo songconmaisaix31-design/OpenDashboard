@@ -20,3 +20,11 @@ test('keeps the explicit path and mode vocabulary closed', async () => {
   assert.match(source, /mode !== 'fixture' && mode !== 'local'/)
   assert.match(source, /key !== 'mode'/)
 })
+
+test('keeps Fixture selection and gives the local H2 adapter a bounded timeout', async () => {
+  const source = await readFile(mainSourceUrl, 'utf8')
+  assert.match(
+    source,
+    /mode\s*===\s*'fixture'\s*\?\s*h2EmsPlugin\s*:\s*createH2EmsPlugin\(\s*\{\s*enabled\s*:\s*true\s*,\s*baseUrl\s*:\s*window\.location\.origin\s*,\s*timeoutMs\s*:\s*30_000\s*,?\s*\}\s*\)/s,
+  )
+})
