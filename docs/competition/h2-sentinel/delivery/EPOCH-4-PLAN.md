@@ -62,7 +62,7 @@ checks the remote SHA before integration.
 | A | `.gitattributes` | Preserve LF normalization for evidence blobs and plan/release documents. |
 | B | `validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/**` | Add or repair sanitized attempt-6 report evidence and verify its required hash. No official CSV is added and no attempt-1..5 file is edited. |
 | C | `submission/h2-sentinel/**` | Correct submission-package evidence, hashes, claims, and validators without changing application code. |
-| D | `docs/competition/h2-sentinel/BRANCH_OVERVIEW.md`, `docs/competition/h2-sentinel/DEPLOYMENT_AND_SMOKE.md`, `docs/competition/h2-sentinel/MULTI_AGENT_TASKS.md`, `docs/competition/h2-sentinel/PRD.md`, `docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.json` | Correct only stale claims and status fields; do not edit the whole docs directory or historical Epoch plans. |
+| D | `docs/competition/h2-sentinel/BRANCH_OVERVIEW.md`, `docs/competition/h2-sentinel/DEPLOYMENT_AND_SMOKE.md`, `docs/competition/h2-sentinel/MULTI_AGENT_TASKS.md`, `docs/competition/h2-sentinel/PRD.md`, `docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.json`, `docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json` | Correct only stale claims and status fields; make the minimum schema v2 extension needed to machine-express Technical GO, registration/submission, receipt/acceptance, official score, and visual verification while preserving historical attempt and old-schema semantics; do not edit the whole docs directory or historical Epoch plans. |
 | E | `scripts/h2-sentinel/HANDOFF.md` | Record the tested deployment/deep-link handoff and evidence commands. |
 | F | `MEMORY.md` | Record durable, non-secret Epoch 4 evidence boundaries and unresolved UNKNOWN-HOLD states. |
 
