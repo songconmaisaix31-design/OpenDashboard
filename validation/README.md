@@ -94,8 +94,9 @@ present base columns use the official formulas, everything else is zero.
 `official-csv-e2e.mjs` is the coordinator-only official-data gate. It accepts
 an external, read-only CSV path and never copies the raw CSV into this
 repository. Before it starts the local launcher or loads the full CSV text, it
-requires the literal expected commit to equal `HEAD` and streams the raw file to
-check all frozen identity values:
+requires the literal expected commit to equal `HEAD`, records that tested code
+SHA, and checks that the operator path is a regular file with the exact raw byte
+count. Only then does it stream the raw file to check all frozen identity values:
 
 | Representation | Bytes | SHA-256 | Rows | Fields |
 | --- | ---: | --- | ---: | ---: |
@@ -109,24 +110,38 @@ physical RAM and a 4 GiB Node heap:
 node --max-old-space-size=4096 --import tsx validation/official-csv-e2e.mjs `
   --official-csv "<operator-approved-read-only-csv-path>" `
   --expected-commit "<40-lowercase-hex-assembled-head>" `
-  --run-id "official-20260823-1"
+  --run-id "run_f2bc8c0433f8" `
+  --task-id "task_x" `
+  --dispatch-id "ctx_x"
 ```
 
-The run ID is restricted to lowercase letters, digits, and single hyphens. The
-runner creates, but never overwrites,
+`--dispatch-id` is optional. Run, task, and dispatch IDs accept only lowercase
+letters, digits, `_`, and `-`; traversal, whitespace, and separators are
+rejected. The runner creates, but never overwrites,
 `validation/reports/epoch-2/<safe-run-id>/attempt-<n>/`. Each attempt contains
-the exported submission artifact and a sanitized `report.json`; the report
-contains stable error codes, fixed identities, hashes/counts/durations,
-repository-relative artifact references, and Node resource counters only. It
-does not contain the operator path, URL, port, PID, arguments, environment,
-request/response body, stdout, stderr, or stack trace.
+the exported submission artifact and a sanitized `official-csv-e2e.json`; the
+report records public run/task/optional-dispatch IDs and `testedCodeSha`, stable
+error codes, fixed identities, hashes/counts/durations, repository-relative
+artifact references, and Node resource counters only. It does not contain the
+operator path, URL, port, PID, arguments, environment, request/response body,
+stdout, stderr, or stack trace.
 
 After the raw and normalized identity gates, the runner starts the existing
 local launcher once and constructs the existing Live data source only from the
 launcher's `ready.webUrl` with `timeoutMs: 30000`. The required order is
 `importCsv -> runAnalysis -> exportSubmission -> checker`; every request stays
 on that same Web origin. The launcher is stopped exactly once in `finally` on
-both success and failure, without retry. A checker failure returns exit code 1.
+both success and failure, without retry. Import is bound to `LIVE_ANALYSIS`,
+the frozen normalized row/field counts and fingerprint, and non-blocked
+quality. Analysis is bound to completion, the imported dataset/fingerprint, and
+non-blocked quality. Export is bound to a ready `submission_csv` CSV descriptor,
+the analysis run, text/csv media type, and matching content hash. The checker
+must be valid, have 16 columns, and return the analysis event count. A checker
+or cleanup failure returns exit code 1.
+
+This runner deliberately does not claim or synthesize series hydration. The
+coordinator records that separate, bounded measurement only after the assembled
+T3 curve-selection handoff provides its selected variables and time range.
 
 The test suite uses only injected synthetic data and faked dependencies. It
 does not read or execute the official CSV:

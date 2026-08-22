@@ -7,6 +7,7 @@ import test from 'node:test'
 
 import {
   inspectCsvIdentity,
+  parseOfficialCsvE2eArgs,
   runOfficialCsvE2e,
   sanitizeErrorCode,
 } from './official-csv-e2e.mjs'
@@ -33,42 +34,101 @@ async function withTempDir(run) {
   }
 }
 
-function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', events, check = { valid: true } } = {}) {
+function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', events, check, mutate = {}, stopResult = { code: 0, signal: null, timedOut: false } } = {}) {
   const calls = []
+  let metadataCalls = 0
+  let inspectCalls = 0
+  let readCalls = 0
+  const normalizedText = rawText
+  const expected = { raw: identity(rawText), normalized: identity(normalizedText) }
+  const normalizedFingerprint = `sha256:${expected.normalized.sha256}`
+  const imported = {
+    dataset: {
+      datasetId: 'dataset-1',
+      mode: 'LIVE_ANALYSIS',
+      rowCount: expected.normalized.rows,
+      fields: Array.from({ length: expected.normalized.fields }, () => ({})),
+      fingerprint: normalizedFingerprint,
+    },
+    quality: { status: 'passed' },
+  }
+  const analysis = {
+    runId: 'run-1',
+    status: 'completed',
+    dataset: {
+      datasetId: imported.dataset.datasetId,
+      fingerprint: imported.dataset.fingerprint,
+    },
+    quality: { status: 'passed' },
+    events: [{}, {}],
+  }
+  const submissionContent = 'header\nrow\nrow\n'
+  const submission = {
+    content: submissionContent,
+    mediaType: 'text/csv',
+    descriptor: {
+      status: 'ready',
+      kind: 'submission_csv',
+      format: 'csv',
+      runId: analysis.runId,
+      contentHash: `sha256:${createHash('sha256').update(submissionContent).digest('hex')}`,
+    },
+  }
+  mutate.import?.(imported)
+  mutate.analysis?.(analysis)
+  mutate.export?.(submission)
+  const checkerResult = check ?? {
+    valid: true,
+    columns: Array.from({ length: 16 }, () => 'column'),
+    rowCount: analysis.events.length,
+  }
   const source = {
     async importCsv(input) {
       calls.push(['import', input.filename])
       if (events?.import) throw new Error('import body must not be recorded')
-      return { dataset: { datasetId: 'dataset-1' } }
+      return imported
     },
     async runAnalysis(datasetId) {
       calls.push(['analysis', datasetId])
       if (events?.analysis) throw new Error('analysis body must not be recorded')
-      return { runId: 'run-1' }
+      return analysis
     },
     async exportSubmission(runId) {
       calls.push(['export', runId])
       if (events?.export) throw new Error('export body must not be recorded')
-      return { content: 'header\n', mediaType: 'text/csv' }
+      return submission
     },
   }
-  const normalizedText = rawText
   let stopped = 0
   let nextPort = 4100
   return {
     calls,
+    metadataCalls: () => metadataCalls,
+    inspectCalls: () => inspectCalls,
+    readCalls: () => readCalls,
     stopped: () => stopped,
     rawText,
     normalizedText,
-    expected: { raw: identity(rawText), normalized: identity(normalizedText) },
+    expected,
     deps: {
       getHead: async () => EXPECTED_COMMIT,
-      readFile: async () => rawText,
-      inspectRaw: async () => identity(rawText),
+      statRaw: async () => {
+        metadataCalls += 1
+        return { isFile: () => true, size: Buffer.byteLength(rawText) }
+      },
+      readFile: async () => {
+        readCalls += 1
+        return rawText
+      },
+      inspectRaw: async () => {
+        inspectCalls += 1
+        return identity(rawText)
+      },
       normalize: () => normalizedText,
       inspectNormalized: async () => identity(normalizedText),
       officialFields: FIELDS,
       totalMemoryBytes: () => 8 * 1024 ** 3,
+      heapLimitBytes: () => 4 * 1024 ** 3,
       freeLoopbackPort: async () => nextPort++,
       startLauncher: async (options) => {
         calls.push(['start', options])
@@ -78,6 +138,7 @@ function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', eve
           stop: async () => {
             stopped += 1
             if (events?.cleanup) throw new Error('cleanup output must not be recorded')
+            return stopResult
           },
         }
       },
@@ -86,7 +147,7 @@ function depsFor({ rawText = 'timestamp,power_kw\n2026-01-01T00:00:00Z,1\n', eve
         if (events?.source) throw new Error('source output must not be recorded')
         return source
       },
-      checkSubmission: () => check,
+      checkSubmission: () => checkerResult,
       getResources: () => ({ rssBytes: 123, resourceUsage: { maxRSS: 456 } }),
     },
   }
@@ -96,7 +157,9 @@ async function runFixture(directory, fixture, overrides = {}) {
   return runOfficialCsvE2e({
     rawPath: join(directory, 'not-reported.csv'),
     expectedCommit: EXPECTED_COMMIT,
-    runId: 'synthetic-run',
+    runId: 'run_f2bc8c0433f8',
+    taskId: 'task_x',
+    dispatchId: 'ctx_x',
     outputRoot: join(directory, 'reports'),
     expected: fixture.expected,
     dependencies: { ...fixture.deps, ...overrides },
@@ -109,7 +172,9 @@ test('rejects a literal expected commit mismatch before identity, reads, or laun
     const result = await runOfficialCsvE2e({
       rawPath: join(directory, 'not-reported.csv'),
       expectedCommit: 'b'.repeat(40),
-      runId: 'synthetic-run',
+      runId: 'run_f2bc8c0433f8',
+      taskId: 'task_x',
+      dispatchId: 'ctx_x',
       outputRoot: join(directory, 'reports'),
       expected: fixture.expected,
       dependencies: fixture.deps,
@@ -117,6 +182,106 @@ test('rejects a literal expected commit mismatch before identity, reads, or laun
     assert.equal(result.status, 'failed')
     assert.equal(result.errorCode, 'E_COMMIT_MISMATCH')
     assert.deepEqual(fixture.calls, [])
+  })
+})
+
+test('parses required public identifiers, preserves underscores, and rejects traversal', () => {
+  assert.deepEqual(
+    parseOfficialCsvE2eArgs([
+      '--official-csv', 'operator-input.csv',
+      '--expected-commit', EXPECTED_COMMIT,
+      '--run-id', 'run_f2bc8c0433f8',
+      '--task-id', 'task_x',
+      '--dispatch-id', 'ctx_x',
+    ]),
+    {
+      rawPath: 'operator-input.csv',
+      expectedCommit: EXPECTED_COMMIT,
+      runId: 'run_f2bc8c0433f8',
+      taskId: 'task_x',
+      dispatchId: 'ctx_x',
+    },
+  )
+  assert.throws(
+    () => parseOfficialCsvE2eArgs([
+      '--official-csv', 'operator-input.csv',
+      '--expected-commit', EXPECTED_COMMIT,
+      '--run-id', '../escape',
+      '--task-id', 'task_x',
+    ]),
+    (error) => sanitizeErrorCode(error) === 'E_RUN_ID_INVALID',
+  )
+  assert.throws(
+    () => parseOfficialCsvE2eArgs([
+      '--official-csv', 'operator-input.csv',
+      '--expected-commit', EXPECTED_COMMIT,
+      '--run-id', 'run_f2bc8c0433f8',
+    ]),
+    (error) => sanitizeErrorCode(error) === 'E_ARGUMENTS_INVALID',
+  )
+  assert.throws(
+    () => parseOfficialCsvE2eArgs([
+      '--official-csv', 'operator-input.csv',
+      '--expected-commit', EXPECTED_COMMIT,
+      '--run-id', 'run_f2bc8c0433f8',
+      '--task-id', '../escape',
+    ]),
+    (error) => sanitizeErrorCode(error) === 'E_TASK_ID_INVALID',
+  )
+})
+
+test('records run, task, dispatch, and tested code identity in a successful sanitized report', async () => {
+  await withTempDir(async (directory) => {
+    const fixture = depsFor()
+    const result = await runFixture(directory, fixture)
+    const report = JSON.parse(await readFile(result.reportPath, 'utf8'))
+    assert.equal(result.status, 'passed')
+    assert.equal(report.runId, 'run_f2bc8c0433f8')
+    assert.equal(report.taskId, 'task_x')
+    assert.equal(report.dispatchId, 'ctx_x')
+    assert.equal(report.testedCodeSha, EXPECTED_COMMIT)
+  })
+})
+
+test('omits rather than fabricates an optional dispatch identity', async () => {
+  await withTempDir(async (directory) => {
+    const fixture = depsFor()
+    const result = await runOfficialCsvE2e({
+      rawPath: join(directory, 'not-reported.csv'),
+      expectedCommit: EXPECTED_COMMIT,
+      runId: 'run_f2bc8c0433f8',
+      taskId: 'task_x',
+      outputRoot: join(directory, 'reports'),
+      expected: fixture.expected,
+      dependencies: fixture.deps,
+    })
+    const report = JSON.parse(await readFile(result.reportPath, 'utf8'))
+    assert.equal(result.status, 'passed')
+    assert.equal(Object.hasOwn(report, 'dispatchId'), false)
+  })
+})
+
+test('rejects a non-file or size-mismatched raw metadata result before opening a stream or reading text', async () => {
+  await withTempDir(async (directory) => {
+    for (const [metadata, expectedCode] of [
+      [{ isFile: () => false, size: 0 }, 'E_RAW_NOT_FILE'],
+      [{ isFile: () => true, size: 0 }, 'E_RAW_BYTES_MISMATCH'],
+    ]) {
+      const fixture = depsFor()
+      let statCalls = 0
+      const result = await runFixture(directory, fixture, {
+        statRaw: async () => {
+          statCalls += 1
+          return metadata
+        },
+      })
+      assert.equal(result.status, 'failed')
+      assert.equal(result.errorCode, expectedCode)
+      assert.equal(statCalls, 1)
+      assert.equal(fixture.inspectCalls(), 0)
+      assert.equal(fixture.readCalls(), 0)
+      assert.deepEqual(fixture.calls, [])
+    }
   })
 })
 
@@ -169,6 +334,38 @@ test('uses only the launcher web origin with the mandated 30 second adapter time
   })
 })
 
+for (const [name, options, expectedCode] of [
+  ['import dataset mode', { mutate: { import: (value) => { value.dataset.mode = 'FIXTURE' } } }, 'E_IMPORT_MODE_INVALID'],
+  ['import row count', { mutate: { import: (value) => { value.dataset.rowCount = 0 } } }, 'E_IMPORT_ROW_COUNT_MISMATCH'],
+  ['import field count', { mutate: { import: (value) => { value.dataset.fields = [] } } }, 'E_IMPORT_FIELD_COUNT_MISMATCH'],
+  ['import fingerprint', { mutate: { import: (value) => { value.dataset.fingerprint = 'sha256:bad' } } }, 'E_IMPORT_FINGERPRINT_MISMATCH'],
+  ['import blocked quality', { mutate: { import: (value) => { value.quality.status = 'blocked' } } }, 'E_IMPORT_QUALITY_BLOCKED'],
+  ['import invalid quality', { mutate: { import: (value) => { value.quality.status = 'unknown' } } }, 'E_IMPORT_QUALITY_INVALID'],
+  ['analysis completion status', { mutate: { analysis: (value) => { value.status = 'failed' } } }, 'E_ANALYSIS_STATUS_INVALID'],
+  ['analysis dataset identity', { mutate: { analysis: (value) => { value.dataset.datasetId = 'other-dataset' } } }, 'E_ANALYSIS_DATASET_ID_MISMATCH'],
+  ['analysis fingerprint identity', { mutate: { analysis: (value) => { value.dataset.fingerprint = 'sha256:bad' } } }, 'E_ANALYSIS_FINGERPRINT_MISMATCH'],
+  ['analysis blocked quality', { mutate: { analysis: (value) => { value.quality.status = 'blocked' } } }, 'E_ANALYSIS_QUALITY_BLOCKED'],
+  ['analysis invalid quality', { mutate: { analysis: (value) => { value.quality.status = 'unknown' } } }, 'E_ANALYSIS_QUALITY_INVALID'],
+  ['export descriptor status', { mutate: { export: (value) => { value.descriptor.status = 'failed' } } }, 'E_EXPORT_STATUS_INVALID'],
+  ['export descriptor kind', { mutate: { export: (value) => { value.descriptor.kind = 'period_summary' } } }, 'E_EXPORT_KIND_INVALID'],
+  ['export descriptor format', { mutate: { export: (value) => { value.descriptor.format = 'json' } } }, 'E_EXPORT_FORMAT_INVALID'],
+  ['export run identity', { mutate: { export: (value) => { value.descriptor.runId = 'other-run' } } }, 'E_EXPORT_RUN_ID_MISMATCH'],
+  ['export media type', { mutate: { export: (value) => { value.mediaType = 'application/json' } } }, 'E_EXPORT_MEDIA_TYPE_INVALID'],
+  ['export content hash', { mutate: { export: (value) => { value.descriptor.contentHash = 'sha256:bad' } } }, 'E_EXPORT_CONTENT_HASH_MISMATCH'],
+  ['checker column count', { check: { valid: true, columns: [], rowCount: 2 } }, 'E_CHECKER_COLUMNS_INVALID'],
+  ['checker row count', { check: { valid: true, columns: Array.from({ length: 16 }, () => 'column'), rowCount: 0 } }, 'E_CHECKER_ROW_COUNT_MISMATCH'],
+]) {
+  test(`rejects unbound ${name}`, async () => {
+    await withTempDir(async (directory) => {
+      const fixture = depsFor(options)
+      const result = await runFixture(directory, fixture)
+      assert.equal(result.status, 'failed')
+      assert.equal(result.errorCode, expectedCode)
+      assert.equal(fixture.stopped(), 1)
+    })
+  })
+}
+
 for (const stage of ['import', 'analysis', 'export', 'source']) {
   test(`stops the launcher exactly once when ${stage} fails`, async () => {
     await withTempDir(async (directory) => {
@@ -192,6 +389,29 @@ test('treats an invalid checker result as a nonzero runner failure', async () =>
   })
 })
 
+for (const [name, stopResult] of [
+  ['a timed out stop', { code: null, signal: null, timedOut: true }],
+  ['a nonzero stop code', { code: 1, signal: null, timedOut: false }],
+  ['an unexpected stop signal', { code: 0, signal: 'SIGTERM', timedOut: false }],
+]) {
+  test(`marks cleanup failed after ${name}`, async () => {
+    await withTempDir(async (directory) => {
+      const fixture = depsFor({ stopResult })
+      const result = await runFixture(directory, fixture)
+      const report = JSON.parse(await readFile(result.reportPath, 'utf8'))
+      assert.equal(result.status, 'failed')
+      assert.equal(result.errorCode, 'E_CLEANUP_FAILED')
+      assert.deepEqual(report.stages.at(-1), {
+        stage: 'cleanup',
+        status: 'failed',
+        durationMs: report.stages.at(-1).durationMs,
+        errorCode: 'E_CLEANUP_FAILED',
+      })
+      assert.equal(fixture.stopped(), 1)
+    })
+  })
+}
+
 test('sanitizes errors and reports without paths, URLs, argv, ports, raw CSV, or stack traces', async () => {
   await withTempDir(async (directory) => {
     const fixture = depsFor({ events: { import: true } })
@@ -213,6 +433,15 @@ test('preserves attempts and refuses to overwrite an existing report', async () 
       () => writeFile(first.reportPath, '{}', { flag: 'wx' }),
       { code: 'EEXIST' },
     )
+  })
+})
+
+test('uses official-csv-e2e.json as the only report artifact name', async () => {
+  await withTempDir(async (directory) => {
+    const fixture = depsFor()
+    const result = await runFixture(directory, fixture)
+    assert.match(result.reportPath, /official-csv-e2e\.json$/)
+    assert.match(result.reportRef, /official-csv-e2e\.json$/)
   })
 })
 

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { totalmem } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -31,7 +31,7 @@ const MIN_MEMORY_BYTES = 8 * 1024 ** 3
 const MIN_HEAP_BYTES = 4 * 1024 ** 3
 const REQUEST_TIMEOUT_MS = 30_000
 const REPORT_SCHEMA = 'h2-sentinel-official-csv-e2e-v1'
-const RUN_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,63}$/
+const SAFE_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/
 const COMMIT_PATTERN = /^[0-9a-f]{40}$/
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const DEFAULT_REPORT_ROOT = resolve(scriptDirectory, 'reports/epoch-2')
@@ -54,6 +54,7 @@ function defaultDependencies() {
         })
       })
     },
+    statRaw: stat,
     inspectRaw: inspectCsvIdentity,
     readFile,
     normalize: normalizeOfficialCsv,
@@ -174,9 +175,21 @@ export async function inspectCsvTextIdentity(text, expectedFields = OFFICIAL_FIE
   return inspectText(text, expectedFields)
 }
 
-function safeRunId(value) {
-  if (typeof value !== 'string' || !RUN_ID_PATTERN.test(value)) throw new RunnerError('E_RUN_ID_INVALID')
+function safeIdentifier(value, errorCode) {
+  if (typeof value !== 'string' || !SAFE_ID_PATTERN.test(value)) throw new RunnerError(errorCode)
   return value
+}
+
+function safeRunId(value) {
+  return safeIdentifier(value, 'E_RUN_ID_INVALID')
+}
+
+function safeTaskId(value) {
+  return safeIdentifier(value, 'E_TASK_ID_INVALID')
+}
+
+function safeDispatchId(value) {
+  return safeIdentifier(value, 'E_DISPATCH_ID_INVALID')
 }
 
 async function createAttempt(outputRoot, runId) {
@@ -217,6 +230,96 @@ function reportIdentity(identity) {
   }
 }
 
+function assertRawMetadata(metadata, expected) {
+  if (!metadata || typeof metadata.isFile !== 'function' || !metadata.isFile()) {
+    throw new RunnerError('E_RAW_NOT_FILE')
+  }
+  if (!Number.isSafeInteger(metadata.size) || metadata.size !== expected.bytes) {
+    throw new RunnerError('E_RAW_BYTES_MISMATCH')
+  }
+}
+
+function sha256Descriptor(text) {
+  return `sha256:${createHash('sha256').update(text).digest('hex')}`
+}
+
+function assertImportBinding(imported, normalizedIdentity) {
+  if (!imported || typeof imported !== 'object' || !imported.dataset || typeof imported.dataset !== 'object') {
+    throw new RunnerError('E_IMPORT_RESPONSE_INVALID')
+  }
+  const { dataset, quality } = imported
+  if (dataset.mode !== 'LIVE_ANALYSIS') throw new RunnerError('E_IMPORT_MODE_INVALID')
+  if (dataset.rowCount !== normalizedIdentity.rows) throw new RunnerError('E_IMPORT_ROW_COUNT_MISMATCH')
+  if (!Array.isArray(dataset.fields) || dataset.fields.length !== normalizedIdentity.fields) {
+    throw new RunnerError('E_IMPORT_FIELD_COUNT_MISMATCH')
+  }
+  if (dataset.fingerprint !== `sha256:${normalizedIdentity.sha256}`) {
+    throw new RunnerError('E_IMPORT_FINGERPRINT_MISMATCH')
+  }
+  if (!quality || typeof quality !== 'object') throw new RunnerError('E_IMPORT_QUALITY_INVALID')
+  if (quality.status === 'blocked') throw new RunnerError('E_IMPORT_QUALITY_BLOCKED')
+  if (quality.status !== 'passed' && quality.status !== 'warning') {
+    throw new RunnerError('E_IMPORT_QUALITY_INVALID')
+  }
+  if (typeof dataset.datasetId !== 'string' || dataset.datasetId.length === 0) {
+    throw new RunnerError('E_IMPORT_RESPONSE_INVALID')
+  }
+}
+
+function assertAnalysisBinding(analysis, imported) {
+  if (!analysis || typeof analysis !== 'object') throw new RunnerError('E_ANALYSIS_RESPONSE_INVALID')
+  if (analysis.status !== 'completed') throw new RunnerError('E_ANALYSIS_STATUS_INVALID')
+  if (!analysis.dataset || typeof analysis.dataset !== 'object') {
+    throw new RunnerError('E_ANALYSIS_RESPONSE_INVALID')
+  }
+  if (analysis.dataset.datasetId !== imported.dataset.datasetId) {
+    throw new RunnerError('E_ANALYSIS_DATASET_ID_MISMATCH')
+  }
+  if (analysis.dataset.fingerprint !== imported.dataset.fingerprint) {
+    throw new RunnerError('E_ANALYSIS_FINGERPRINT_MISMATCH')
+  }
+  if (!analysis.quality || typeof analysis.quality !== 'object') {
+    throw new RunnerError('E_ANALYSIS_QUALITY_INVALID')
+  }
+  if (analysis.quality.status === 'blocked') throw new RunnerError('E_ANALYSIS_QUALITY_BLOCKED')
+  if (analysis.quality.status !== 'passed' && analysis.quality.status !== 'warning') {
+    throw new RunnerError('E_ANALYSIS_QUALITY_INVALID')
+  }
+  if (typeof analysis.runId !== 'string' || analysis.runId.length === 0 || !Array.isArray(analysis.events)) {
+    throw new RunnerError('E_ANALYSIS_RESPONSE_INVALID')
+  }
+}
+
+function assertExportBinding(submission, runId) {
+  if (!submission || typeof submission !== 'object' || typeof submission.content !== 'string') {
+    throw new RunnerError('E_EXPORT_RESPONSE_INVALID')
+  }
+  const { descriptor } = submission
+  if (!descriptor || typeof descriptor !== 'object') throw new RunnerError('E_EXPORT_RESPONSE_INVALID')
+  if (descriptor.status !== 'ready') throw new RunnerError('E_EXPORT_STATUS_INVALID')
+  if (descriptor.kind !== 'submission_csv') throw new RunnerError('E_EXPORT_KIND_INVALID')
+  if (descriptor.format !== 'csv') throw new RunnerError('E_EXPORT_FORMAT_INVALID')
+  if (descriptor.runId !== runId) throw new RunnerError('E_EXPORT_RUN_ID_MISMATCH')
+  if (submission.mediaType !== 'text/csv') throw new RunnerError('E_EXPORT_MEDIA_TYPE_INVALID')
+  if (descriptor.contentHash !== sha256Descriptor(submission.content)) {
+    throw new RunnerError('E_EXPORT_CONTENT_HASH_MISMATCH')
+  }
+}
+
+function assertCheckerBinding(check, eventCount) {
+  if (!check || check.valid !== true) throw new RunnerError('E_CHECKER_INVALID')
+  if (!Array.isArray(check.columns) || check.columns.length !== 16) {
+    throw new RunnerError('E_CHECKER_COLUMNS_INVALID')
+  }
+  if (!Number.isSafeInteger(check.rowCount) || check.rowCount !== eventCount) {
+    throw new RunnerError('E_CHECKER_ROW_COUNT_MISMATCH')
+  }
+}
+
+function isCleanStop(result) {
+  return result?.timedOut === false && result.code === 0 && result.signal === null
+}
+
 export function sanitizeErrorCode(error) {
   return error instanceof RunnerError && /^E_[A-Z0-9_]+$/.test(error.code)
     ? error.code
@@ -231,19 +334,26 @@ export async function runOfficialCsvE2e({
   rawPath,
   expectedCommit,
   runId,
+  taskId,
+  dispatchId,
   outputRoot = DEFAULT_REPORT_ROOT,
   expected = { raw: OFFICIAL_RAW_IDENTITY, normalized: OFFICIAL_NORMALIZED_IDENTITY },
   dependencies = {},
 }) {
   const deps = { ...defaultDependencies(), ...dependencies }
   const safeId = safeRunId(runId)
+  const safeTask = safeTaskId(taskId)
+  const safeDispatch = dispatchId === undefined ? undefined : safeDispatchId(dispatchId)
   const { attempt, directory } = await createAttempt(outputRoot, safeId)
-  const reportPath = resolve(directory, 'report.json')
+  const reportPath = resolve(directory, 'official-csv-e2e.json')
   const report = {
     schema: REPORT_SCHEMA,
     status: 'failed',
     errorCode: null,
     runId: safeId,
+    taskId: safeTask,
+    ...(safeDispatch === undefined ? {} : { dispatchId: safeDispatch }),
+    testedCodeSha: null,
     attempt,
     expected: {
       raw: reportIdentity(expected.raw),
@@ -261,11 +371,21 @@ export async function runOfficialCsvE2e({
       throw new RunnerError('E_COMMIT_INVALID')
     }
     const head = await deps.getHead()
+    if (typeof head === 'string' && COMMIT_PATTERN.test(head)) report.testedCodeSha = head
     if (head !== expectedCommit) throw new RunnerError('E_COMMIT_MISMATCH')
     if (deps.totalMemoryBytes() < MIN_MEMORY_BYTES) throw new RunnerError('E_MEMORY_UNAVAILABLE')
     if (deps.heapLimitBytes() < MIN_HEAP_BYTES) throw new RunnerError('E_HEAP_UNAVAILABLE')
 
     let startedAt = Date.now()
+    try {
+      const metadata = await deps.statRaw(rawPath)
+      assertRawMetadata(metadata, expected.raw)
+      report.stages.push(stageRecord('raw_metadata', 'passed', startedAt, { bytes: metadata.size }))
+    } catch (error) {
+      throw stableStageError('raw_metadata', error)
+    }
+
+    startedAt = Date.now()
     let rawIdentity
     try {
       rawIdentity = await deps.inspectRaw(rawPath, deps.officialFields)
@@ -318,7 +438,7 @@ export async function runOfficialCsvE2e({
     startedAt = Date.now()
     try {
       imported = await source.importCsv({ filename: 'official-timeseries.csv', text: normalized })
-      if (typeof imported?.dataset?.datasetId !== 'string') throw new RunnerError('E_IMPORT_RESPONSE_INVALID')
+      assertImportBinding(imported, normalizedIdentity)
       report.stages.push(stageRecord('import', 'passed', startedAt))
     } catch (error) {
       throw stableStageError('import', error)
@@ -328,7 +448,7 @@ export async function runOfficialCsvE2e({
     startedAt = Date.now()
     try {
       analysis = await source.runAnalysis(imported.dataset.datasetId)
-      if (typeof analysis?.runId !== 'string') throw new RunnerError('E_ANALYSIS_RESPONSE_INVALID')
+      assertAnalysisBinding(analysis, imported)
       report.stages.push(stageRecord('analysis', 'passed', startedAt))
     } catch (error) {
       throw stableStageError('analysis', error)
@@ -338,7 +458,7 @@ export async function runOfficialCsvE2e({
     startedAt = Date.now()
     try {
       submission = await source.exportSubmission(analysis.runId)
-      if (typeof submission?.content !== 'string') throw new RunnerError('E_EXPORT_RESPONSE_INVALID')
+      assertExportBinding(submission, analysis.runId)
       const artifactPath = resolve(directory, 'submission.csv')
       await writeFile(artifactPath, submission.content, { encoding: 'utf8', flag: 'wx' })
       report.artifacts.push({
@@ -354,7 +474,7 @@ export async function runOfficialCsvE2e({
     startedAt = Date.now()
     try {
       const check = await deps.checkSubmission(resolve(directory, 'submission.csv'))
-      if (!check?.valid) throw new RunnerError('E_CHECKER_INVALID')
+      assertCheckerBinding(check, analysis.events.length)
       report.stages.push(stageRecord('checker', 'passed', startedAt))
     } catch (error) {
       throw stableStageError('checker', error)
@@ -368,7 +488,8 @@ export async function runOfficialCsvE2e({
     if (session) {
       const startedAt = Date.now()
       try {
-        await session.stop()
+        const stopResult = await session.stop()
+        if (!isCleanStop(stopResult)) throw new RunnerError('E_CLEANUP_FAILED')
         report.stages.push(stageRecord('cleanup', 'passed', startedAt))
       } catch {
         report.stages.push(stageRecord('cleanup', 'failed', startedAt, { errorCode: 'E_CLEANUP_FAILED' }))
@@ -386,17 +507,17 @@ export async function runOfficialCsvE2e({
     errorCode: report.errorCode,
     exitCode: report.status === 'passed' ? 0 : 1,
     reportPath,
-    reportRef: reportRefFor(safeId, attempt, 'report.json'),
+    reportRef: reportRefFor(safeId, attempt, 'official-csv-e2e.json'),
     ...(resultError ? { errorCode: resultError } : {}),
   }
 }
 
-function parseArguments(argumentsList) {
+export function parseOfficialCsvE2eArgs(argumentsList) {
   const values = new Map()
   for (let index = 0; index < argumentsList.length; index += 1) {
     const flag = argumentsList[index]
     const value = argumentsList[index + 1]
-    if (!['--official-csv', '--expected-commit', '--run-id'].includes(flag) || value === undefined || value.startsWith('--')) {
+    if (!['--official-csv', '--expected-commit', '--run-id', '--task-id', '--dispatch-id'].includes(flag) || value === undefined || value.startsWith('--')) {
       throw new RunnerError('E_ARGUMENTS_INVALID')
     }
     if (values.has(flag)) throw new RunnerError('E_ARGUMENTS_INVALID')
@@ -406,14 +527,22 @@ function parseArguments(argumentsList) {
   const rawPath = values.get('--official-csv')
   const expectedCommit = values.get('--expected-commit')
   const runId = values.get('--run-id')
-  if (!rawPath || !expectedCommit || !runId) throw new RunnerError('E_ARGUMENTS_INVALID')
-  return { rawPath, expectedCommit, runId }
+  const taskId = values.get('--task-id')
+  const dispatchId = values.get('--dispatch-id')
+  if (!rawPath || !expectedCommit || !runId || !taskId) throw new RunnerError('E_ARGUMENTS_INVALID')
+  return {
+    rawPath,
+    expectedCommit,
+    runId: safeRunId(runId),
+    taskId: safeTaskId(taskId),
+    ...(dispatchId === undefined ? {} : { dispatchId: safeDispatchId(dispatchId) }),
+  }
 }
 
 async function main() {
   let result
   try {
-    result = await runOfficialCsvE2e(parseArguments(process.argv.slice(2)))
+    result = await runOfficialCsvE2e(parseOfficialCsvE2eArgs(process.argv.slice(2)))
   } catch (error) {
     result = { status: 'failed', errorCode: sanitizeErrorCode(error), exitCode: 1 }
   }
