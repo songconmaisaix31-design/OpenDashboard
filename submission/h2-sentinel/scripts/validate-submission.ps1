@@ -25,7 +25,7 @@ foreach ($file in $requiredFiles) {
 
 $narrativePath = Join-Path $packageRoot 'TEN_PAGE_PROJECT_NARRATIVE.md'
 if (Test-Path -LiteralPath $narrativePath) {
-  $pageCount = (Select-String -LiteralPath $narrativePath -Pattern '^## Page [0-9]+ —').Count
+  $pageCount = (Select-String -LiteralPath $narrativePath -Pattern '^## Page [0-9]+ \u2014').Count
   if ($pageCount -ne 10) {
     $errors.Add("Ten-page narrative has $pageCount page headings; expected 10.")
   }
