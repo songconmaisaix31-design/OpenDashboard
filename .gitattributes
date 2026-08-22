@@ -1,0 +1,11 @@
+validation/reports/**/*.json text eol=lf
+validation/reports/**/*.csv text eol=lf
+docs/competition/h2-sentinel/*.md text eol=lf
+docs/competition/h2-sentinel/delivery/*.md text eol=lf
+docs/competition/h2-sentinel/delivery/*.json text eol=lf
+submission/h2-sentinel/**/*.md text eol=lf
+scripts/h2-sentinel/HANDOFF.md text eol=lf
+MEMORY.md text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
