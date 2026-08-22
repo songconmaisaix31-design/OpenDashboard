@@ -12,7 +12,8 @@
 ## Corrected evidence
 
 Attempt-6 is the only official-run input described here. It is bound to
-`58090bc` and records raw 77,865,257 bytes / 172,800 rows / 69 fields
+`58090bc` and records a raw official input that is not repository content:
+77,865,257 bytes / 172,800 rows / 69 fields
 (`88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9`),
 normalized 78,038,054 bytes
 (`4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169`),
@@ -20,13 +21,17 @@ normalized 78,038,054 bytes
 passed cleanup. The report path is
 `validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json`
 with SHA-256 `8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f`.
-The attempt-6 `submission.csv` SHA-256 is
+The pipeline-derived attempt-6 `submission.csv` SHA-256 is
 `af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326`.
+It is not an organizer submission, receipt, or final archive identity. Final
+organizer submission package/archive hash and redistribution/licensing review
+are `UNKNOWN-HOLD`.
 
-Deployment evidence is `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` at
-`h2-sentinel-hxrbu0wan-dwwww.vercel.app`, with explicit alias `204421.xyz`.
-The named root/mode routes returned 200 SPA shells, and remote JavaScript
-contained H2, invalid-mode, and Chinese-brand markers. This is not a visual or
+Deployment evidence is `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf`. Only custom domain
+`204421.xyz` is recorded as returning 200 same-origin H2 SPA shells and
+`H2 Sentinel` and `氢哨` JavaScript markers. Direct hostname
+`h2-sentinel-hxrbu0wan-dwwww.vercel.app` returned 302 SSO for root and Fixture:
+`AUTH-REDIRECT/UNKNOWN-HOLD`, not an H2 shell result. This is not a visual or
 interactive pass. Visual desktop/mobile and interactive verification remain
 `UNKNOWN-HOLD` because computer control was prohibited.
 
@@ -40,6 +45,14 @@ Registration/submission, organizer receipt/acceptance/approval, and official
 score/rank are all `UNKNOWN-HOLD`. Historical internal numbers 0.2168 and
 0.9517 lack immutable `testedCodeSha` binding, so they are historical/unbound
 and are not current F1, precision, recall, or accuracy claims.
+
+## Organizer-rule source
+
+[Feishu competition rule, revision 146](https://explorneo.feishu.cn/docx/OwAodS0VxoDUsGxsEFGcRgEtn2f) was reviewed 2026-08-23. Its stated deadline,
+single team-leader submission, 100/500-character copy, no-more-than-ten-page
+Feishu document, and accessible demo/product requirements are revision facts.
+External accessibility and final organizer status are not proven by this
+repository.
 
 ## Verification commands
 
