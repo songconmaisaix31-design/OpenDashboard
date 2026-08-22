@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://opendashboard.local/schemas/h2-sentinel/release-manifest.schema.json",
-  "title": "H2 Sentinel Epoch 1 Release Manifest",
+  "title": "H2 Sentinel Release Manifest",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -24,7 +24,7 @@
     "blockingGateIds"
   ],
   "properties": {
-    "schemaVersion": { "const": "1.0" },
+    "schemaVersion": { "enum": ["1.0", "2.0"] },
     "runId": { "$ref": "#/$defs/id" },
     "planParentSha": { "$ref": "#/$defs/sha" },
     "parallelTaskBaseSha": { "$ref": "#/$defs/sha" },
@@ -52,9 +52,51 @@
     "deployment": { "$ref": "#/$defs/deployment" },
     "submission": { "$ref": "#/$defs/releaseArea" },
     "verdict": { "enum": ["PASS", "HOLD", "FAIL"] },
-    "blockingGateIds": { "type": "array", "items": { "$ref": "#/$defs/gateId" }, "uniqueItems": true }
+    "blockingGateIds": { "type": "array", "items": { "$ref": "#/$defs/gateId" }, "uniqueItems": true },
+    "epoch": { "type": "integer", "minimum": 1 },
+    "decisions": { "$ref": "#/$defs/epoch4Decisions" },
+    "finalization": { "$ref": "#/$defs/finalization" },
+    "officialAttempts": {
+      "type": "array",
+      "minItems": 6,
+      "items": { "$ref": "#/$defs/officialAttempt" }
+    },
+    "ciRuns": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "$ref": "#/$defs/ciRun" },
+      "uniqueItems": true
+    },
+    "deploymentObservation": { "$ref": "#/$defs/deploymentObservation" },
+    "inputPackageIntegrity": { "$ref": "#/$defs/inputPackageIntegrity" }
   },
   "allOf": [
+    {
+      "if": {
+        "required": ["schemaVersion"],
+        "properties": { "schemaVersion": { "const": "2.0" } }
+      },
+      "then": {
+        "required": [
+          "epoch",
+          "decisions",
+          "finalization",
+          "officialAttempts",
+          "ciRuns",
+          "deploymentObservation",
+          "inputPackageIntegrity"
+        ],
+        "properties": {
+          "epoch": { "const": 4 },
+          "decisions": {},
+          "finalization": {},
+          "officialAttempts": {},
+          "ciRuns": {},
+          "deploymentObservation": {},
+          "inputPackageIntegrity": {}
+        }
+      }
+    },
     {
       "if": { "properties": { "verdict": { "const": "PASS" } } },
       "then": {
@@ -236,6 +278,7 @@
   ],
   "$defs": {
     "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "id": { "type": "string", "minLength": 1, "maxLength": 240, "pattern": "^[^\\r\\n]+$" },
     "reason": { "type": "string", "minLength": 1, "maxLength": 2000, "pattern": "^[^\\r\\n]+$" },
     "timestamp": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$" },
@@ -444,6 +487,252 @@
           "then": { "required": ["reason"], "properties": { "reason": {} } }
         }
       ]
+    },
+    "epoch4DecisionStatus": { "enum": ["GO", "PENDING", "UNKNOWN-HOLD", "HOLD", "FAIL"] },
+    "epoch4Decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason"],
+      "properties": {
+        "status": { "$ref": "#/$defs/epoch4DecisionStatus" },
+        "reason": { "$ref": "#/$defs/reason" },
+        "testedCodeSha": { "$ref": "#/$defs/sha" },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "GO" } } },
+          "then": {
+            "required": ["testedCodeSha", "evidence"],
+            "properties": {
+              "testedCodeSha": {},
+              "evidence": { "type": "array", "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
+    "epoch4Decisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "technicalReadiness",
+        "registrationOrFormSubmission",
+        "receiptOrAcceptance",
+        "officialScore",
+        "visualVerification",
+        "overallCompetition"
+      ],
+      "properties": {
+        "technicalReadiness": { "$ref": "#/$defs/epoch4Decision" },
+        "registrationOrFormSubmission": { "$ref": "#/$defs/epoch4Decision" },
+        "receiptOrAcceptance": { "$ref": "#/$defs/epoch4Decision" },
+        "officialScore": { "$ref": "#/$defs/epoch4Decision" },
+        "visualVerification": { "$ref": "#/$defs/epoch4Decision" },
+        "overallCompetition": { "$ref": "#/$defs/epoch4Decision" }
+      }
+    },
+    "finalizationItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "track": { "enum": ["A", "B", "C", "D", "E", "F"] },
+        "status": { "$ref": "#/$defs/status" },
+        "commitSha": { "$ref": "#/$defs/sha" },
+        "remoteRef": { "$ref": "#/$defs/id" },
+        "remoteSha": { "$ref": "#/$defs/sha" },
+        "observedAt": { "$ref": "#/$defs/timestamp" },
+        "evidence": { "$ref": "#/$defs/evidence" },
+        "reason": { "$ref": "#/$defs/reason" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "passed" } } },
+          "then": {
+            "required": ["commitSha", "remoteRef", "remoteSha", "observedAt", "evidence"],
+            "properties": {
+              "commitSha": {},
+              "remoteRef": {},
+              "remoteSha": {},
+              "observedAt": {},
+              "evidence": { "type": "array", "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["failed", "pending", "not-delivered"] } } },
+          "then": {
+            "required": ["reason"],
+            "properties": { "reason": {} },
+            "not": { "required": ["commitSha"] }
+          }
+        }
+      ]
+    },
+    "finalizationTrack": {
+      "allOf": [
+        { "$ref": "#/$defs/finalizationItem" },
+        {
+          "type": "object",
+          "properties": {
+            "track": { "enum": ["A", "B", "C", "D", "E", "F"] }
+          },
+          "required": ["track"]
+        }
+      ]
+    },
+    "finalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tracks", "postDocumentationIntegration"],
+      "properties": {
+        "tracks": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": { "$ref": "#/$defs/finalizationTrack" }
+        },
+        "postDocumentationIntegration": { "$ref": "#/$defs/finalizationItem" }
+      }
+    },
+    "officialAttemptFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rawInputBytes",
+        "rawInputRows",
+        "rawInputFields",
+        "rawInputSha256",
+        "normalizedBytes",
+        "normalizedSha256",
+        "eventCount",
+        "submissionRows",
+        "submissionColumns",
+        "seriesVariableCount",
+        "seriesPointCount",
+        "cleanupStatus"
+      ],
+      "properties": {
+        "rawInputBytes": { "type": "integer", "minimum": 0 },
+        "rawInputRows": { "type": "integer", "minimum": 0 },
+        "rawInputFields": { "type": "integer", "minimum": 0 },
+        "rawInputSha256": { "$ref": "#/$defs/sha256" },
+        "normalizedBytes": { "type": "integer", "minimum": 0 },
+        "normalizedSha256": { "$ref": "#/$defs/sha256" },
+        "eventCount": { "type": "integer", "minimum": 0 },
+        "submissionRows": { "type": "integer", "minimum": 0 },
+        "submissionColumns": { "type": "integer", "minimum": 0 },
+        "seriesVariableCount": { "type": "integer", "minimum": 0 },
+        "seriesPointCount": { "type": "integer", "minimum": 0 },
+        "cleanupStatus": { "enum": ["passed", "failed", "pending"] }
+      }
+    },
+    "officialAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attempt", "status", "reportPath", "reportSha256", "reason"],
+      "properties": {
+        "attempt": { "type": "integer", "minimum": 1 },
+        "status": { "enum": ["historical", "passed", "failed", "pending"] },
+        "reportPath": { "$ref": "#/$defs/repoPath" },
+        "reportSha256": { "$ref": "#/$defs/sha256" },
+        "testedCodeSha": { "$ref": "#/$defs/sha" },
+        "submissionPath": { "$ref": "#/$defs/repoPath" },
+        "submissionSha256": { "$ref": "#/$defs/sha256" },
+        "facts": { "$ref": "#/$defs/officialAttemptFacts" },
+        "reason": { "$ref": "#/$defs/reason" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "attempt": { "const": 6 } } },
+          "then": {
+            "required": ["testedCodeSha", "submissionPath", "submissionSha256", "facts"],
+            "properties": {
+              "testedCodeSha": {},
+              "submissionPath": {},
+              "submissionSha256": {},
+              "facts": {},
+              "status": { "const": "passed" }
+            }
+          }
+        }
+      ]
+    },
+    "ciRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runId", "headSha", "conclusion", "evidence"],
+      "properties": {
+        "runId": { "$ref": "#/$defs/id" },
+        "headSha": { "$ref": "#/$defs/sha" },
+        "conclusion": { "const": "success" },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "routeCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routePath", "status"],
+      "properties": {
+        "routePath": { "type": "string", "pattern": "^/[^\\r\\n]*$" },
+        "status": { "const": "SPA_SHELL_200" }
+      }
+    },
+    "deploymentObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deploymentId", "hostname", "customDomain", "codeShaBinding", "routeChecks", "assetMarkers", "evidenceScope"],
+      "properties": {
+        "deploymentId": { "$ref": "#/$defs/id" },
+        "hostname": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+        "customDomain": { "type": "string", "pattern": "^[a-z0-9.-]+$" },
+        "codeShaBinding": { "enum": ["verified", "unverified"] },
+        "testedCodeSha": { "$ref": "#/$defs/sha" },
+        "routeChecks": { "type": "array", "minItems": 4, "items": { "$ref": "#/$defs/routeCheck" } },
+        "assetMarkers": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+        "evidenceScope": { "const": "transport-and-static-assets-only" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "codeShaBinding": { "const": "verified" } } },
+          "then": { "required": ["testedCodeSha"], "properties": { "testedCodeSha": {} } }
+        }
+      ]
+    },
+    "inputDataIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "identicalArchiveCount", "archiveBytes", "archiveSha256", "checksumEntries", "checksumStatus", "officialTestCsvSha256", "reason"],
+      "properties": {
+        "status": { "const": "PASS" },
+        "identicalArchiveCount": { "type": "integer", "minimum": 1 },
+        "archiveBytes": { "type": "integer", "minimum": 0 },
+        "archiveSha256": { "$ref": "#/$defs/sha256" },
+        "checksumEntries": { "type": "integer", "minimum": 0 },
+        "checksumStatus": { "const": "PASS" },
+        "officialTestCsvSha256": { "$ref": "#/$defs/sha256" },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "organizerDocumentationManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "actualTopLevelDocumentCount", "reason"],
+      "properties": {
+        "status": { "const": "DISCREPANCY" },
+        "actualTopLevelDocumentCount": { "type": "integer", "minimum": 0 },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    },
+    "inputPackageIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataIntegrity", "organizerDocumentationManifest"],
+      "properties": {
+        "dataIntegrity": { "$ref": "#/$defs/inputDataIntegrity" },
+        "organizerDocumentationManifest": { "$ref": "#/$defs/organizerDocumentationManifest" }
+      }
     },
     "releaseArea": {
       "type": "object",

@@ -1,81 +1,361 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "2.0",
+  "epoch": 4,
   "runId": "run_f2bc8c0433f8",
-  "planParentSha": "f5646486f3912d1f97052bc9ee08f9c48053346e",
-  "parallelTaskBaseSha": "2e809854422230f5afaca4776d6ec56e5c8507be",
-  "planSha": "2e809854422230f5afaca4776d6ec56e5c8507be",
-  "testedCodeSha": "e76167566429390cac1826b4c44a55c220f48a9b",
+  "planParentSha": "90088005259ec6ff18042238c99e118e67fb172b",
+  "parallelTaskBaseSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+  "planSha": "30f8f36ff936b295596c5515f15d2a8d17cebaff",
+  "testedCodeSha": "58090bc1747d621bc87d698259319a70c34e75f2",
   "contractGate": {
     "contractsTree": "11608e5ff5c0e69c3dd4a18588e5a13027151e82",
     "vocabularyTree": "84d3d39a864e25e69e607a0314f3b27aa10c0fe8",
-    "analyticsContractsBlob": "3d33f410379339f417f4bc7451483e484124acc6"
+    "analyticsContractsBlob": "9139010808e1fc5392919ab1a437aefe76f850da"
   },
   "tasks": [
-    { "taskId": "task_dab68d3285f0", "owner": "orchestration:task_dab68d3285f0", "writePaths": ["apps/web/src/features/h2-sentinel"], "commitSha": "64a5b2d3f5da40e2be48e542e44edebef92cb1cd", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/model/workspace-loader.ts", "apps/web/src/features/h2-sentinel/test/workspace-loader.test.ts"] },
-    { "taskId": "task_6e6cc9448893", "owner": "orchestration:task_6e6cc9448893", "writePaths": ["apps/web/src/features/h2-sentinel"], "commitSha": "8aef1192abce6de2abeff208b2d583113f68238c", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/HANDOFF.md"] },
-    { "taskId": "task_9036d70dac77", "owner": "orchestration:task_9036d70dac77", "writePaths": ["apps/web/src/features/h2-sentinel"], "commitSha": "9b164f570daa81affe4e9e4efecaa74562f3bb75", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/HANDOFF.md"] },
-    { "taskId": "task_655e51c62e42", "owner": "orchestration:task_655e51c62e42", "writePaths": ["scripts/h2-sentinel"], "commitSha": "fa74f43d1284cde1163dfec8f1d83754b3066a53", "status": "passed", "evidence": ["scripts/h2-sentinel/smoke.mjs", "scripts/h2-sentinel/offline-deploy-smoke.mjs"] },
-    { "taskId": "task_e9362a97d703", "owner": "orchestration:task_e9362a97d703", "writePaths": ["scripts/h2-sentinel"], "commitSha": "24ff81c52fd4d099796a44ff02902fd4bc2e3014", "status": "passed", "evidence": ["scripts/h2-sentinel/smoke.mjs", "scripts/h2-sentinel/launch.test.mjs"] },
-    { "taskId": "task_100bb1a1be7a", "owner": "orchestration:task_100bb1a1be7a", "writePaths": ["vercel.json"], "commitSha": "c4fe86f99c7309e4a2cb605166508b3dc184f1e6", "status": "passed", "evidence": ["vercel.json"] },
-    { "taskId": "task_80c5a51b18c3", "owner": "orchestration:task_80c5a51b18c3", "writePaths": ["docs/competition/h2-sentinel/delivery"], "commitSha": "1bcf3aa692c41d694cd7d0d6407f27304d4d9c07", "status": "failed", "reason": "The earlier integration attempt retained cold-smoke, root-uv, and remote-verification failures; later live observation does not rewrite that task outcome.", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md"] },
-    { "taskId": "task_985faa3dfa4a", "owner": "collaboration:/root/rules_audit", "writePaths": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md", "docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json"], "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "status": "passed", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md", "docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json"] }
+    {
+      "taskId": "trackA",
+      "owner": "Epoch 4 Track A",
+      "writePaths": [".gitattributes"],
+      "status": "pending",
+      "reason": "The Track A final commit SHA is not recorded in the unique integration record."
+    },
+    {
+      "taskId": "trackB",
+      "owner": "Epoch 4 Track B",
+      "writePaths": ["validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6"],
+      "status": "pending",
+      "reason": "The Track B final commit SHA is not recorded in the unique integration record."
+    },
+    {
+      "taskId": "trackC",
+      "owner": "Epoch 4 Track C",
+      "writePaths": ["submission/h2-sentinel"],
+      "status": "pending",
+      "reason": "The Track C final commit SHA is not recorded in the unique integration record."
+    },
+    {
+      "taskId": "trackD",
+      "owner": "Epoch 4 Track D",
+      "writePaths": [
+        "docs/competition/h2-sentinel/BRANCH_OVERVIEW.md",
+        "docs/competition/h2-sentinel/DEPLOYMENT_AND_SMOKE.md",
+        "docs/competition/h2-sentinel/MULTI_AGENT_TASKS.md",
+        "docs/competition/h2-sentinel/PRD.md",
+        "docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json",
+        "docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.json"
+      ],
+      "status": "pending",
+      "reason": "The Track D final commit SHA is not recorded in the unique integration record."
+    },
+    {
+      "taskId": "trackE",
+      "owner": "Epoch 4 Track E",
+      "writePaths": ["scripts/h2-sentinel/HANDOFF.md"],
+      "status": "pending",
+      "reason": "The Track E final commit SHA is not recorded in the unique integration record."
+    },
+    {
+      "taskId": "trackF",
+      "owner": "Epoch 4 Track F",
+      "writePaths": ["MEMORY.md"],
+      "status": "pending",
+      "reason": "The Track F final commit SHA is not recorded in the unique integration record."
+    }
   ],
   "dispatches": [
-    { "dispatchId": "ctx_5ba11eeea8a6", "taskId": "task_dab68d3285f0", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/model/workspace-loader.ts"] },
-    { "dispatchId": "ctx_9dd1d5e68d8a", "taskId": "task_6e6cc9448893", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/HANDOFF.md"] },
-    { "dispatchId": "ctx_fc32646f5c0a", "taskId": "task_9036d70dac77", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/HANDOFF.md"] },
-    { "dispatchId": "ctx_0f820c611d98", "taskId": "task_655e51c62e42", "status": "passed", "evidence": ["scripts/h2-sentinel/smoke.mjs"] },
-    { "dispatchId": "ctx_0371109f5120", "taskId": "task_e9362a97d703", "status": "passed", "evidence": ["scripts/h2-sentinel/launch.test.mjs"] },
-    { "dispatchId": "ctx_3afaf16bcc10", "taskId": "task_100bb1a1be7a", "status": "passed", "evidence": ["vercel.json"] },
-    { "dispatchId": "ctx_7a5d29219bc7", "taskId": "task_80c5a51b18c3", "status": "failed", "reason": "The dispatched integration attempt ended with recorded local and remote-verification failures.", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md"] }
+    {
+      "dispatchId": "dispatch_e4_trackA",
+      "taskId": "trackA",
+      "status": "pending",
+      "reason": "The unique integrator has not recorded the Track A dispatch outcome."
+    },
+    {
+      "dispatchId": "dispatch_e4_trackB",
+      "taskId": "trackB",
+      "status": "pending",
+      "reason": "The unique integrator has not recorded the Track B dispatch outcome."
+    },
+    {
+      "dispatchId": "dispatch_e4_trackC",
+      "taskId": "trackC",
+      "status": "pending",
+      "reason": "The unique integrator has not recorded the Track C dispatch outcome."
+    },
+    {
+      "dispatchId": "dispatch_e4_trackD",
+      "taskId": "trackD",
+      "status": "pending",
+      "reason": "The unique integrator has not recorded the Track D dispatch outcome."
+    },
+    {
+      "dispatchId": "dispatch_e4_trackE",
+      "taskId": "trackE",
+      "status": "pending",
+      "reason": "The unique integrator has not recorded the Track E dispatch outcome."
+    },
+    {
+      "dispatchId": "dispatch_e4_trackF",
+      "taskId": "trackF",
+      "status": "pending",
+      "reason": "The unique integrator has not recorded the Track F dispatch outcome."
+    }
   ],
   "commits": [
-    { "taskId": "task_dab68d3285f0", "localSha": "64a5b2d3f5da40e2be48e542e44edebef92cb1cd", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e1-web-csv", "remoteSha": "9b164f570daa81affe4e9e4efecaa74562f3bb75", "observedAt": "2026-08-22T16:40:19Z", "status": "passed", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/64a5b2d3f5da40e2be48e542e44edebef92cb1cd"] },
-    { "taskId": "task_6e6cc9448893", "localSha": "8aef1192abce6de2abeff208b2d583113f68238c", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e1-web-csv", "remoteSha": "9b164f570daa81affe4e9e4efecaa74562f3bb75", "observedAt": "2026-08-22T16:40:19Z", "status": "passed", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/8aef1192abce6de2abeff208b2d583113f68238c"] },
-    { "taskId": "task_9036d70dac77", "localSha": "9b164f570daa81affe4e9e4efecaa74562f3bb75", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e1-web-csv", "remoteSha": "9b164f570daa81affe4e9e4efecaa74562f3bb75", "observedAt": "2026-08-22T16:40:19Z", "status": "passed", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/9b164f570daa81affe4e9e4efecaa74562f3bb75"] },
-    { "taskId": "task_655e51c62e42", "localSha": "fa74f43d1284cde1163dfec8f1d83754b3066a53", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e1-smoke-linux", "remoteSha": "24ff81c52fd4d099796a44ff02902fd4bc2e3014", "observedAt": "2026-08-22T16:40:19Z", "status": "passed", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/fa74f43d1284cde1163dfec8f1d83754b3066a53"] },
-    { "taskId": "task_e9362a97d703", "localSha": "24ff81c52fd4d099796a44ff02902fd4bc2e3014", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e1-smoke-linux", "remoteSha": "24ff81c52fd4d099796a44ff02902fd4bc2e3014", "observedAt": "2026-08-22T16:40:19Z", "status": "passed", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/24ff81c52fd4d099796a44ff02902fd4bc2e3014"] },
-    { "taskId": "task_100bb1a1be7a", "localSha": "c4fe86f99c7309e4a2cb605166508b3dc184f1e6", "remoteRef": "refs/heads/songconmaisaix31-design/h2-e1-vercel-route", "remoteSha": "c4fe86f99c7309e4a2cb605166508b3dc184f1e6", "observedAt": "2026-08-22T16:40:19Z", "status": "passed", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/c4fe86f99c7309e4a2cb605166508b3dc184f1e6"] },
-    { "taskId": "task_80c5a51b18c3", "localSha": "1bcf3aa692c41d694cd7d0d6407f27304d4d9c07", "remoteRef": "refs/heads/songconmaisaix31-design/h2-delivery-integrate-e1", "status": "failed", "reason": "Historical network verification failed at task completion; no remote SHA is attached to the failed observation.", "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md"] },
-    { "taskId": "task_985faa3dfa4a", "localSha": "e76167566429390cac1826b4c44a55c220f48a9b", "remoteRef": "refs/heads/songconmaisaix31-design/h2-delivery-integrate-e1", "remoteSha": "e76167566429390cac1826b4c44a55c220f48a9b", "observedAt": "2026-08-22T16:40:19Z", "status": "passed", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/e76167566429390cac1826b4c44a55c220f48a9b"] }
+    {
+      "taskId": "trackA",
+      "status": "pending",
+      "reason": "No Track A commit SHA is recorded for final Epoch 4 integration."
+    },
+    {
+      "taskId": "trackB",
+      "status": "pending",
+      "reason": "No Track B commit SHA is recorded for final Epoch 4 integration."
+    },
+    {
+      "taskId": "trackC",
+      "status": "pending",
+      "reason": "No Track C commit SHA is recorded for final Epoch 4 integration."
+    },
+    {
+      "taskId": "trackD",
+      "status": "pending",
+      "reason": "No Track D commit SHA is recorded for final Epoch 4 integration."
+    },
+    {
+      "taskId": "trackE",
+      "status": "pending",
+      "reason": "No Track E commit SHA is recorded for final Epoch 4 integration."
+    },
+    {
+      "taskId": "trackF",
+      "status": "pending",
+      "reason": "No Track F commit SHA is recorded for final Epoch 4 integration."
+    }
   ],
   "attempts": [
-    { "gateId": "ubuntuSmoke", "attempt": 1, "runId": "32581403575", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "2e809854422230f5afaca4776d6ec56e5c8507be", "runnerOS": "Ubuntu", "environment": "GitHub Actions job 97051221180", "command": "npm run h2:smoke", "status": "failed", "reason": "The GitHub Actions attempt failed without a passing Ubuntu smoke result; the freeze-time timeout blocker remains unresolved.", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32581403575/job/97051221180"] },
-    { "gateId": "ubuntuSmoke", "attempt": 2, "runId": "32581406281", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "2e809854422230f5afaca4776d6ec56e5c8507be", "runnerOS": "Ubuntu", "environment": "GitHub Actions job 97051227728", "command": "npm run h2:smoke", "status": "failed", "reason": "The retry failed without a passing Ubuntu smoke result; it does not validate the later tested code commit.", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32581406281/job/97051227728"] },
-    { "gateId": "submission", "attempt": 1, "runId": "task_80c5a51b18c3", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "local integration worktree", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File submission/h2-sentinel/validate-submission.ps1", "status": "failed", "reason": "The requested validator path did not exist; the actual script is under submission/h2-sentinel/scripts.", "evidence": ["submission/h2-sentinel/scripts/validate-submission.ps1"] },
-    { "gateId": "submission", "attempt": 2, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "Windows PowerShell 5.1.26100.9168", "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File submission/h2-sentinel/scripts/validate-submission.ps1", "status": "failed", "reason": "Windows PowerShell 5.1 reached the actual file but failed to parse the validator at line 37.", "evidence": ["submission/h2-sentinel/scripts/validate-submission.ps1"] },
-    { "gateId": "submission", "attempt": 3, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "PowerShell 7.6.5", "command": "pwsh -NoProfile -File submission/h2-sentinel/scripts/validate-submission.ps1", "status": "passed", "evidence": ["submission/h2-sentinel/scripts/validate-submission.ps1", "submission/h2-sentinel/RUNTIME_EVIDENCE_CHECKLIST.md"] },
-    { "gateId": "integration", "attempt": 1, "runId": "task_80c5a51b18c3", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "cold local integration worktree", "command": "npm run h2:smoke", "status": "failed", "reason": "The launcher did not report analytics health before readiness and exited without a passing smoke result.", "evidence": ["scripts/h2-sentinel/smoke.mjs"] },
-    { "gateId": "integration", "attempt": 2, "runId": "task_80c5a51b18c3", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "repository root", "command": "uv lock --check", "status": "failed", "reason": "The repository root has no pyproject.toml; this failed command is kept separate from service-directory Python passes.", "evidence": ["services/h2-analytics/pyproject.toml"] },
-    { "gateId": "integration", "attempt": 3, "runId": "task_80c5a51b18c3", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "services/h2-analytics", "command": "uv lock --check", "status": "passed", "evidence": ["services/h2-analytics/pyproject.toml", "services/h2-analytics/uv.lock"] },
-    { "gateId": "integration", "attempt": 4, "runId": "task_80c5a51b18c3", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "services/h2-analytics", "command": "uv sync --locked --extra dev", "status": "passed", "evidence": ["services/h2-analytics/pyproject.toml", "services/h2-analytics/uv.lock"] },
-    { "gateId": "integration", "attempt": 5, "runId": "task_80c5a51b18c3", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "services/h2-analytics", "command": "uv run --locked --extra dev pytest tests", "status": "passed", "evidence": ["services/h2-analytics/tests", "services/h2-analytics/uv.lock"] },
-    { "gateId": "integration", "attempt": 6, "runId": "task_80c5a51b18c3", "taskId": "task_80c5a51b18c3", "dispatchId": "ctx_7a5d29219bc7", "commitSha": "081298270a144837ce6e1b2c3e2279825059430e", "runnerOS": "Windows", "environment": "warm local integration worktree", "command": "npm run h2:smoke", "status": "passed", "evidence": ["scripts/h2-sentinel/smoke.mjs"] },
-    { "gateId": "integration", "attempt": 7, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "local integration worktree", "command": "npm run check", "status": "passed", "evidence": ["package.json", "package-lock.json"] },
-    { "gateId": "integration", "attempt": 8, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "local integration worktree", "command": "npm run h2:test", "status": "passed", "evidence": ["apps/web/src/features/h2-sentinel/test", "packages/h2-contracts/test", "plugins/h2-ems/test"] },
-    { "gateId": "integration", "attempt": 9, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "local integration worktree", "command": "npm run h2:qa", "status": "passed", "evidence": ["tests/h2-sentinel"] },
-    { "gateId": "integration", "attempt": 10, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "local integration worktree", "command": "npm run h2:launcher:test", "status": "passed", "evidence": ["scripts/h2-sentinel/composition.test.mjs", "scripts/h2-sentinel/launch.test.mjs"] },
-    { "gateId": "integration", "attempt": 11, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "local integration worktree", "command": "npm run h2:smoke", "status": "passed", "evidence": ["scripts/h2-sentinel/smoke.mjs"] },
-    { "gateId": "integration", "attempt": 12, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "repository root", "command": "uv lock --check", "status": "failed", "reason": "The repository root has no pyproject.toml; the authoritative Python project is the analytics service directory.", "evidence": ["services/h2-analytics/pyproject.toml"] },
-    { "gateId": "integration", "attempt": 13, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "services/h2-analytics", "command": "uv lock --check", "status": "passed", "evidence": ["services/h2-analytics/pyproject.toml", "services/h2-analytics/uv.lock"] },
-    { "gateId": "integration", "attempt": 14, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "services/h2-analytics", "command": "uv sync --locked --extra dev", "status": "passed", "evidence": ["services/h2-analytics/pyproject.toml", "services/h2-analytics/uv.lock"] },
-    { "gateId": "integration", "attempt": 15, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "services/h2-analytics", "command": "uv run --locked --extra dev pytest tests", "status": "passed", "evidence": ["services/h2-analytics/tests", "services/h2-analytics/uv.lock"] },
-    { "gateId": "integration", "attempt": 16, "runId": "run_f2bc8c0433f8", "taskId": "task_985faa3dfa4a", "commitSha": "e76167566429390cac1826b4c44a55c220f48a9b", "runnerOS": "Windows", "environment": "local integration worktree", "command": "npx --yes ajv-cli@5 compile --spec=draft2020 --strict=true -s docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json", "status": "passed", "evidence": ["docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json"] }
+    {
+      "gateId": "webOfficialCsvE2E",
+      "attempt": 6,
+      "runId": "run_f2bc8c0433f8",
+      "taskId": "trackB",
+      "commitSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+      "runnerOS": "sanitized-runner",
+      "environment": "authorized-official-run-evidence",
+      "command": "official-csv-e2e",
+      "status": "passed",
+      "evidence": [
+        "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json",
+        "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/submission.csv"
+      ]
+    }
   ],
   "gates": {
-    "webOfficialCsvE2E": { "status": "pending", "attempts": [], "reason": "The 300 MiB metadata/pre-read fix is only a necessary condition. No exact 77,865,257-byte, 172,800-row, 69-field authorized file has completed normalize through same-origin Web import, analyze, export, and checker on testedCodeSha. The Live default remains 5,000 ms, the older unbound full-file import/analyze exceeded six seconds, and the older smoke path bypassed the Web proxy." },
-    "ubuntuSmoke": { "status": "pending", "attempts": [1, 2], "reason": "Both recorded Ubuntu attempts failed on the frozen plan commit; no Ubuntu run has passed on testedCodeSha." },
-    "officialDataValidation": { "status": "pending", "attempts": [], "reason": "No current authorized full-file validation report, official score, or organizer acceptance is available." },
-    "deployment": { "status": "pending", "attempts": [], "reason": "The route configuration task passed, but no deployed HTTPS URL bound to testedCodeSha has been observed in this release workflow." },
-    "submission": { "status": "pending", "attempts": [1, 2, 3], "reason": "PowerShell 7.6.5 passed the repository validator, but Windows PowerShell 5.1 still has a parser failure and no organizer form receipt or approval is evidenced." },
-    "integration": { "status": "passed", "attempts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], "evidence": ["docs/competition/h2-sentinel/delivery/EPOCH-1-PLAN.md", "docs/competition/h2-sentinel/delivery/RELEASE-MANIFEST.schema.json", "scripts/h2-sentinel/smoke.mjs", "services/h2-analytics/uv.lock"] }
+    "webOfficialCsvE2E": {
+      "status": "passed",
+      "attempts": [6],
+      "evidence": ["validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json"]
+    },
+    "ubuntuSmoke": {
+      "status": "passed",
+      "attempts": [],
+      "evidence": [
+        "https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32591314579",
+        "https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32591315711",
+        "https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32591315735"
+      ]
+    },
+    "officialDataValidation": {
+      "status": "passed",
+      "attempts": [6],
+      "evidence": ["validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json"]
+    },
+    "deployment": {
+      "status": "pending",
+      "attempts": [],
+      "reason": "Transport and static-asset observations do not bind the deployment to testedCodeSha and do not prove visual or interactive behavior."
+    },
+    "submission": {
+      "status": "pending",
+      "attempts": [],
+      "reason": "No organizer form submission, receipt, or acceptance is evidenced."
+    },
+    "integration": {
+      "status": "pending",
+      "attempts": [],
+      "reason": "The final post-document integration SHA and fresh exact-SHA gates remain pending."
+    }
   },
   "publication": {
-    "integrationBranch": { "status": "passed", "localSha": "e76167566429390cac1826b4c44a55c220f48a9b", "remoteRef": "refs/heads/songconmaisaix31-design/h2-delivery-integrate-e1", "remoteSha": "e76167566429390cac1826b4c44a55c220f48a9b", "observedAt": "2026-08-22T16:40:19Z", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/e76167566429390cac1826b4c44a55c220f48a9b"] },
-    "canonical": { "status": "pending", "localSha": "e76167566429390cac1826b4c44a55c220f48a9b", "remoteRef": "refs/heads/competition/h2-sentinel", "observedAt": "2026-08-22T16:40:19Z", "reason": "The live canonical ref and pull request head were independently observed at 2e809854422230f5afaca4776d6ec56e5c8507be before the manifest commit and final publication step.", "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/commit/2e809854422230f5afaca4776d6ec56e5c8507be"] }
+    "integrationBranch": {
+      "status": "pending",
+      "reason": "The final post-document integration commit and remote observation are not yet recorded."
+    },
+    "canonical": {
+      "status": "pending",
+      "reason": "Canonical publication of the final post-document SHA is not yet recorded."
+    }
   },
-  "deployment": { "status": "pending", "reason": "No deployed HTTPS URL or deployed commit identity has been observed for testedCodeSha." },
-  "submission": { "status": "pending", "reason": "Local package validation does not establish organizer submission, receipt, approval, visual review, deployment, or official-data acceptance." },
+  "deployment": {
+    "status": "pending",
+    "reason": "Observed HTTP 200 SPA shells and static assets are not a tested-code binding, visual verification, or interactive smoke proof."
+  },
+  "submission": {
+    "status": "pending",
+    "reason": "Local technical artifacts do not prove organizer registration, submission, receipt, acceptance, or score."
+  },
   "verdict": "HOLD",
-  "blockingGateIds": ["webOfficialCsvE2E", "ubuntuSmoke", "officialDataValidation", "deployment", "submission"]
+  "blockingGateIds": ["deployment", "submission", "integration"],
+  "decisions": {
+    "technicalReadiness": {
+      "status": "PENDING",
+      "reason": "The frozen executable base has evidence, but the final post-document integration SHA and its fresh gates are not yet recorded."
+    },
+    "registrationOrFormSubmission": {
+      "status": "UNKNOWN-HOLD",
+      "reason": "Revision 146 requires the captain's one-time team submission; no form evidence is available after the 2026-08-21 online-work deadline."
+    },
+    "receiptOrAcceptance": {
+      "status": "UNKNOWN-HOLD",
+      "reason": "No organizer receipt, acknowledgement, or acceptance tied to a package hash is available."
+    },
+    "officialScore": {
+      "status": "UNKNOWN-HOLD",
+      "reason": "No organizer score attributable to this submission is available; historical 0.2168 and 0.9517 values are unbound and are not official scores."
+    },
+    "visualVerification": {
+      "status": "UNKNOWN-HOLD",
+      "reason": "Current transport and static-asset checks are not desktop/mobile visual or interactive verification."
+    },
+    "overallCompetition": {
+      "status": "HOLD",
+      "reason": "Technical finalization is pending and registration, receipt, official score, and visual verification remain independently unknown."
+    }
+  },
+  "finalization": {
+    "tracks": [
+      { "track": "A", "status": "pending", "reason": "Track A final commit and remote SHA are not yet recorded." },
+      { "track": "B", "status": "pending", "reason": "Track B final commit and remote SHA are not yet recorded." },
+      { "track": "C", "status": "pending", "reason": "Track C final commit and remote SHA are not yet recorded." },
+      { "track": "D", "status": "pending", "reason": "Track D final commit and remote SHA are not yet recorded." },
+      { "track": "E", "status": "pending", "reason": "Track E final commit and remote SHA are not yet recorded." },
+      { "track": "F", "status": "pending", "reason": "Track F final commit and remote SHA are not yet recorded." }
+    ],
+    "postDocumentationIntegration": {
+      "status": "pending",
+      "reason": "The unique integrator must record the final post-document SHA and fresh gates."
+    }
+  },
+  "officialAttempts": [
+    {
+      "attempt": 1,
+      "status": "historical",
+      "reportPath": "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-1/official-csv-e2e.json",
+      "reportSha256": "3350f3f2acc09a8f913b8bc107c836b79118563b45078ca4eeee84a045f8b923",
+      "reason": "Immutable historical report retained without reclassification in Epoch 4."
+    },
+    {
+      "attempt": 2,
+      "status": "historical",
+      "reportPath": "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-2/official-csv-e2e.json",
+      "reportSha256": "9d7b93c730841e9adac10ef98db3bd1e7784ec2b2518c5dbc16cd6509f643987",
+      "reason": "Immutable historical report retained without reclassification in Epoch 4."
+    },
+    {
+      "attempt": 3,
+      "status": "historical",
+      "reportPath": "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-3/official-csv-e2e.json",
+      "reportSha256": "58ccb36101c9a5c279993269abd38fcb70a285d66f48cb5e9b78bdd0ec2fd0b9",
+      "reason": "Immutable historical report retained without reclassification in Epoch 4."
+    },
+    {
+      "attempt": 4,
+      "status": "historical",
+      "reportPath": "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-4/official-csv-e2e.json",
+      "reportSha256": "a65645c8e79fe5107cd46b76bf19a6942fb621e902608d46afb401aa29c39976",
+      "reason": "Immutable historical report retained without reclassification in Epoch 4."
+    },
+    {
+      "attempt": 5,
+      "status": "historical",
+      "reportPath": "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-5/official-csv-e2e.json",
+      "reportSha256": "655bc6b60c1c88603d887d5e3cf9d5548b1ef70c47970e9ef714a1db566f1c35",
+      "reason": "Immutable historical report retained without reclassification in Epoch 4."
+    },
+    {
+      "attempt": 6,
+      "status": "passed",
+      "reportPath": "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/official-csv-e2e.json",
+      "reportSha256": "8796dd1f9e9baca3dad0711c6fb74ccca40485874527a5ef0e2323a9111bf27f",
+      "testedCodeSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+      "submissionPath": "validation/reports/epoch-2/run_f2bc8c0433f8/attempt-6/submission.csv",
+      "submissionSha256": "af8814d3e428ef1470a43e0a07d4d6dcdc79585846841a15778fff8c91d60326",
+      "facts": {
+        "rawInputBytes": 77865257,
+        "rawInputRows": 172800,
+        "rawInputFields": 69,
+        "rawInputSha256": "88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9",
+        "normalizedBytes": 78038054,
+        "normalizedSha256": "4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169",
+        "eventCount": 104,
+        "submissionRows": 104,
+        "submissionColumns": 16,
+        "seriesVariableCount": 21,
+        "seriesPointCount": 172800,
+        "cleanupStatus": "passed"
+      },
+      "reason": "Sanitized attempt-6 evidence records a technical pass only; it is not evidence of registration, receipt, official score, deployment binding, or visual verification."
+    }
+  ],
+  "ciRuns": [
+    {
+      "runId": "32591314579",
+      "headSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+      "conclusion": "success",
+      "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32591314579"]
+    },
+    {
+      "runId": "32591315711",
+      "headSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+      "conclusion": "success",
+      "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32591315711"]
+    },
+    {
+      "runId": "32591315735",
+      "headSha": "58090bc1747d621bc87d698259319a70c34e75f2",
+      "conclusion": "success",
+      "evidence": ["https://github.com/songconmaisaix31-design/OpenDashboard/actions/runs/32591315735"]
+    }
+  ],
+  "deploymentObservation": {
+    "deploymentId": "dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf",
+    "hostname": "h2-sentinel-hxrbu0wan-dwwww.vercel.app",
+    "customDomain": "204421.xyz",
+    "codeShaBinding": "unverified",
+    "routeChecks": [
+      { "routePath": "/", "status": "SPA_SHELL_200" },
+      { "routePath": "/h2-sentinel?mode=fixture", "status": "SPA_SHELL_200" },
+      { "routePath": "/h2-sentinel/?mode=fixture", "status": "SPA_SHELL_200" },
+      { "routePath": "/h2-sentinel?mode=local", "status": "SPA_SHELL_200" },
+      { "routePath": "/h2-sentinel?mode=invalid", "status": "SPA_SHELL_200" }
+    ],
+    "assetMarkers": ["h2", "invalid-mode", "chinese-marker"],
+    "evidenceScope": "transport-and-static-assets-only"
+  },
+  "inputPackageIntegrity": {
+    "dataIntegrity": {
+      "status": "PASS",
+      "identicalArchiveCount": 3,
+      "archiveBytes": 68574329,
+      "archiveSha256": "27dd2d096e0eb002cf50feb68f33fd1b586b46e4daddf97398390dc6394a5072",
+      "checksumEntries": 20,
+      "checksumStatus": "PASS",
+      "officialTestCsvSha256": "88f3a5c15fb5c42d265475f2998fe9f6c271dcef16f43daee7626f6704504cd9",
+      "reason": "This PASS is limited to the three identical archives and their 20 checked data or material entries; it does not validate organizer documentation naming."
+    },
+    "organizerDocumentationManifest": {
+      "status": "DISCREPANCY",
+      "actualTopLevelDocumentCount": 5,
+      "reason": "The five actual top-level documents do not match listed paths or names: the XLSX is only renamed with the same hash, the DOCX and two Markdown files differ in content or size, and an unlisted PDF is present. The cover and PDF name D01-D13 and a scoring framework, while the DOCX body lacks Sections 8 and 13; no missing content is inferred."
+    }
+  }
 }
