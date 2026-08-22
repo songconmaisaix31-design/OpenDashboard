@@ -100,7 +100,9 @@ def test_pipeline_outputs_validate_against_frozen_contract_schemas(
     for row in submission_rows(run["events"]):
         Draft202012Validator(submission_schema).validate(row)
         assert row["severity"] in _OFFICIAL_SEVERITIES
-        assert ":" in row["affected_equipment"]
+        assert "," in row["affected_equipment"]
+        assert ":" not in row["affected_equipment"]
+        assert " " not in row["affected_equipment"]
         assert row["primary_control_object"]
 
 

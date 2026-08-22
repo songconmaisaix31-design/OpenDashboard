@@ -26,7 +26,7 @@
       {
         "day": "fixture",
         "rows": 22,
-        "events": 2
+        "events": 1
       }
     ]
   },
@@ -40,32 +40,31 @@
     }
   },
   "predictions": {
-    "rawCount": 2,
-    "mergedCount": 2,
+    "rawCount": 1,
+    "mergedCount": 1,
     "detectorVersion": "deterministic-c01-c07-v2",
     "byCode": {
-      "C03": 1,
-      "C04": 1
+      "C03": 1
     }
   },
   "metrics": {
     "overall": {
-      "tp": 2,
+      "tp": 1,
       "fp": 0,
-      "fn": 0,
+      "fn": 1,
       "precision": 1,
-      "recall": 1,
-      "f1": 1
+      "recall": 0.5,
+      "f1": 0.6666666666666666
     },
     "classification": {
       "definition": "code-agnostic temporal overlap; classification accuracy = code-correct / matched pairs",
-      "matches": 2,
-      "correctCode": 2,
+      "matches": 1,
+      "correctCode": 1,
       "detectionPrecision": 1,
-      "detectionRecall": 1,
-      "detectionF1": 1,
+      "detectionRecall": 0.5,
+      "detectionF1": 0.6666666666666666,
       "classificationAccuracy": 1,
-      "eventAccuracy": 1
+      "eventAccuracy": 0.5
     },
     "byCode": {
       "C01": {
@@ -104,13 +103,13 @@
       "C04": {
         "code": "C04",
         "groundTruth": 1,
-        "predictions": 1,
-        "tp": 1,
+        "predictions": 0,
+        "tp": 0,
         "fp": 0,
-        "fn": 0,
-        "precision": 1,
-        "recall": 1,
-        "f1": 1
+        "fn": 1,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
       },
       "C05": {
         "code": "C05",
@@ -156,21 +155,14 @@
       "groundTruthEnd": "2026-01-05T10:41:00Z",
       "predictionStart": "2026-01-05T10:20:00Z",
       "predictionEnd": "2026-01-05T10:41:00Z"
-    },
-    {
-      "groundTruthId": "C04-20260105-001",
-      "predictionId": "C04-20260105-001",
-      "code": "C04",
-      "groundTruthStart": "2026-01-05T10:32:00Z",
-      "groundTruthEnd": "2026-01-05T10:39:00Z",
-      "predictionStart": "2026-01-05T10:20:00Z",
-      "predictionEnd": "2026-01-05T10:41:00Z"
     }
   ],
-  "unmatchedGroundTruth": [],
+  "unmatchedGroundTruth": [
+    "C04-20260105-001"
+  ],
   "unmatchedPredictions": [],
   "provenance": {
-    "generatedAt": "2026-08-21T16:10:36.823Z",
+    "generatedAt": "2026-08-21T17:34:09.717Z",
     "tool": "validation/evaluate.mjs",
     "limitations": [
       "Event-level evaluation contract, not the organizer score.",

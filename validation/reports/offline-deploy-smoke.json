@@ -1,12 +1,12 @@
 {
   "contract": "h2-sentinel-offline-deploy-smoke-v1",
-  "verdict": "blocked",
+  "verdict": "passed",
   "prerequisites": [],
   "ports": {
-    "web": 55388,
-    "analytics": 55389,
-    "webUrl": "http://127.0.0.1:55388/h2-sentinel/?mode=local",
-    "analyticsUrl": "http://127.0.0.1:55389/"
+    "web": 51315,
+    "analytics": 51316,
+    "webUrl": "http://127.0.0.1:51315/h2-sentinel/?mode=local",
+    "analyticsUrl": "http://127.0.0.1:51316/"
   },
   "dataset": {
     "source": "03_test_timeseries.csv",
@@ -27,31 +27,25 @@
       "datasetId": "live-h2-4407495ad75299f2",
       "rowCount": 172800,
       "fingerprint": "sha256:4407495ad75299f2f8f06112f6d3209eb93b2773ff3f0c797c47874159853169",
-      "durationMs": 5816,
+      "durationMs": 6315,
       "status": "passed"
     },
     {
       "step": "analyze",
       "runId": "run-live-h2-4407495ad75299f2",
-      "events": 566,
+      "events": 104,
       "detectorVersion": "deterministic-c01-c07-v2",
-      "durationMs": 4278,
+      "durationMs": 6264,
       "status": "passed"
     },
     {
       "step": "export",
       "mediaType": "text/csv",
-      "rows": 566,
-      "artifactPath": "C:\\Users\\DW\\orca\\workspaces\\OpenDashboard\\h2-track-d-qa\\scripts\\h2-sentinel\\artifacts\\submission-testset.csv",
-      "checkerValid": false,
-      "checkerIssues": [
-        "row 2 affected_equipment \"ELZ01:碱性电解槽1;ELZ02:碱性电解槽2;ELZ03:碱性电解槽3\" has a non-official token",
-        "row 3 affected_equipment \"BESS01:储能系统;PCC01:并网点;ELZ01:碱性电解槽1;ELZ02:碱性电解槽2;ELZ03:碱性电解槽3\" has a non-official token",
-        "row 4 affected_equipment \"PV01:光伏发电单元;BESS01:储能系统;PCC01:并网点;ELZ01:碱性电解槽1;ELZ02:碱性电解槽2;ELZ03:碱性电解槽3\" has a non-official token",
-        "row 5 affected_equipment \"BESS01:储能系统;PCC01:并网点;ELZ01:碱性电解槽1;ELZ02:碱性电解槽2;ELZ03:碱性电解槽3\" has a non-official token",
-        "row 6 affected_equipment \"ELZ01:碱性电解槽1;ELZ02:碱性电解槽2;ELZ03:碱性电解槽3\" has a non-official token"
-      ],
-      "checkerRowCount": 566,
+      "rows": 104,
+      "artifactPath": "C:\\Users\\DW\\orca\\workspaces\\OpenDashboard\\H2_Sentinel\\scripts\\h2-sentinel\\artifacts\\submission-testset.csv",
+      "checkerValid": true,
+      "checkerIssues": [],
+      "checkerRowCount": 104,
       "status": "passed"
     }
   ],
@@ -60,7 +54,7 @@
     "Artifact directory is gitignored; the JSON report is the committed evidence."
   ],
   "provenance": {
-    "generatedAt": "2026-08-21T16:13:41.038Z",
+    "generatedAt": "2026-08-22T11:06:31.121Z",
     "tool": "scripts/h2-sentinel/offline-deploy-smoke.mjs",
     "environment": {
       "node": "v24.16.0",

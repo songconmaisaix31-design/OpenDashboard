@@ -28,6 +28,23 @@ export const H2_SUBMISSION_COLUMNS = [
 
 export type H2SubmissionColumn = (typeof H2_SUBMISSION_COLUMNS)[number]
 
+/**
+ * Official `affected_equipment` submission tokens per code, comma-separated
+ * without spaces (mirrors `validation/lib/fields.mjs`). C01/C02 vary per event;
+ * these are the canonical fallback order used by the submission serializer.
+ */
+const H2_CANONICAL_EQUIPMENT_TOKENS: Readonly<
+  Record<H2AnomalyCode, readonly string[]>
+> = {
+  C01: ['ELZ1', 'ELZ2', 'BESS', 'PCC'],
+  C02: ['ELZ1'],
+  C03: ['BESS', 'PCC'],
+  C04: ['PCC', 'BESS', 'ELZ', 'PV'],
+  C05: ['PCC', 'BESS', 'ELZ'],
+  C06: ['ELZ1', 'ELZ2', 'ELZ3'],
+  C07: ['BESS', 'PCC', 'PV', 'ELZ'],
+}
+
 export interface H2SubmissionRowForCode<TCode extends H2AnomalyCode> {
   readonly pred_event_id: string
   readonly start_time: string
@@ -69,9 +86,7 @@ export function toH2SubmissionRow<TEvent extends H2AnomalyEvent>(
     anomaly_subtype: event.subtype,
     severity: event.severity,
     primary_control_object: event.primaryControlObject.type,
-    affected_equipment: event.affectedEquipment
-      .map(({ id, kind }) => `${kind}:${id}`)
-      .join(';'),
+    affected_equipment: H2_CANONICAL_EQUIPMENT_TOKENS[event.code].join(','),
     confidence: event.confidence,
     evidence_json: JSON.stringify(
       event.evidence.map((item) => ({

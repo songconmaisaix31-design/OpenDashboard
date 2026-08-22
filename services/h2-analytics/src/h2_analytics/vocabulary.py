@@ -219,6 +219,28 @@ def equipment_by_id() -> dict[str, dict[str, Any]]:
     return {entry["equipment_id"]: dict(entry) for entry in load_equipment()}
 
 
+# Official `affected_equipment` submission tokens, comma-separated without
+# spaces, taken verbatim from the official label files (04/05, 350 rows). The
+# order mirrors `validation/lib/fields.mjs` CANONICAL_EQUIPMENT_TOKENS_BY_CODE.
+# C01/C02 vary per event (oscillating/derated tank); the values here are the
+# canonical fallback used when the per-event unit cannot be resolved.
+_AFFECTED_EQUIPMENT_TOKENS_BY_CODE: dict[str, tuple[str, ...]] = {
+    "C01": ("ELZ1", "ELZ2", "BESS", "PCC"),
+    "C02": ("ELZ1",),
+    "C03": ("BESS", "PCC"),
+    "C04": ("PCC", "BESS", "ELZ", "PV"),
+    "C05": ("PCC", "BESS", "ELZ"),
+    "C06": ("ELZ1", "ELZ2", "ELZ3"),
+    "C07": ("BESS", "PCC", "PV", "ELZ"),
+}
+
+
+@lru_cache(maxsize=1)
+def affected_equipment_tokens_by_code() -> dict[str, tuple[str, ...]]:
+    """Official `affected_equipment` submission tokens for each anomaly code."""
+    return dict(_AFFECTED_EQUIPMENT_TOKENS_BY_CODE)
+
+
 @lru_cache(maxsize=1)
 def control_object_type_by_code() -> dict[str, str]:
     return {
