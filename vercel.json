@@ -1,6 +1,13 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "apps/web/dist",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/h2-sentinel/?mode=fixture",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/h2-sentinel",
