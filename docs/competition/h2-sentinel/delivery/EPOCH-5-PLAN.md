@@ -9,11 +9,26 @@ Sentinel six-page Fixture experience. The target hostname is frozen as:
 full.204421.xyz
 ```
 
+The isolated Vercel project name is frozen as:
+
+```text
+h2-sentinel-full
+```
+
+The project must be created and recorded by Epoch 5. If that exact project
+name is already occupied and there is no Epoch 5 creation receipt binding it
+to this task, delivery is `HOLD`; workers must not adopt, rename, delete, or
+overwrite the existing project.
+
 The existing `204421.xyz` deployment, alias, DNS behavior, TLS behavior, and
 served asset identity must remain unchanged. Epoch 5 is not a production
-promotion and must never invoke `vercel deploy --prod`, use a production
-deployment command through a wrapper, or alias the new candidate to
-`204421.xyz`.
+promotion of the existing `h2-sentinel` project. The only permitted
+production-mode deployment command is `vercel deploy --prod --skip-domain`,
+and it may run only from a context independently verified as the new
+`h2-sentinel-full` project. No worker may run `--prod`, promote, assign a
+production deployment, or change a domain in the existing `h2-sentinel`
+project. The new project must never contain the exact apex domain
+`204421.xyz`; only `full.204421.xyz` may be bound after qualification.
 
 The Git base is frozen at:
 
@@ -29,9 +44,10 @@ Amend, rebase, force push, destructive reset, and history rewriting are
 prohibited.
 
 This plan is the Epoch 5 specification and acceptance contract. It authorizes
-only the minimal Fixture presentation and isolated preview-alias deployment
-described below. It does not authorize a public analytics backend, remote
-device access, public Local mode, or a broader product redesign.
+only the minimal Fixture presentation and an isolated staged production
+deployment in the new project followed by one explicit alias assignment. It
+does not authorize a public analytics backend, remote device access, public
+Local mode, or a broader product redesign.
 
 ## 2. Product definition and truth boundary
 
@@ -91,20 +107,35 @@ The redirect must be temporary, same-origin, and terminate after one hop at a
 continue to resolve through the static SPA rewrite. Hash navigation for all
 six pages remains client-side.
 
-The candidate must be created with a normal preview deployment command that
-does not contain `--prod`. After the preview deployment has passed its local
-and preview-host gates, only that exact deployment may receive the independent
-alias `full.204421.xyz`. The preview deployment URL, deployment ID, candidate
-Git SHA, local build asset hashes, remote asset hashes, and alias result must
-be recorded together.
+The existing `h2-sentinel` project's direct Preview is not a delivery path:
+Standard Protection may return a 302 SSO redirect and prevent anonymous
+access. Epoch 5 must instead create the independent `h2-sentinel-full` project
+with no exact `204421.xyz` apex-domain assignment. From an explicitly verified
+new-project context, run exactly:
+
+```text
+vercel deploy --prod --skip-domain
+```
+
+`--skip-domain` makes this a staged production deployment: qualification
+occurs before any custom domain points to it. Any production-mode deployment
+in the existing project, any promote operation, and any automatic or manual
+assignment of `204421.xyz` are prohibited. After the staged deployment passes
+its anonymous-access and static-delivery gates, only that exact deployment may
+receive `full.204421.xyz`. The project creation receipt, project name,
+deployment URL, deployment ID, candidate Git SHA, local build asset hashes,
+remote asset hashes, and alias result must be recorded together.
 
 The deployer may use an already-authenticated Vercel CLI session, but must not
 read, print, copy, export, or persist tokens, cookies, credentials, `.env`
 files, environment values, or credential-store content. Do not run an
 environment pull command. If the exact `full.204421.xyz` alias already exists
 and does not point to an explicitly recorded Epoch 5 deployment, stop for a
-collision review rather than overwriting it. Do not modify apex, wildcard, or
-unrelated DNS records.
+collision review rather than overwriting it. Project inspection must prove the
+deployment context is `h2-sentinel-full` immediately before and after the
+staged deployment. Anonymous requests must succeed without cookies,
+authorization headers, or an authenticated browser session. Do not modify the
+exact apex `204421.xyz`, wildcard, or unrelated DNS records.
 
 ## 4. Exact write allowlists
 
@@ -120,8 +151,8 @@ closed, non-overlapping tracks. A path not listed below is frozen.
 | Track | Exact write allowlist | Responsibility |
 | --- | --- | --- |
 | A — Fixture UI boundary | `apps/web/src/features/h2-sentinel/pages/analysis/AnalysisPage.tsx`; `apps/web/src/features/h2-sentinel/test/presentation.test.tsx` | Condition the analysis-page import presentation on dataset mode. Fixture must show the two exact Chinese strings and no actionable file input; Local behavior remains intact. |
-| B — Preview routing | `vercel.json`; `scripts/h2-sentinel/composition.test.mjs` | Add the exact temporary root redirect, preserve both H2 deep-link rewrites, and statically prove that no public API/function route was added. |
-| C — Deployment evidence | `docs/competition/h2-sentinel/DEPLOYMENT_AND_SMOKE.md`; `scripts/h2-sentinel/HANDOFF.md`; `MEMORY.md` | Record only measured candidate, preview deployment, alias, HTTP/DNS/TLS, asset, unchanged-`204421.xyz`, test, rollback, and UNKNOWN-HOLD evidence. Do not copy secrets or private responses. |
+| B — Staged deployment routing | `vercel.json`; `scripts/h2-sentinel/composition.test.mjs` | Add the exact temporary root redirect, preserve both H2 deep-link rewrites, and statically prove that no public API/function route was added. |
+| C — Deployment evidence | `docs/competition/h2-sentinel/DEPLOYMENT_AND_SMOKE.md`; `scripts/h2-sentinel/HANDOFF.md`; `MEMORY.md` | Record only measured project creation, candidate, staged production deployment, alias, anonymous HTTP, DNS/TLS, asset, unchanged-`204421.xyz`, test, rollback, and UNKNOWN-HOLD evidence. Do not copy secrets or private responses. |
 
 The final Epoch 5 candidate may differ from the frozen base only at the plan
 path and the union of Tracks A through C. Root package manifests, lockfiles,
@@ -148,8 +179,13 @@ Before implementation or external mutation:
 5. record the live HTTP status, redirect behavior, same-origin asset paths,
    and asset SHA-256 values for `https://204421.xyz` as the before-state;
 6. resolve `full.204421.xyz` and query the Vercel alias state without printing
-   authentication material; and
-7. stop if `full.204421.xyz` is already owned by an unrecorded deployment.
+   authentication material;
+7. query the exact `h2-sentinel-full` project name; require it to be available,
+   or require an Epoch 5 creation receipt proving that this task created it;
+8. record the existing `h2-sentinel` project and its exact domains as a frozen
+   no-mutation control, without reading environment values; and
+9. stop if the project name or `full.204421.xyz` is owned by an unrecorded
+   project or deployment.
 
 ### Task 1 — Implement the Fixture-only analysis presentation
 
@@ -168,7 +204,7 @@ regular expression:
 - Live output retains the existing CSV picker and file constraints; and
 - provenance and report behavior remain unchanged.
 
-### Task 2 — Add isolated preview routing
+### Task 2 — Add isolated staged-deployment routing
 
 Track B adds one non-permanent root redirect to
 `/h2-sentinel/?mode=fixture`. It must preserve the existing exact rewrites for
@@ -214,13 +250,29 @@ that the emitted JavaScript contains the two exact Chinese truth-boundary
 strings. String presence is static-bundle evidence only; the semantic test is
 the behavior evidence, and neither is visual evidence.
 
-### Task 4 — Create and qualify an independent preview deployment
+### Task 4 — Create the independent project and qualify a staged deployment
 
-Deploy the clean committed candidate as a Vercel preview. The invoked command
-must be captured in sanitized form and must not contain `--prod`. Do not assign
-any custom alias yet.
+Create the exact `h2-sentinel-full` project only after the name-availability
+preflight passes. Record the provider-issued project identity and creation
+result without recording credentials or environment values. Verify that the
+new project has no exact `204421.xyz` apex-domain assignment and that the
+working context targets this new project, not the existing `h2-sentinel`
+project.
 
-Qualify the immutable preview URL with CLI HTTP checks:
+Deploy the clean committed candidate with exactly:
+
+```text
+vercel deploy --prod --skip-domain
+```
+
+This is the only authorized production-mode command. It is authorized only in
+the verified `h2-sentinel-full` context. `--skip-domain` must prevent automatic
+custom-domain assignment. Do not assign any custom alias yet, do not promote a
+deployment, and do not run any production-mode operation in the existing
+project.
+
+Qualify the immutable staged deployment URL with CLI HTTP checks made without
+cookies or authorization headers:
 
 - root returns the expected one-hop temporary redirect;
 - both slash forms of the H2 Fixture route return a 200 SPA shell;
@@ -231,14 +283,20 @@ Qualify the immutable preview URL with CLI HTTP checks:
 - `/api/v1/h2-sentinel/mode` does not return a successful analytics response;
 - no response or log used as evidence contains credentials or private data;
   and
-- an authentication redirect is recorded as `AUTH-REDIRECT`, not converted
-  into a pass by following it.
+- no request returns Standard Protection, SSO, login, or authentication
+  redirect behavior; any such response is `AUTH-REDIRECT/HOLD` and cannot be
+  converted into a pass by following it.
+
+Project inspection after deployment must still identify `h2-sentinel-full`,
+show no exact `204421.xyz` apex domain, and show no mutation to the existing
+project's deployment or domain state.
 
 ### Task 5 — Assign only the new alias
 
 After Task 4 passes, assign only `full.204421.xyz` to the exact qualified
-preview deployment. Do not invoke a production deployment and do not touch the
-`204421.xyz` alias.
+staged production deployment in `h2-sentinel-full`. Do not promote the
+deployment, do not invoke another production deployment during aliasing, and
+do not touch the exact `204421.xyz` apex alias or any existing-project domain.
 
 After DNS and certificate propagation, verify with CLI-only checks:
 
@@ -247,8 +305,8 @@ After DNS and certificate propagation, verify with CLI-only checks:
 3. `/` returns the exact temporary redirect and destination;
 4. `/h2-sentinel?mode=fixture` and
    `/h2-sentinel/?mode=fixture` return the H2 SPA shell;
-5. the remote asset paths and SHA-256 values match the qualified preview and
-   local build;
+5. the remote asset paths and SHA-256 values match the qualified staged
+   deployment and local build;
 6. all six hash deep-link URLs resolve to the same H2 document transport;
 7. `/api/v1/h2-sentinel/mode` is not a successful analytics API;
 8. source and focused tests still prove that public origins cannot activate
@@ -261,16 +319,17 @@ not sent to the server. They do not prove rendered navigation or interaction.
 
 ### Task 6 — Record truthful evidence
 
-Track C records the candidate SHA, deployment ID, preview URL, alias, DNS/TLS
+Track C records the new-project creation receipt, candidate SHA, staged
+production deployment ID and URL, alias, anonymous-access proof, DNS/TLS
 outcome, redirect status and `Location`, route matrix, local and remote asset
-hashes, exact test commands and results, unchanged `204421.xyz` comparison,
-and rollback state.
+hashes, exact test commands and results, unchanged existing-project and
+`204421.xyz` comparisons, and rollback state.
 
 The evidence must keep these independent statuses:
 
 | Decision | Required Epoch 5 status policy |
 | --- | --- |
-| Static Fixture delivery | May become `GO` only when every local, preview, alias, asset, route, DNS/TLS, unchanged-existing-site, and path/ref gate passes. |
+| Static Fixture delivery | May become `GO` only when every local, project-isolation, staged-deployment, anonymous-access, alias, asset, route, DNS/TLS, unchanged-existing-site, and path/ref gate passes. |
 | Live/Local analytics | `NOT_EXPOSED`; no public capability is claimed. |
 | Visual verification | `UNKNOWN-HOLD`; see Section 7. |
 | Organizer submission/acceptance | Preserve the prior independent state; Epoch 5 does not change it. |
@@ -289,18 +348,27 @@ true on the same committed candidate:
 5. Fixture semantic tests prove the exact copy and absence of an actionable
    CSV input while Live semantic tests preserve local behavior;
 6. the root redirect is a one-hop 307 to the exact Fixture URL;
-7. the H2 Fixture shell and same-origin assets return 200 from both the preview
-   and `full.204421.xyz`;
-8. local, preview, and aliased asset hashes match;
-9. DNS and TLS pass for `full.204421.xyz`;
-10. no successful public H2 analytics API, sidecar, or remote Local capability
+7. `h2-sentinel-full` was created and recorded by Epoch 5, contains no exact
+   `204421.xyz` apex domain, and is the independently verified deployment
+   context;
+8. the staged deployment was created only with
+   `vercel deploy --prod --skip-domain`, with no automatic custom-domain
+   assignment and no promote operation;
+9. the H2 Fixture shell and same-origin assets return 200 anonymously from both
+   the staged deployment and `full.204421.xyz`, with no SSO or protection
+   redirect;
+10. local, staged-deployment, and aliased asset hashes match;
+11. DNS and TLS pass for `full.204421.xyz`;
+12. no successful public H2 analytics API, sidecar, or remote Local capability
     exists;
-11. the preview was created without `--prod` and only the new alias was
-    assigned;
-12. the before/after evidence shows `204421.xyz` is unchanged;
-13. local and live remote `main` and canonical competition refs remain at
+13. no production-mode command, promotion, deployment assignment, domain
+    mutation, or access-policy change occurred in the existing `h2-sentinel`
+    project, and only the new alias was assigned in the new project;
+14. the before/after evidence shows the existing project and `204421.xyz` are
+    unchanged;
+15. local and live remote `main` and canonical competition refs remain at
     their recorded preflight values; and
-14. all evidence claims preserve the Fixture, Live, visual, organizer, and
+16. all evidence claims preserve the Fixture, Live, visual, organizer, and
     score boundaries.
 
 Any missing, redirected, inconsistent, or unauditable result is a HOLD, not a
@@ -335,14 +403,16 @@ and client-side hash navigation. None may be described as visually verified.
 
 | Risk | User impact | Control |
 | --- | --- | --- |
-| Preview accidentally promotes production | Existing public site changes unexpectedly | Prohibit `--prod`; capture the sanitized command; deploy preview first; alias only the exact preview deployment. |
-| Wrong alias target | Users see stale or unrelated content | Record deployment ID, URL, candidate SHA, and asset hashes before aliasing; independently inspect alias target after mutation. |
+| New-project name collision | An unrelated project is overwritten or trusted | Require an Epoch 5 creation receipt for `h2-sentinel-full`; otherwise stop at `HOLD` without adopting or deleting it. |
+| Production command runs in the existing project | Existing public site changes unexpectedly | Independently verify the project context before and after the sole allowed `vercel deploy --prod --skip-domain`; prohibit existing-project production, promote, domain, and access-policy operations. |
+| Automatic domain assignment during staging | A candidate becomes public before qualification | Require `--skip-domain`; inspect new-project domains before and after staging; bind only `full.204421.xyz` after qualification. |
+| Wrong alias target | Users see stale or unrelated content | Record project identity, deployment ID, URL, candidate SHA, and asset hashes before aliasing; independently inspect alias target after mutation. |
 | Existing `204421.xyz` changes | Current delivery is disrupted | Capture before-state and require identical after-state; never alias, deploy, or change DNS for the apex. |
 | Fixture appears to accept real CSV | Users may disclose data or believe analysis is Live | Hide the actionable input in Fixture and show both exact Chinese boundary strings; test Fixture and Live separately. |
 | Public sidecar or API exposure | Data leakage, resource abuse, and false Live claims | Add no function/API route; verify negative API behavior; preserve literal-loopback code and tests. |
 | Redirect loop or incorrect query | Root becomes unusable | Freeze one temporary redirect and exact destination; verify one-hop Location and both H2 path forms. |
-| Deployment/source identity drift | Evidence cannot be tied to code | Deploy a clean commit; compare local, preview, and alias asset hashes; record all identities together. |
-| Preview protection masks failure | SSO redirect is mistaken for product availability | Do not follow auth redirects into a pass; record `AUTH-REDIRECT` and require the public custom alias gates independently. |
+| Deployment/source identity drift | Evidence cannot be tied to code | Deploy a clean commit; compare local, staged-deployment, and alias asset hashes; record all identities together. |
+| Standard Protection or SSO blocks anonymous users | Judges cannot open the site without an account | Use the isolated project rather than the protected existing Preview; make requests without auth context; any SSO/login redirect is `AUTH-REDIRECT/HOLD`. |
 | DNS or TLS propagation is incomplete | Users receive resolution or certificate failures | Keep delivery on HOLD until exact-host DNS and TLS checks pass. |
 | No visual inspection | Undetected presentation defects remain | Preserve `UNKNOWN-HOLD`; report the specific residual risks and only the permitted substitute evidence. |
 
@@ -355,7 +425,7 @@ competition branch as a rollback target.
 Before assigning the alias, record whether `full.204421.xyz` is absent or its
 exact prior deployment target. If any post-alias acceptance gate fails:
 
-1. stop further publication and preserve the failed preview deployment and
+1. stop further publication and preserve the failed staged deployment and
    sanitized evidence for diagnosis;
 2. verify the exact current alias target before mutation;
 3. if the alias was absent at preflight, remove only the exact
@@ -366,8 +436,9 @@ exact prior deployment target. If any post-alias acceptance gate fails:
 6. repeat exact-host DNS and TLS observations and record the rollback result;
    and
 7. fix code with a new normal commit on the Epoch 5 branch, repeat all local
-   and preview gates, and assign the alias again only after the new exact
-   deployment qualifies.
+   gates, create the replacement staged deployment only with
+   `vercel deploy --prod --skip-domain` in the verified new-project context,
+   and assign the alias again only after the new exact deployment qualifies.
 
 Do not delete a deployment, project, DNS zone, wildcard, certificate, branch,
 or Git history as part of routine rollback. Destructive cleanup requires a
@@ -382,14 +453,17 @@ The final Epoch 5 receipt must contain:
 2. exact base-to-candidate changed paths and clean/untracked status;
 3. unchanged local and live remote protected-ref observations;
 4. all Task 3 command results;
-5. local, preview, and alias asset identities;
-6. preview deployment ID and URL plus the exact new alias;
-7. DNS, TLS, redirect, deep-link, negative API, and unchanged-existing-site
-   results;
-8. rollback preflight and final state;
-9. `Static Fixture delivery`, `Live/Local analytics`, `Visual verification`,
+5. `h2-sentinel-full` creation receipt, exact project identity, and proof that
+   it never contained the exact `204421.xyz` apex domain;
+6. local, staged-deployment, and alias asset identities;
+7. staged production deployment ID and URL, the sanitized exact deployment
+   command, anonymous-access result, and the exact new alias;
+8. DNS, TLS, redirect, deep-link, negative API, and unchanged-existing-project
+   and site results;
+9. rollback preflight and final state;
+10. `Static Fixture delivery`, `Live/Local analytics`, `Visual verification`,
    organizer, and score statuses as independent fields; and
-10. confirmation that `MEMORY.md` was updated only with durable, non-secret,
+11. confirmation that `MEMORY.md` was updated only with durable, non-secret,
     measured Epoch 5 facts, or an explicit reason it was not updated.
 
 The handoff must not convert transport, bundle, Fixture, or test evidence into
