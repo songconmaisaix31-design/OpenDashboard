@@ -42,6 +42,32 @@ const readyState: H2WorkspaceState = {
   },
 }
 
+const liveProvenance = {
+  ...H2_WEB_FIXTURE_RUN.provenance,
+  mode: 'LIVE_ANALYSIS',
+  source: 'local-test-import',
+} as const
+
+const liveDataset = {
+  ...H2_WEB_FIXTURE_RUN.dataset,
+  mode: 'LIVE_ANALYSIS',
+  provenance: liveProvenance,
+} as const
+
+const liveReadyState: H2WorkspaceState = {
+  status: 'ready',
+  workspace: {
+    ...readyState.workspace,
+    mode: 'LIVE_ANALYSIS',
+    datasets: [liveDataset],
+    run: {
+      ...H2_WEB_FIXTURE_RUN,
+      dataset: liveDataset,
+      provenance: liveProvenance,
+    },
+  },
+}
+
 describe('H2 Sentinel presentation', () => {
   it('keeps all six top-level views directly addressable', () => {
     const expectations = [
@@ -211,6 +237,23 @@ describe('H2 Sentinel presentation', () => {
     assert.match(markup, /PCC 功率边界线/)
     assert.match(markup, /SOC 目标轨迹/)
     assert.match(markup, /电量配额/)
+  })
+
+  it('keeps CSV import available only for Live analysis workspaces', () => {
+    const fixtureMarkup = renderView(readyState, { route: 'analysis' })
+
+    assert.match(fixtureMarkup, /演示数据 Fixture/)
+    assert.match(fixtureMarkup, /不接收或上传用户文件/)
+    assert.doesNotMatch(fixtureMarkup, /<input\b[^>]*\btype="file"/)
+    assert.doesNotMatch(fixtureMarkup, /h2-file-picker|导入本地 CSV|选择 CSV 文件|正在导入与分析/)
+
+    const liveMarkup = renderView(liveReadyState, { route: 'analysis' })
+
+    assert.match(liveMarkup, /LIVE · 本地分析/)
+    assert.match(liveMarkup, /导入本地 CSV/)
+    assert.match(liveMarkup, /选择 CSV 文件/)
+    assert.match(liveMarkup, /仅接受 \.csv，最大 300 MiB/)
+    assert.match(liveMarkup, /<input\b[^>]*\btype="file"/)
   })
 
   it('only offers returned series variables in the variable explorer', () => {
