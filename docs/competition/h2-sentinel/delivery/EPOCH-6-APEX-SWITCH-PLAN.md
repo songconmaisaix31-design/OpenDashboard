@@ -11,13 +11,25 @@ default experience at:
 https://204421.xyz
 ```
 
-The user-visible change is intentionally limited to the entry hostname. The
-apex currently serves the older static shell from the existing `h2-sentinel`
-project and recorded deployment:
+The user-visible change is intentionally limited to the entry hostname. Fresh
+preflight established that current provider metadata and traffic have separate
+owners:
+
+- ProjectDomain `204421.xyz` belongs to Vercel project `dashboard`, project ID
+  `prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`;
+- the apex alias sends traffic to Vercel project `h2-sentinel`, project ID
+  `prj_6pRMaPgh3YXvgibdHBYnM9RoysUQ`; and
+- that traffic is served by the `Ready` production deployment and immutable
+  automatic URL:
 
 ```text
-dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf
+Deployment: dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf
+Deployment URL: https://h2-sentinel-hxrbu0wan-dwwww.vercel.app
 ```
+
+The `h2-sentinel` project itself has no custom domains. Therefore,
+ProjectDomain ownership, current traffic target, and target ownership are
+three distinct roles; this plan must not collapse them into one "old project."
 
 After the switch, the apex must serve the complete six-page deterministic
 Fixture from the existing `h2-sentinel-full` project and already-qualified
@@ -46,9 +58,11 @@ Epoch 6 changes only the exact Vercel assignment or alias for
   record;
 - reuse `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU` without a new deployment, build,
   promotion, or source change;
-- retain the old project and `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` as the
-  rollback target;
-- avoid deleting or renaming either Vercel project or deployment;
+- retain `dashboard` as the metadata rollback owner and retain
+  `h2-sentinel` / `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` as the traffic rollback
+  target;
+- avoid deleting or renaming any of the three Vercel projects or either
+  deployment;
 - avoid changing Vercel environment variables, access policy, or Deployment
   Protection;
 - avoid changing code, configuration, dependencies, Git history, or remote
@@ -96,8 +110,9 @@ post-switch observations.
 Epoch 6 is complete only when all of the following are true in one evidence
 window:
 
-1. fresh inspection binds the old apex owner, both projects, both deployment
-   identities, and the target production assignment before mutation;
+1. fresh inspection binds `dashboard` as the current ProjectDomain owner,
+   `h2-sentinel` as the current alias traffic target, both deployment
+   identities, and `h2-sentinel-full` as the target owner and traffic target;
 2. exactly one approved migration path in Section 5 is used;
 3. the external apex DNS A result remains `216.198.79.1`;
 4. `https://204421.xyz/` returns HTTP 307 with exact relative
@@ -109,7 +124,8 @@ window:
 8. TLS validates and HSTS is present at the apex;
 9. `full.204421.xyz` remains unchanged and continues to pass the same route,
    asset, DNS, and TLS controls;
-10. the old deployment remains `Ready` but no longer owns or serves the apex;
+10. the old deployment remains `Ready` but no longer receives apex alias
+    traffic, while `h2-sentinel` continues to have no custom domain;
 11. the protected remote refs remain unchanged; and
 12. the independent evidence statuses in Section 9 remain truthful.
 
@@ -145,13 +161,17 @@ authentication material.
 
 Record all of the following:
 
-1. the authenticated Vercel scope and team, without credential material;
-2. the exact old project identity for `h2-sentinel`, including its provider
-   project ID resolved during preflight;
-3. the exact new project identity
+1. the authenticated Vercel scope `dwwww`, without credential material;
+2. the ProjectDomain owner `dashboard`, project ID
+   `prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`, and its assignment of exact
+   `204421.xyz`;
+3. the current alias traffic project `h2-sentinel`, project ID
+   `prj_6pRMaPgh3YXvgibdHBYnM9RoysUQ`, its empty custom-domain set, and the
+   exact alias target
+   `h2-sentinel-hxrbu0wan-dwwww.vercel.app`;
+4. the exact new project identity
    `h2-sentinel-full` / `prj_KvPLDryNckM3lSaHVDG3YeMJyiCj`;
-4. the complete custom-domain set for each project;
-5. the exact current owner and assignment of `204421.xyz`;
+5. the complete custom-domain set for all three projects;
 6. continued ownership of `full.204421.xyz` by `h2-sentinel-full`;
 7. `Ready` state for both
    `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` and
@@ -161,9 +181,11 @@ Record all of the following:
 9. no wildcard or unrelated domain is implicated by the intended command or
    API request.
 
-Stop at `HOLD` if the apex owner is not the recorded old project, the target
-production deployment differs, either deployment is not `Ready`, the full
-subdomain is not on the new project, or a proposed mutation has broader scope.
+Stop at `HOLD` if the ProjectDomain owner is not `dashboard`, the alias does
+not target the recorded `h2-sentinel` deployment, `h2-sentinel` has acquired a
+custom domain, the target production deployment differs, either deployment is
+not `Ready`, the full subdomain is not on the new project, or a proposed
+mutation has broader scope.
 
 ### 4.2 Anonymous HTTP and artifact snapshot
 
@@ -203,14 +225,19 @@ authorize changing it.
 
 ### 4.4 Command semantic gate
 
-Before mutation, inspect the installed Vercel CLI help and current official
-provider behavior for the exact CLI version. Resolve every placeholder to an
-immutable deployment URL, exact project name or ID, and exact domain. Record a
-sanitized mutation transcript before running it.
+Fresh preflight used Vercel CLI `56.3.1` and confirmed the exact operation
+semantics. `vercel domains add <domain> <project> --force` performs a
+sequential DELETE of the existing exact ProjectDomain followed by a POST to
+the new project with target `PRODUCTION`. It is not atomic. It does not change
+DNS, another domain, or a deployment, and it does not delete or rename a
+project. Reconfirm the same CLI version and semantics immediately before
+mutation, and record a sanitized transcript.
 
 The transcript must prove:
 
-- the source is the freshly inspected old project;
+- the metadata source is the freshly inspected `dashboard` project;
+- the current traffic source is the freshly inspected `h2-sentinel`
+  deployment;
 - the target is `h2-sentinel-full`;
 - the only domain argument is exactly `204421.xyz`;
 - the target production deployment is the already-qualified
@@ -219,97 +246,93 @@ The transcript must prove:
   access-policy change, wildcard action, or `full.204421.xyz` action; and
 - a corresponding exact-apex rollback operation is available.
 
-If command semantics are ambiguous, prefer a project-scoped provider API whose
-request path and body bind the exact project ID and apex. If neither CLI nor
-API can prove exact scope, stop at `HOLD`.
+If the CLI version or semantics differ, stop at `HOLD`. Do not substitute a
+new command or API mutation under this plan.
 
 ## 5. Migration strategy decision
 
-Select exactly one path after Section 4. Do not mix paths, retry a mutation,
-or proceed from a partial state without another fresh inspection.
+Fresh preflight explicitly selects Path A. Do not switch to Path B, retry a
+mutation, or proceed from a partial state without another fresh inspection.
 
 | Path | Advantage | Primary risk | Selection policy |
 | --- | --- | --- | --- |
-| A — zero-downtime alias transition | Sends traffic to the qualified full deployment before changing project ownership | A partially completed multi-step state can leave alias and project ownership different | Preferred only when fresh CLI/API inspection confirms the official alias-then-transfer semantics and each intermediate state is observable and reversible |
-| B — one-command forced project transfer | Smallest mutation count and simplest ownership result | A short interruption or cache transition may occur while the exact domain moves | Fallback when Path A cannot be proved safe or supported; requires exact one-command scope and immediate rollback readiness |
+| A — zero-downtime alias transition | Sends traffic to the qualified full deployment before changing ProjectDomain ownership | The later non-atomic metadata transfer can stop between DELETE and POST | **Selected:** CLI `56.3.1` semantics are known, and the traffic alias is switched and verified before metadata transfer |
+| B — direct forced ProjectDomain transfer | Uses one metadata command | CLI `--force` is a sequential, non-atomic DELETE then POST; without the alias gate, users can see interruption | Evaluated but not selected or authorized for Epoch 6 execution |
 
-Path A is preferred because preserving public availability has direct user
-value. Path B is safer than improvising an unsupported multi-step sequence. If
-Path A's current semantics cannot be proven, use Path B only after explicitly
-recording the possible interruption; otherwise stop at `HOLD`.
+Path A is selected because preserving public availability has direct user
+value and fresh preflight proved that ProjectDomain ownership (`dashboard`)
+and alias traffic (`h2-sentinel`) are already separate. The alias gate moves
+traffic first; the later exact-domain command moves metadata from `dashboard`
+to `h2-sentinel-full`. If the confirmed preconditions drift, stop at `HOLD`
+rather than falling back to Path B.
 
 ### 5.1 Path A — preferred zero-downtime alias transition
 
-The expected first operation, subject to the command semantic gate, is:
+The first and only traffic-switch command is:
 
 ```text
-vercel alias set h2-sentinel-full-87jzhi1zh-dwwww.vercel.app 204421.xyz
+vercel alias set h2-sentinel-full-87jzhi1zh-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
 ```
 
 This must target the immutable automatic URL of
 `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU`, not a mutable project-default hostname.
 The operator must not use a wildcard or `full.204421.xyz`.
 
-The path has three gated mutation stages:
+The path has two gated mutation stages:
 
 1. **Set the exact apex alias to the new immutable deployment.** Immediately
    verify that the apex returns the target 307, full asset hashes, TLS, and
    HSTS while DNS remains unchanged. If this gate fails, perform no domain
-   ownership mutation and restore the exact apex alias to the freshly verified
-   old immutable deployment URL.
-2. **Detach only the exact apex from the old project.** Use the freshly
-   verified project-scoped CLI or API operation. Immediately verify that the
-   apex still serves the full artifact through the alias, the old deployment
-   remains `Ready`, the old project no longer lists the apex, and DNS and
-   `full.204421.xyz` remain unchanged. On failure, reattach only the apex to
-   the old project and restore its old deployment alias.
-3. **Attach only the exact apex to `h2-sentinel-full`.** Use the freshly
-   verified project-scoped operation, then require the new project's custom
-   domains to include exactly `204421.xyz` and `full.204421.xyz`, with no
-   unrelated custom domain introduced. Verify the complete Section 7 matrix.
-   On failure, run the Section 8 rollback after fresh inspection.
+   ownership mutation and restore traffic with the exact rollback alias in
+   Section 8.
+2. **Transfer the exact ProjectDomain metadata from `dashboard` to
+   `h2-sentinel-full`.** Only after Stage 1 passes, run:
 
-The exact detach and attach invocations must be frozen in the sanitized
-preflight receipt after inspecting the installed CLI/API. Do not invent a
-global removal command when a project-scoped operation is available. Each
-stage must finish its gate before the next mutation. A failed or timed-out
-stage is not retried blindly.
+   ```text
+   vercel domains add 204421.xyz h2-sentinel-full --force --scope dwwww --non-interactive
+   ```
 
-### 5.2 Path B — exact one-command forced transfer
+   CLI `56.3.1` performs a non-atomic DELETE of exact `204421.xyz` from
+   `dashboard`, then POSTs exact `204421.xyz` to `h2-sentinel-full` with target
+   `PRODUCTION`. Immediately require `dashboard` to no longer list the apex,
+   `h2-sentinel-full` to list both apex and `full.204421.xyz`, the apex alias
+   to continue serving the qualified full deployment, and `h2-sentinel` to
+   retain an empty custom-domain set and its old `Ready` deployment. Then run
+   the complete Section 7 matrix.
 
-If Path A is unsupported or cannot be scoped and observed safely, the only
-authorized Path B mutation is, after fresh confirmation of current CLI
-semantics:
+For this plan, `--force` authorizes only the exact ProjectDomain transfer
+described above. It does not authorize a wildcard, `full.204421.xyz`, DNS
+mutation, another domain, project deletion, deployment creation, promotion,
+or access-policy change.
 
-```text
-vercel domains add 204421.xyz h2-sentinel-full --force
-```
+Each stage must finish its gate before the next mutation. A failed or timed-out
+stage is not retried blindly. If Stage 2 stops between DELETE and POST, the
+already-verified new alias is the traffic-preservation layer; fresh inspection
+must determine the exact partial metadata state before Section 8 rollback.
 
-For this plan, `--force` authorizes only removal of the exact
-`204421.xyz` assignment from its freshly verified old project and immediate
-addition of that exact domain to `h2-sentinel-full`. It does not authorize a
-wildcard, `full.204421.xyz`, DNS mutation, another domain, project deletion,
-deployment creation, or promotion.
+### 5.2 Path B — evaluated but not selected
 
-Immediately after the command, inspect both projects and run the Section 7
-matrix. If the command output indicates any other target, asks to broaden
-scope, leaves ownership ambiguous, or fails before a confirmed assignment,
-stop further mutation and enter Section 8 rollback after fresh inspection.
+Running only the Stage 2 `--force` command would directly move ProjectDomain
+metadata but would expose users to the non-atomic DELETE/POST interval. Path B
+is therefore not authorized in this Epoch. Any need to abandon Path A requires
+a new plan and fresh authority; it is not an in-run fallback.
 
 ## 6. Task sequence
 
 ### Task 0 — Freeze the receipt and rollback targets
 
-Complete Section 4, choose Path A or B, resolve the old project ID and old
-immutable deployment URL, and record the exact rollback operation. Require a
-clean Epoch 6 worktree and record the plan commit. Do not mutate external state
-until every field is complete.
+Complete Section 4, reconfirm selected Path A, and bind all three roles:
+`dashboard` as metadata owner, `h2-sentinel` as old traffic target, and
+`h2-sentinel-full` as new owner and traffic target. Record the frozen commands
+and exact rollback operations. Require a clean Epoch 6 worktree and record the
+plan commit. Do not mutate external state until every field is complete.
 
-### Task 1 — Execute one selected path
+### Task 1 — Execute selected Path A
 
-Run only the operations authorized by the selected Section 5 path. Preserve
-timestamped sanitized results for each stage. Do not follow authentication
-redirects, expose private responses, or run a second migration path.
+Run only the two ordered Path A operations in Section 5.1, with the complete
+Stage 1 traffic gate between them. Preserve timestamped sanitized results for
+each stage. Do not follow authentication redirects, expose private responses,
+or run Path B.
 
 ### Task 2 — Verify the new default origin
 
@@ -319,8 +342,8 @@ project-assignment response without passing anonymous routes and assets is a
 
 ### Task 3 — Verify controls and record evidence
 
-Re-inspect both projects and deployments, `full.204421.xyz`, DNS, TLS, and
-protected refs. Record the selected path, exact sanitized operations,
+Re-inspect all three projects and both deployments, `full.204421.xyz`, DNS,
+TLS, and protected refs. Record the selected path, exact sanitized operations,
 intermediate gates, final domain sets, route and asset evidence, rollback
 readiness, and independent status matrix. Update durable project memory only
 with measured non-secret outcomes.
@@ -356,7 +379,11 @@ transport only, not rendered navigation or interaction.
   `full.204421.xyz`, with no unintended domain introduced by Epoch 6;
 - `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU` remains `Ready` and is the production
   deployment serving both exact domains;
-- the old project does not list or serve `204421.xyz`;
+- `dashboard` no longer lists the `204421.xyz` ProjectDomain;
+- the apex alias targets
+  `h2-sentinel-full-87jzhi1zh-dwwww.vercel.app`;
+- `h2-sentinel` continues to have an empty custom-domain set and no longer
+  receives apex alias traffic;
 - `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` remains `Ready` and retained for bounded
   rollback; and
 - no new deployment, promotion, project, wildcard, DNS record, access-policy
@@ -387,29 +414,47 @@ transport only, not rendered navigation or interaction.
 ## 8. Rollback
 
 Rollback is mandatory if any apex route, asset, TLS, domain-assignment, or
-control gate fails after mutation. It is scoped to reassignment of the exact
-apex to the old project and old deployment. It must not delete or change DNS.
+control gate fails after mutation. It is scoped to restoring `dashboard` as
+the exact ProjectDomain owner and the old `h2-sentinel` deployment as the apex
+alias target. It must not delete or change DNS.
 
 Before rollback, freshly inspect:
 
-1. the current owner and alias target of exact `204421.xyz`;
-2. both project identities and complete custom-domain sets;
+1. the current ProjectDomain owner and alias target of exact `204421.xyz`;
+2. all three project identities and complete custom-domain sets;
 3. both immutable deployment identities and `Ready` states;
 4. the current apex HTTP and asset result;
 5. the unchanged `full.204421.xyz` assignment and result; and
 6. the unchanged apex A and full-subdomain CNAME results.
 
-Then restore only `204421.xyz` to the freshly verified old project and
-`dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` using the provider-supported exact-apex
-alias/reassignment sequence appropriate to the observed partial state. Prefer
-aliasing the old immutable deployment URL first when the current provider
-semantics support a zero-downtime reversal. Reattach only the exact apex to the
-old project; do not remove `full.204421.xyz` from the new project.
+For immediate traffic rollback, run exactly:
+
+```text
+vercel alias set h2-sentinel-hxrbu0wan-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+```
+
+If only Stage 1 ran and `dashboard` still owns the ProjectDomain, verify old
+traffic and perform no metadata mutation. If Stage 2 began or completed, first
+restore complete metadata ownership with exactly:
+
+```text
+vercel domains add 204421.xyz dashboard --force --scope dwwww --non-interactive
+```
+
+Then lock traffic to the old immutable deployment by running the exact alias
+rollback command again. Every rollback operation is preceded by fresh
+inspection of the observed partial state. The `--force` rollback may move only
+exact `204421.xyz` from its observed current metadata owner to `dashboard`;
+it must not remove `full.204421.xyz` from `h2-sentinel-full`.
 
 Rollback succeeds only when:
 
-- the old project again owns and serves `204421.xyz` from
+- `dashboard` again owns the `204421.xyz` ProjectDomain;
+- the exact apex alias again targets
+  `h2-sentinel-hxrbu0wan-dwwww.vercel.app` and serves
   `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf`;
+- `h2-sentinel` retains an empty custom-domain set and the old deployment
+  remains `Ready`;
 - the apex returns its recorded preflight route behavior and old JavaScript
   identity of 935,592 bytes / SHA-256
   `b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6`;
@@ -446,7 +491,7 @@ not open or drive a browser, capture screenshots, or claim visual quality.
 | Traffic interruption or stale cache | The default link may briefly fail or show the old shell | Prefer the verified zero-downtime alias path; use temporary redirect and immutable asset hashes as immediate probes; keep the old deployment Ready for rollback |
 | Wrong project or domain | Users reach an unrelated deployment, or another hostname is displaced | Freshly bind source owner, target project ID, deployment ID, and exact apex before every mutation; reject wildcard or unrelated-domain scope |
 | Partial multi-step state | Alias target and project ownership diverge after a failed stage | Gate every Path A stage, stop on first mismatch, fresh-inspect the partial state, and use its stage-specific exact-apex rollback |
-| Forced-transfer scope is misunderstood | `--force` moves more than intended | Use Path B only after current CLI semantics prove it transfers exact `204421.xyz` from the inspected old project to `h2-sentinel-full` and nothing else |
+| Forced-transfer scope is misunderstood | `--force` moves more than intended | Use it only as Path A Stage 2 after the alias gate; CLI `56.3.1` must still prove exact DELETE from `dashboard` and POST to `h2-sentinel-full`, with no other mutation |
 | DNS is edited unnecessarily | Propagation delay or outage is introduced despite compatible existing routing | Freeze the apex A record and full CNAME; perform project/alias reassignment only |
 | Full subdomain regresses | The already-delivered fallback URL stops working | Treat `full.204421.xyz` as a no-mutation control and verify it after every external mutation |
 | Rollback target drifts | Recovery returns users to the wrong artifact | Freshly inspect and preserve the old immutable deployment and asset identity before switching |
@@ -457,8 +502,9 @@ not open or drive a browser, capture screenshots, or claim visual quality.
 
 The Epoch 6 receipt must contain:
 
-1. plan commit, selected migration path, authenticated scope, both project IDs,
-   both deployment IDs, immutable URLs, and fresh preflight domain sets;
+1. plan commits, selected Path A, authenticated scope, all three project IDs
+   and roles, both deployment IDs, immutable URLs, and fresh preflight domain
+   sets;
 2. exact sanitized mutation operation or ordered Path A operations, including
    every intermediate gate and the reason the path was selected;
 3. before/after apex and full-subdomain HTTP route matrices, exact redirect
