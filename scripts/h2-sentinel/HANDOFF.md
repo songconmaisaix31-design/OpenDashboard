@@ -1,4 +1,4 @@
-# H2 Sentinel Epoch 4 Production Handoff
+# H2 Sentinel Epoch 4 and Epoch 5 Production Handoff
 
 ## Scope and tested identity
 
@@ -185,3 +185,135 @@ Epoch 4 Track E changed only this handoff document. No application source,
 contracts, runner, CI workflow, official CSV, `.env`, credential, token,
 private key, or launch behavior was changed. The handoff intentionally keeps
 the public deployment's static Fixture limitation visible.
+
+## Epoch 5 full-Fixture delivery receipt
+
+Epoch 5 added a second, isolated public presentation of the complete H2
+Sentinel six-page deterministic Fixture experience. It did not replace or
+promote the existing `h2-sentinel` project, expose the loopback analytics
+sidecar, or change the Epoch 4 organizer-evidence boundary.
+
+### Source and project identity
+
+- Frozen base:
+  `39a599285cbd39b2575564d5dc79d078964c5bd7`.
+- Plan commits, in order: `c77a0b0cb659bc922588b0415978e92f1470530e`,
+  `0d1183e6c3dbf4cae8521d8a3d23c53b16b052bc`, and
+  `b88472de32c67293cbd6e79f01ef614f063f0bee`.
+- Implementation commits, in order:
+  `4a9bdbbc911ccd96390d3ff31c2d4237bca95139` and
+  `f546a6aedaefa66f5634b20008a20cab41db26ed`.
+- Deployed implementation candidate:
+  `f546a6aedaefa66f5634b20008a20cab41db26ed`.
+- Isolated branch: `songconmaisaix31-design/h2-full-deploy-e5`.
+- Vercel project: `h2-sentinel-full`, project ID
+  `prj_KvPLDryNckM3lSaHVDG3YeMJyiCj`.
+- Qualified and promoted production deployment:
+  `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU` at
+  `https://h2-sentinel-full-87jzhi1zh-dwwww.vercel.app`, state `Ready`.
+
+The exact publication sequence was one staged `vercel --prod --skip-domain`
+deployment in the independently verified new-project context, authenticated
+pre-binding qualification, configuration of the sole custom domain
+`full.204421.xyz`, and exactly one `vercel promote <deployment>` targeting that
+qualified deployment. There was no second promotion, separate alias command,
+existing-project production command, or apex-domain mutation. The provider's
+default `h2-sentinel-full.vercel.app` hostname is not counted as a custom
+domain.
+
+Both the generated deployment hostname and the provider default hostname
+returned an un-followed anonymous HTTP 302 under Standard Protection. They are
+`AUTH-REDIRECT`, not anonymous-public proof. Their stable classification is
+recorded without a nonce-bearing SSO target or authentication material.
+
+### Anonymous public result
+
+`https://full.204421.xyz/` is anonymously reachable over valid TLS and returns
+HTTP 307 with the exact relative `Location` value
+`/h2-sentinel/?mode=fixture`. HSTS is present. Both
+`/h2-sentinel?mode=fixture` and `/h2-sentinel/?mode=fixture` return HTTP 200
+HTML. The overview, events, diagnosis, analysis, assistant, and reports hash
+URLs each return the same HTTP 200 document transport; fragments are not sent
+to the server, so this does not prove rendered navigation or interaction.
+
+`/api/v1/h2-sentinel/mode` returns HTTP 404. The public product is the complete
+six-page deterministic Fixture and exposes no public analytics API, Python
+sidecar, remote Local mode, or public CSV processing.
+
+The final DNS state is host `full`, CNAME
+`063cc3c97d7335db.vercel-dns-017.com`, TTL 600. Vercel reported the domain as
+configured correctly, verified, CNAME-configured, and free of issues or
+conflicts. External DNS-over-HTTPS agreed. The exact provider DNS record ID for
+bounded rollback inspection is `2091551737541830656`; it is not a credential.
+
+### Artifact binding
+
+The local build, authenticated pre-binding fetch, and anonymous custom-domain
+fetch matched byte-for-byte:
+
+| Asset | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `/assets/index-CG2awVBj.js` | 935880 | `02ccb27f97ce0bc6098307e8ed8506577699a83ec5088ebed1a7b4b41610066d` |
+| `/assets/index-DPHGouYO.css` | 49826 | `6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2` |
+
+The JavaScript asset contains `H2 Sentinel`, `氢哨`, `演示数据 Fixture`, and
+`不接收或上传用户文件`. The hash and marker evidence binds the static
+artifact; it is not visual or interactive proof.
+
+### Unchanged controls
+
+The existing `https://204421.xyz` control remained on deployment
+`dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf`. Its recorded HTML routes remained HTTP
+200, `/api/v1/h2-sentinel/mode` remained HTTP 404, apex DNS remained A
+`216.198.79.1`, JavaScript remained 935592 bytes with SHA-256
+`b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6`,
+and CSS remained 49826 bytes with SHA-256
+`6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2`.
+
+Live remote protected refs also remained unchanged:
+
+- `refs/heads/main` at
+  `7889feb274dac77753fdd323df352c9c1335aebf`;
+- `refs/heads/competition/h2-sentinel` at
+  `39a599285cbd39b2575564d5dc79d078964c5bd7`.
+
+### Candidate verification
+
+The candidate passed `npm ci`, strict type checking, the production build,
+`npm run check`, 110/110 repository tests, 78/78 H2 tests, 39/39 contract tests,
+5/5 QA groups, 5/5 assembled QA groups, 13/13 launcher tests, 9/9 launcher
+smoke scenarios, `uv lock --check`, locked dev-environment sync, and 50/50
+Python tests. A process-scoped production dependency audit against the official
+npm registry reported zero vulnerabilities. `git diff --check` and the Epoch 5
+path/ref controls passed on the implementation candidate.
+
+Recorded exceptions and residual warnings are:
+
+- the first `npm run h2:check` attempt had a transient Local readiness failure;
+  no code changed, a dedicated-port launcher run released both ports, and the
+  full command then passed;
+- npmmirror's audit endpoint returned HTTP 404; the official-registry rerun
+  reported zero production vulnerabilities;
+- local `vercel build` returned `project_settings_required` because environment
+  pull was prohibited; the cloud build and production deployment passed;
+- `vercel link` created `.env.local` and modified `.gitignore`; `.env.local`
+  was deleted without being read, `.gitignore` was restored, and no environment
+  value was persisted;
+- Vite retains its greater-than-500-kB JavaScript bundle warning; and
+- the Python tests retain one upstream Starlette/httpx deprecation warning.
+
+### Epoch 5 decision matrix
+
+| Decision | Status | Evidence boundary |
+| --- | --- | --- |
+| Static Fixture delivery | `GO` | Isolated project, staged qualification, sole-domain gate, one promotion, anonymous HTTP, DNS/TLS, artifact identity, unchanged controls, and candidate gates passed. |
+| Live/Local analytics | `NOT_EXPOSED` | Local CSV analytics remains literal-loopback-only; the public endpoint is a 404 and no public sidecar exists. |
+| Visual verification | `UNKNOWN-HOLD` | No browser control, screenshot, desktop/mobile render, or interaction verification was performed. |
+| Registration/submission | `UNKNOWN-HOLD` | No organizer action evidence is recorded. |
+| Receipt/acceptance | `UNKNOWN-HOLD` | No organizer receipt or acceptance evidence is recorded. |
+| Official score | `UNKNOWN-HOLD` | Fixture and technical results are not an official score. |
+| Final submission archive | `UNKNOWN-HOLD` | No final organizer archive identity is established. |
+
+Rollback is limited to the exact `full.204421.xyz` binding and its exact DNS
+record after fresh inspection. It does not authorize a second promotion,
+deletion, apex/wildcard mutation, protected-ref movement, or history rewrite.

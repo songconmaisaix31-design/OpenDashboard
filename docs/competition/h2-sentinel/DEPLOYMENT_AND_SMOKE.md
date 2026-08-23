@@ -101,3 +101,154 @@ The matching local production asset establishes a static-asset-only binding to
 the frozen executable SHA. It is neither desktop/mobile visual verification nor
 interactive smoke proof, and it does not establish organizer submission,
 receipt, acceptance, or score.
+
+## 7. Epoch 5 isolated full-Fixture deployment receipt
+
+Epoch 5 reused the complete six-page deterministic Fixture application from the
+canonical H2 branch without changing the existing deployment. The deployed
+implementation candidate is
+`f546a6aedaefa66f5634b20008a20cab41db26ed`, on
+`songconmaisaix31-design/h2-full-deploy-e5`, descended linearly from frozen
+base `39a599285cbd39b2575564d5dc79d078964c5bd7`.
+
+### 7.1 Isolated project and publication workflow
+
+The new deployment is isolated from the existing `h2-sentinel` project:
+
+| Field | Recorded value |
+| --- | --- |
+| Project | `h2-sentinel-full` |
+| Project ID | `prj_KvPLDryNckM3lSaHVDG3YeMJyiCj` |
+| Deployment ID | `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU` |
+| Generated deployment URL | `https://h2-sentinel-full-87jzhi1zh-dwwww.vercel.app` |
+| Provider state | `Ready`, production target |
+| Public custom domain | `https://full.204421.xyz` |
+| Deployed Git candidate | `f546a6aedaefa66f5634b20008a20cab41db26ed` |
+
+The candidate was first created with the sanitized staged-production command
+`vercel --prod --skip-domain` in the independently verified
+`h2-sentinel-full` context. It was qualified before domain binding, then the
+same deployment was targeted by exactly one sanitized
+`vercel promote <deployment>` invocation. No second promotion or separate
+alias assignment occurred. Immediately before promotion, the only custom
+domain was `full.204421.xyz`; the provider-generated
+`h2-sentinel-full.vercel.app` hostname is not a custom domain. The new project
+never contained the apex `204421.xyz` or another custom domain.
+
+Direct anonymous requests to both the generated deployment URL and the default
+`h2-sentinel-full.vercel.app` hostname returned HTTP 302 under Vercel Standard
+Protection. They are classified as `AUTH-REDIRECT`, were not followed, and are
+not public-delivery evidence. The authenticated staged qualification used the
+CLI's normal credential handling; no credential or private response was
+recorded.
+
+### 7.2 DNS, TLS, routes, and asset identity
+
+The exact-host DNS record created for Epoch 5 is record ID
+`2091551737541830656`, host `full`, type `CNAME`, target
+`063cc3c97d7335db.vercel-dns-017.com`, and TTL 600. Provider verification
+reported `configured_correctly`, verified ownership, CNAME configuration, and
+no issue or conflict. External DNS-over-HTTPS returned the same CNAME. TLS
+validation succeeded for `full.204421.xyz`, and the HTTPS response includes
+HSTS.
+
+Anonymous requests without cookies or authorization produced:
+
+| Request | Result | Evidence boundary |
+| --- | --- | --- |
+| `/` | HTTP 307, exact `Location: /h2-sentinel/?mode=fixture` | One-hop temporary entry redirect |
+| `/h2-sentinel?mode=fixture` | HTTP 200 HTML | SPA document transport |
+| `/h2-sentinel/?mode=fixture` | HTTP 200 HTML | SPA document transport |
+| `#h2/overview` | HTTP 200 HTML | Document transport only; fragment not sent to server |
+| `#h2/events` | HTTP 200 HTML | Document transport only; fragment not sent to server |
+| `#h2/diagnosis` | HTTP 200 HTML | Document transport only; fragment not sent to server |
+| `#h2/analysis` | HTTP 200 HTML | Document transport only; fragment not sent to server |
+| `#h2/assistant` | HTTP 200 HTML | Document transport only; fragment not sent to server |
+| `#h2/reports` | HTTP 200 HTML | Document transport only; fragment not sent to server |
+| `/api/v1/h2-sentinel/mode` | HTTP 404 | No successful public analytics API |
+
+The local build, authenticated staged fetch, and final anonymous custom-domain
+fetch matched byte-for-byte:
+
+| Asset | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `/assets/index-CG2awVBj.js` | 935,880 | `02ccb27f97ce0bc6098307e8ed8506577699a83ec5088ebed1a7b4b41610066d` |
+| `/assets/index-DPHGouYO.css` | 49,826 | `6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2` |
+
+The JavaScript contains the static markers `H2 Sentinel`, `氢哨`,
+`演示数据 Fixture`, and `不接收或上传用户文件`. Marker and hash matches bind
+the static artifact only. Semantic tests separately prove that Fixture mode
+has no actionable CSV input while Live mode retains the local-only import
+flow.
+
+### 7.3 Existing-site and protected-ref controls
+
+The `https://204421.xyz` before/after control remained unchanged:
+
+- deployment ID `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf`;
+- `/`, both H2 Fixture slash forms, and their static shell routes returned HTTP
+  200, while `/api/v1/h2-sentinel/mode` returned HTTP 404;
+- `/assets/index-C2wmhv_n.js` remained 935,592 bytes with SHA-256
+  `b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6`;
+- `/assets/index-DPHGouYO.css` remained 49,826 bytes with SHA-256
+  `6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2`;
+  and
+- the apex DNS A result remained `216.198.79.1`.
+
+The live remote protected refs also remained unchanged:
+
+- `refs/heads/main`:
+  `7889feb274dac77753fdd323df352c9c1335aebf`;
+- `refs/heads/competition/h2-sentinel`:
+  `39a599285cbd39b2575564d5dc79d078964c5bd7`.
+
+### 7.4 Exact-candidate verification and exceptions
+
+The recorded exact-candidate gates passed:
+
+- `npm ci`, `npm run typecheck`, `npm run build`, and `npm run check`;
+- `npm run test`: 110/110;
+- H2 tests: 78/78; contract tests: 39/39; QA: 5/5; assembled QA:
+  5/5; launcher tests: 13/13;
+- `npm run h2:smoke`: 9/9;
+- `uv lock --check` and `uv sync --locked --extra dev`;
+- locked Python tests: 50/50; and
+- production dependency audit against the official npm registry: zero
+  vulnerabilities.
+
+The following exceptions are preserved rather than hidden:
+
+- the first `npm run h2:check` attempt had a transient Local readiness failure;
+  after no code change, a dedicated-port launcher check released both ports and
+  the complete `h2:check` rerun passed;
+- the configured npmmirror audit endpoint returned HTTP 404, so the
+  process-scoped rerun used the official npm registry and reported zero
+  vulnerabilities;
+- local `vercel build` stopped with `project_settings_required` because an
+  environment pull was intentionally prohibited; the provider cloud build and
+  deployment completed successfully;
+- `vercel link` created `.env.local` and changed `.gitignore`; the environment
+  file was not read and was deleted immediately, the ignore-file change was
+  restored, and no environment value was persisted;
+- Vite retains the greater-than-500-kB JavaScript bundle warning; and
+- the Python suite retains one upstream Starlette/httpx deprecation warning.
+
+### 7.5 Independent delivery decisions
+
+| Decision | Status | Evidence boundary |
+| --- | --- | --- |
+| Static Fixture delivery | `GO` | Isolated project, staged qualification, exact single promotion, anonymous custom-domain routes, DNS/TLS, matching assets, unchanged existing site, refs, and local gates passed. |
+| Live/Local analytics | `NOT_EXPOSED` | Public delivery is the complete six-page deterministic Fixture; the CSV analytics sidecar remains loopback-only and no public API is exposed. |
+| Visual verification | `UNKNOWN-HOLD` | No browser control, screenshots, desktop/mobile rendering, or interaction verification was authorized. |
+| Organizer submission/receipt/acceptance | `UNKNOWN-HOLD` | Epoch 5 contains no organizer action or receipt evidence. |
+| Official score | `UNKNOWN-HOLD` | Fixture and technical outputs are not an official score. |
+| Final submission archive | `UNKNOWN-HOLD` | Epoch 5 did not create or verify an organizer submission archive. |
+
+HTTP status, hash-route transport, matching static assets, Fixture output, and
+test success must not be restated as visual quality, Live analytics, organizer
+acceptance, an official score, or final-archive verification.
+
+Rollback authority remains limited to the exact Epoch 5 custom-domain binding
+and DNS record above after a fresh target inspection. It does not authorize a
+second promotion, apex/wildcard mutation, project or deployment deletion,
+protected-ref movement, or history rewriting.
