@@ -59,6 +59,7 @@ export function AnalysisPage({ importError, importNotice, importPending, onImpor
   const [dedicatedView, setDedicatedView] = useState<DedicatedView>('pcc')
   const selectedField = chartableFields.find(({ name }) => name === selectedVariable) ?? chartableFields[0]
   const hasLabels = datasetHasValidationLabels(workspace.run)
+  const isLiveAnalysis = workspace.mode === 'LIVE_ANALYSIS'
   const series = workspace.series
   const quotaAvailable =
     series !== null && H2_QUOTA_VARIABLES.some((variable) => hasSeriesVariable(series, variable))
@@ -82,27 +83,37 @@ export function AnalysisPage({ importError, importNotice, importPending, onImpor
         <div className="h2-dataset-card__fingerprint"><span>SHA-256 指纹</span><code>{workspace.run.dataset.fingerprint}</code></div>
       </section>
 
-      <section className="h2-panel h2-import-panel">
-        <div><p className="h2-eyebrow">Live analysis input</p><h2>导入本地 CSV</h2><p>浏览器只读取你明确选择的 CSV 文本，并通过注入的数据源端口交给本地分析适配器。</p></div>
-        <label className="h2-file-picker">
-          <span>{importPending ? '正在导入与分析…' : '选择 CSV 文件'}</span>
-          <input
-            accept=".csv,text/csv"
-            disabled={importPending}
-            onChange={(event) => {
-              const file = event.currentTarget.files?.[0]
-              if (file) onImport(file)
-              event.currentTarget.value = ''
-            }}
-            type="file"
-          />
-        </label>
-        <p className="h2-file-policy">仅接受 .csv，最大 {H2_CSV_MAX_BYTES / (1024 * 1024)} MiB。</p>
-        <div aria-live="polite" className="h2-message-stack">
-          {importError ? <p className="h2-message h2-message--error">{importError}</p> : null}
-          {importNotice ? <p className="h2-message h2-message--success">{importNotice}</p> : null}
-        </div>
-      </section>
+      {isLiveAnalysis ? (
+        <section className="h2-panel h2-import-panel">
+          <div><p className="h2-eyebrow">Live analysis input</p><h2>导入本地 CSV</h2><p>浏览器只读取你明确选择的 CSV 文本，并通过注入的数据源端口交给本地分析适配器。</p></div>
+          <label className="h2-file-picker">
+            <span>{importPending ? '正在导入与分析…' : '选择 CSV 文件'}</span>
+            <input
+              accept=".csv,text/csv"
+              disabled={importPending}
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0]
+                if (file) onImport(file)
+                event.currentTarget.value = ''
+              }}
+              type="file"
+            />
+          </label>
+          <p className="h2-file-policy">仅接受 .csv，最大 {H2_CSV_MAX_BYTES / (1024 * 1024)} MiB。</p>
+          <div aria-live="polite" className="h2-message-stack">
+            {importError ? <p className="h2-message h2-message--error">{importError}</p> : null}
+            {importNotice ? <p className="h2-message h2-message--success">{importNotice}</p> : null}
+          </div>
+        </section>
+      ) : (
+        <section className="h2-panel h2-import-panel">
+          <div>
+            <p className="h2-eyebrow">演示数据 Fixture</p>
+            <h2>内置固定样例</h2>
+            <p>不接收或上传用户文件</p>
+          </div>
+        </section>
+      )}
 
       <div className="h2-analysis-grid">
         <section className="h2-panel h2-quality-panel">
