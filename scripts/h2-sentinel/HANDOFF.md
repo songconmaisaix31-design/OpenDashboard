@@ -317,3 +317,153 @@ Recorded exceptions and residual warnings are:
 Rollback is limited to the exact `full.204421.xyz` binding and its exact DNS
 record after fresh inspection. It does not authorize a second promotion,
 deletion, apex/wildcard mutation, protected-ref movement, or history rewrite.
+
+## Epoch 6 apex production-default handoff
+
+Epoch 6 made the existing qualified full Fixture deployment the default at
+`https://204421.xyz`. The operation window was 2026-08-24, and the final HTTP
+receipt ran from 00:15:13 through 00:16:17 `+08:00`. The accepted plan commits
+were `2bf604fb5efb2439552d57702675551b620e8205` and
+`78e966f6d839ef7dce7416c7c77132b29409826a`.
+
+### Preflight and selected migration
+
+Fresh provider inspection separated three roles:
+
+- ProjectDomain owner: `dashboard`, project ID
+  `prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`, owned exact `204421.xyz`;
+- old alias traffic target: `h2-sentinel`, project ID
+  `prj_6pRMaPgh3YXvgibdHBYnM9RoysUQ`, had no custom domain and served the apex
+  from `Ready` production `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` at
+  `h2-sentinel-hxrbu0wan-dwwww.vercel.app`; and
+- target owner and traffic target: `h2-sentinel-full`, project ID
+  `prj_KvPLDryNckM3lSaHVDG3YeMJyiCj`, with `Ready` production
+  `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU` at
+  `h2-sentinel-full-87jzhi1zh-dwwww.vercel.app`.
+
+The apex before-state was HTTP 200 and JavaScript
+`/assets/index-C2wmhv_n.js`, 935592 bytes, SHA-256
+`b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6`.
+The full subdomain already had the HTTP 307 Fixture entry and qualified full
+asset identities.
+
+Vercel CLI `56.3.1` proved that `domains add --force` uses a sequential,
+non-atomic exact-domain DELETE then POST with target `PRODUCTION`. Path A put
+the qualified deployment on the alias before that metadata interval.
+
+Stage 1 ran successfully:
+
+```text
+vercel alias set h2-sentinel-full-87jzhi1zh-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+```
+
+While `dashboard` still owned the ProjectDomain, the immediate gate proved the
+apex root 307 and exact Fixture `Location`, both Fixture routes 200, API 404,
+full JavaScript/CSS identities and four static markers, HSTS, valid TLS, and
+unchanged DNS.
+
+Stage 2 then ran successfully:
+
+```text
+vercel domains add 204421.xyz h2-sentinel-full --force --scope dwwww --non-interactive
+```
+
+The sanitized result showed removal of exact `204421.xyz` from
+`prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`, then addition to
+`h2-sentinel-full`. No new deployment or promotion occurred, and DNS was not
+changed.
+
+### Final provider and public result
+
+Final ProjectDomain listings were:
+
+- `dashboard`: empty;
+- `h2-sentinel`: only platform hostname `h2-sentinel.vercel.app`;
+- `h2-sentinel-full`: `204421.xyz`, `full.204421.xyz`, and platform hostname
+  `h2-sentinel-full.vercel.app`.
+
+The three target-project entries were verified with no redirect or branch
+binding. Both custom domains were `configured_correctly`, attached and
+verified, with no issue or conflict. Both inspected to
+`dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU`, `Ready`, target `production`. The old
+`dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` remained `Ready`, target `production`.
+Protection was observed as `all_except_custom_domains`, with
+`gitForkProtection=true`.
+
+Both `https://204421.xyz` and `https://full.204421.xyz` returned:
+
+| Probe | Measured result |
+| --- | --- |
+| `/` | HTTP 307; exact `Location: /h2-sentinel/?mode=fixture` |
+| `/h2-sentinel?mode=fixture` | HTTP 200 HTML, 528 bytes |
+| `/h2-sentinel/?mode=fixture` | HTTP 200 HTML, 528 bytes |
+| `/api/v1/h2-sentinel/mode` | HTTP 404, 79 bytes |
+| `/assets/index-CG2awVBj.js` | 935880 bytes; SHA-256 `02ccb27f97ce0bc6098307e8ed8506577699a83ec5088ebed1a7b4b41610066d` |
+| `/assets/index-DPHGouYO.css` | 49826 bytes; SHA-256 `6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2` |
+| Static markers | `H2 Sentinel`, `氢哨`, `演示数据 Fixture`, and `不接收或上传用户文件`: all present |
+| Transport security | Exact-host TLS valid; HSTS present |
+
+All six hash URLs returned HTTP 200 document transport on both origins. This
+does not prove client-side navigation, rendering, or interaction. The old
+JavaScript identity no longer served at the apex; the full subdomain remained
+unchanged.
+
+External DNS-over-HTTPS remained apex A `216.198.79.1`, full CNAME
+`063cc3c97d7335db.vercel-dns-017.com`, and authoritative name servers
+`dns31.hichina.com` / `dns32.hichina.com`. Resolver TTL variation was cache
+behavior, not configuration drift.
+
+Fresh Epoch 6 hostname observations, which do not rewrite Epoch 5 history,
+were:
+
+- both immutable old and new automatic URLs: HTTP 302 `AUTH-REDIRECT`;
+- `h2-sentinel.vercel.app`: HTTP 200 `DIRECT`;
+- `h2-sentinel-full.vercel.app`: HTTP 307 `DIRECT-APP-REDIRECT`.
+
+These classifications are drift-prone and require fresh verification.
+
+### Controls, security, and rollback
+
+The live remote refs remained:
+
+- `refs/heads/main` at
+  `7889feb274dac77753fdd323df352c9c1335aebf`;
+- `refs/heads/competition/h2-sentinel` at
+  `39a599285cbd39b2575564d5dc79d078964c5bd7`;
+- `refs/heads/songconmaisaix31-design/h2-full-deploy-e5` at
+  `da5ae929e67168a57dc4f7229bcee47e8047049f`.
+
+Environment values were deliberately not queried. The exact alias and domain
+commands do not operate environment settings, and no environment-related
+change was visible in inspected project/domain metadata; environment values
+were not independently verified. No credential or environment value was read
+or persisted, and `.env.local` was absent.
+
+Rollback was ready but not required. Immediate traffic rollback is:
+
+```text
+vercel alias set h2-sentinel-hxrbu0wan-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+```
+
+After fresh inspection, complete restoration is old alias, exact ProjectDomain
+transfer back to `dashboard`, then old alias again:
+
+```text
+vercel alias set h2-sentinel-hxrbu0wan-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+vercel domains add 204421.xyz dashboard --force --scope dwwww --non-interactive
+vercel alias set h2-sentinel-hxrbu0wan-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+```
+
+Rollback is exact-apex-only and leaves DNS and `full.204421.xyz` untouched.
+
+### Epoch 6 decision matrix
+
+| Decision | Status | Evidence boundary |
+| --- | --- | --- |
+| Static Fixture production default | `GO` | Path A, stage gate, final provider identity, anonymous apex/full transport, artifact hashes, DNS/TLS, refs, and rollback readiness passed. |
+| Live/Local analytics | `NOT_EXPOSED` | Public API is 404; CSV analytics remains literal-loopback-only. |
+| Visual and interaction verification | `UNKNOWN-HOLD` | The user prohibited browser/computer control; CLI, HTTP, hashes, DNS, and TLS are not visual evidence. |
+| Registration/submission | `UNKNOWN-HOLD` | No organizer action evidence exists. |
+| Receipt/acceptance | `UNKNOWN-HOLD` | No organizer receipt or acceptance evidence exists. |
+| Official score | `UNKNOWN-HOLD` | Fixture and technical metrics are not an official score. |
+| Final submission archive | `UNKNOWN-HOLD` | No final organizer archive identity is established. |

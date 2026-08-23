@@ -252,3 +252,181 @@ Rollback authority remains limited to the exact Epoch 5 custom-domain binding
 and DNS record above after a fresh target inspection. It does not authorize a
 second promotion, apex/wildcard mutation, project or deployment deletion,
 protected-ref movement, or history rewriting.
+
+## 8. Epoch 6 apex production-default switch receipt
+
+Epoch 6 changed only the exact `204421.xyz` alias and ProjectDomain assignment
+so the already-qualified six-page Fixture became the production default. It
+did not build or deploy a new artifact, run a promotion, change DNS, expose
+Local analytics, or rewrite the Epoch 5 receipt above.
+
+### 8.1 Authority, time window, and preflight identities
+
+The switch ran on 2026-08-24 under the accepted plan commits, in order:
+
+- `2bf604fb5efb2439552d57702675551b620e8205`;
+- `78e966f6d839ef7dce7416c7c77132b29409826a`.
+
+Fresh preflight established three separate provider roles:
+
+| Role | Project and identity | Recorded state before mutation |
+| --- | --- | --- |
+| ProjectDomain owner | `dashboard` / `prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql` | Owned exact `204421.xyz` |
+| Old alias traffic target | `h2-sentinel` / `prj_6pRMaPgh3YXvgibdHBYnM9RoysUQ` | No custom domain; `Ready` production `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` at `h2-sentinel-hxrbu0wan-dwwww.vercel.app` served the apex |
+| Target owner and traffic target | `h2-sentinel-full` / `prj_KvPLDryNckM3lSaHVDG3YeMJyiCj` | `Ready` production `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU` at `h2-sentinel-full-87jzhi1zh-dwwww.vercel.app`; `full.204421.xyz` already qualified |
+
+Before mutation, the apex root returned HTTP 200 and served
+`/assets/index-C2wmhv_n.js`, 935,592 bytes, SHA-256
+`b26ab9a88167f6b587732d52a4ae9461d8d2edfa4b17847e3f815ec81ef6d4b6`.
+The full subdomain returned its existing HTTP 307 Fixture redirect and the
+Epoch 5 full asset hashes.
+
+### 8.2 Selected Path A and sanitized mutation receipt
+
+Vercel CLI `56.3.1` confirmed that `domains add --force` is a sequential,
+non-atomic DELETE of the existing exact ProjectDomain followed by a POST to
+the new project with target `PRODUCTION`. It does not change DNS, another
+domain, or a deployment. Path A therefore moved and qualified traffic before
+transferring metadata.
+
+Stage 1 ran exactly:
+
+```text
+vercel alias set h2-sentinel-full-87jzhi1zh-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+```
+
+The command succeeded. The immediate anonymous gate proved, while
+`dashboard` still owned the ProjectDomain:
+
+- apex `/` returned HTTP 307 with exact relative
+  `Location: /h2-sentinel/?mode=fixture`;
+- both Fixture slash forms returned HTTP 200;
+- `/api/v1/h2-sentinel/mode` returned HTTP 404;
+- JavaScript and CSS bytes and hashes matched the qualified full artifact;
+- all four static JavaScript markers were present;
+- HSTS was present and TLS validated; and
+- apex A and full-subdomain CNAME results were unchanged.
+
+Only after that gate passed, Stage 2 ran exactly:
+
+```text
+vercel domains add 204421.xyz h2-sentinel-full --force --scope dwwww --non-interactive
+```
+
+The command succeeded. Its sanitized CLI result showed removal of exact
+`204421.xyz` from `prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`, followed by addition
+to `h2-sentinel-full`. Alias-first sequencing preserved qualified traffic
+across the non-atomic metadata transfer.
+
+### 8.3 Final provider and protection state
+
+The final provider observations were:
+
+- `dashboard` ProjectDomains: empty;
+- `h2-sentinel` ProjectDomains: only platform hostname
+  `h2-sentinel.vercel.app`;
+- `h2-sentinel-full` ProjectDomains: exact `204421.xyz`,
+  `full.204421.xyz`, and platform hostname
+  `h2-sentinel-full.vercel.app`;
+- every listed `h2-sentinel-full` ProjectDomain was verified, with no redirect
+  or Git branch binding;
+- both `204421.xyz` and `full.204421.xyz` inspected to
+  `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU`, state `Ready`, target `production`;
+- the old `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` remained `Ready`, target
+  `production`, and retained for rollback;
+- both custom domains verified as `configured_correctly`, attached and
+  verified, with empty issue and conflict results; and
+- protection remained observed as `all_except_custom_domains`, with
+  `gitForkProtection=true`.
+
+No new deployment was created, and no promotion command or promotion result
+occurred in Epoch 6. DNS was not mutated. Environment values were deliberately
+not queried. The two exact commands do not operate environment settings, and
+no environment-related change was visible in the inspected project/domain
+metadata; this is not an independent verification of environment values.
+
+### 8.4 Final anonymous HTTP and artifact window
+
+The final anonymous evidence window was 2026-08-24 00:15:13 through 00:16:17
+`+08:00`. Both `https://204421.xyz` and `https://full.204421.xyz` produced:
+
+| Request or artifact | Result |
+| --- | --- |
+| `/` | HTTP 307; exact `Location: /h2-sentinel/?mode=fixture` |
+| `/h2-sentinel?mode=fixture` | HTTP 200 HTML, 528 bytes |
+| `/h2-sentinel/?mode=fixture` | HTTP 200 HTML, 528 bytes |
+| `/api/v1/h2-sentinel/mode` | HTTP 404, 79 bytes |
+| `/assets/index-CG2awVBj.js` | HTTP 200, 935,880 bytes, SHA-256 `02ccb27f97ce0bc6098307e8ed8506577699a83ec5088ebed1a7b4b41610066d` |
+| `/assets/index-DPHGouYO.css` | HTTP 200, 49,826 bytes, SHA-256 `6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2` |
+| JavaScript markers | `H2 Sentinel`, `氢哨`, `演示数据 Fixture`, and `不接收或上传用户文件`: all present |
+| TLS and HSTS | Valid exact-host TLS and HSTS present |
+
+The overview, events, diagnosis, analysis, assistant, and reports hash URLs
+each returned HTTP 200 document transport on both origins. Fragments are not
+sent to the server, so these results do not prove rendered navigation or
+interaction. The old JavaScript hash no longer appeared at the apex, while
+the full subdomain remained byte-for-byte unchanged.
+
+### 8.5 DNS, hostname drift, refs, and security controls
+
+External DNS-over-HTTPS remained unchanged:
+
+- apex A: `216.198.79.1`;
+- `full.204421.xyz` CNAME:
+  `063cc3c97d7335db.vercel-dns-017.com`;
+- authoritative name servers: `dns31.hichina.com` and `dns32.hichina.com`.
+
+Observed TTL variation was resolver cache behavior, not configuration drift.
+
+Epoch 6 also recorded a fresh current hostname classification without
+rewriting the Epoch 5 historical observation:
+
+| Hostname class | Current result |
+| --- | --- |
+| Old immutable automatic URL `h2-sentinel-hxrbu0wan-dwwww.vercel.app` | HTTP 302 `AUTH-REDIRECT` |
+| New immutable automatic URL `h2-sentinel-full-87jzhi1zh-dwwww.vercel.app` | HTTP 302 `AUTH-REDIRECT` |
+| Old project-default `h2-sentinel.vercel.app` | HTTP 200 `DIRECT` |
+| New project-default `h2-sentinel-full.vercel.app` | HTTP 307 `DIRECT-APP-REDIRECT` |
+
+Hostname access behavior is drift-prone and must be rechecked rather than
+inferred from an earlier Epoch.
+
+The live remote refs remained unchanged:
+
+- `refs/heads/main`:
+  `7889feb274dac77753fdd323df352c9c1335aebf`;
+- `refs/heads/competition/h2-sentinel`:
+  `39a599285cbd39b2575564d5dc79d078964c5bd7`;
+- `refs/heads/songconmaisaix31-design/h2-full-deploy-e5`:
+  `da5ae929e67168a57dc4f7229bcee47e8047049f`.
+
+No credential or environment value was read, printed, or persisted.
+`.env.local` was absent in the Epoch 6 worktree.
+
+### 8.6 Rollback readiness and independent decisions
+
+Rollback was not required. Immediate traffic rollback remains:
+
+```text
+vercel alias set h2-sentinel-hxrbu0wan-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+```
+
+A complete pre-state rollback requires fresh inspection, then this exact
+sequence, limited to the apex:
+
+```text
+vercel alias set h2-sentinel-hxrbu0wan-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+vercel domains add 204421.xyz dashboard --force --scope dwwww --non-interactive
+vercel alias set h2-sentinel-hxrbu0wan-dwwww.vercel.app 204421.xyz --scope dwwww --non-interactive
+```
+
+It does not mutate DNS or `full.204421.xyz`.
+
+| Decision | Status | Evidence boundary |
+| --- | --- | --- |
+| Static Fixture production default | `GO` | Selected Path A, both stage gates, final provider identity, anonymous apex/full HTTP, matching artifacts, DNS/TLS, refs, and rollback readiness passed. |
+| Live/Local analytics | `NOT_EXPOSED` | The public API remains 404; CSV analytics remains literal-loopback-only. |
+| Visual and interaction verification | `UNKNOWN-HOLD` | The user prohibited browser/computer control; CLI, HTTP, DNS, TLS, and hashes are not visual or interaction proof. |
+| Organizer submission/receipt/acceptance | `UNKNOWN-HOLD` | Epoch 6 performed no organizer action. |
+| Official score | `UNKNOWN-HOLD` | Fixture and technical outputs are not an official score. |
+| Final submission archive | `UNKNOWN-HOLD` | No organizer archive was created or verified. |
