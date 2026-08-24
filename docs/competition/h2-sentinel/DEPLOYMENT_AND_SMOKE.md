@@ -532,3 +532,64 @@ even when an endpoint is nominally read-only.
 | Visual and interaction verification | `UNKNOWN-HOLD` | The user prohibited browser/computer control; HTTP and hashes are transport evidence only. |
 | Organizer submission/receipt/acceptance | `UNKNOWN-HOLD` | Epoch 7 performed no organizer action. |
 | Official score and final submission archive | `UNKNOWN-HOLD` | The shutdown attempt establishes neither an official score nor an organizer archive. |
+
+## 10. Epoch 7 dashboard permanent-deletion receipt
+
+On 2026-08-24, the user explicitly authorized permanent deletion of exact
+Vercel project `dashboard` (`prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`). The bounded
+preflight found 24 deployments, two provider-owned aliases, and zero domains.
+The sorted LF-delimited UTF-8 deployment-ID set had SHA-256
+`1755cf715f07dc07f0498c816d5326cd23d6268b39058ebfce3d3acb4e147ac2`;
+the equivalently canonicalized alias set had SHA-256
+`fdfa7fb5f0916126680e6e6a8e22df1e7993359e3d947a3c17b5f4745aba0cfc`.
+
+Exactly one no-body request targeted the immutable ID through
+`DELETE /v9/projects/prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql` in the exact team
+scope. It completed with client exit code 0 as attempt 1 of 1. There was no
+retry, compensating mutation, or rollback.
+
+Post-delete checks established:
+
+- exact name and ID lookups were missing, and the complete project list had
+  zero exact matching rows;
+- all 24 frozen deployment IDs returned `Can't find`;
+- both frozen alias lookups returned HTTP 404 `Project not found`;
+- both alias origins returned HTTP 404 `DEPLOYMENT_NOT_FOUND`; and
+- immutable origin `dashboard-4gdp8qvoe-dwwww.vercel.app` returned HTTP 410
+  `GONE`.
+
+The project and its accepted project-scoped configuration were permanently
+removed. The external Git repository and its history were preserved. No
+During this authorized deletion run, no environment endpoint, value, metadata
+record, or provider ciphertext was read, printed, copied, or persisted.
+
+Both H2 origins remained on `h2-sentinel-full`
+(`prj_KvPLDryNckM3lSaHVDG3YeMJyiCj`) deployment
+`dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU`, `Ready`, target `production`; rollback
+deployment `dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` remained `Ready`. The
+`h2-sentinel-full` inventory stayed at four aliases and three domains. On both
+origins, root remained HTTP 307 with exact
+`Location: /h2-sentinel/?mode=fixture`, both Fixture slash forms remained HTTP
+200, the public API remained HTTP 404, JavaScript remained
+935,880 bytes with SHA-256
+`02ccb27f97ce0bc6098307e8ed8506577699a83ec5088ebed1a7b4b41610066d`,
+and CSS remained 49,826 bytes with SHA-256
+`6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2`.
+TLS, HSTS, apex A, full-subdomain CNAME, and authoritative name-server values
+were unchanged.
+
+Remote refs remained unchanged during the provider mutation:
+
+- `main`: `7889feb274dac77753fdd323df352c9c1335aebf`;
+- `competition/h2-sentinel`:
+  `39a599285cbd39b2575564d5dc79d078964c5bd7`;
+- Epoch 6 branch: `1da8918e8f0735ac96c5289009234d042aa1c61d`;
+  and
+- pre-Epoch-7 receipt branch:
+  `ee1f2c55236884c02a0093dacb26eee010740e3c`.
+
+Permanent deletion is `GO`; Static Fixture production remains `GO`; Live/Local
+analytics remains `NOT_EXPOSED`. Visual/interaction verification, organizer
+submission/receipt/acceptance, official score, and final archive remain
+independent `UNKNOWN-HOLD` outcomes. HTTP and hashes remain static-transport
+evidence only.

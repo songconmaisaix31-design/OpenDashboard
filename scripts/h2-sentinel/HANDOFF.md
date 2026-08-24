@@ -538,3 +538,47 @@ remain out of scope.
 | Delete, promote, redeploy, alias/domain/DNS mutation | `PROHIBITED` | These operations cannot serve as proof of a reversible pause. |
 | Visual and interaction verification | `UNKNOWN-HOLD` | No browser/computer control was used; transport evidence is not visual proof. |
 | Organizer submission, receipt, acceptance, score, or final archive | `UNKNOWN-HOLD` | Epoch 7 performed none of these actions. |
+
+## Epoch 7 dashboard permanent-deletion handoff
+
+The user explicitly authorized permanent deletion on 2026-08-24. Exact target
+`dashboard` (`prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`) passed a bounded preflight of
+24 deployments, two aliases, and zero domains. The sorted LF-delimited UTF-8
+set digests were
+`1755cf715f07dc07f0498c816d5326cd23d6268b39058ebfce3d3acb4e147ac2`
+for deployments and
+`fdfa7fb5f0916126680e6e6a8e22df1e7993359e3d947a3c17b5f4745aba0cfc`
+for aliases.
+
+One no-body
+`DELETE /v9/projects/prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql` targeted the immutable
+project ID in the exact team scope and exited 0. This was attempt 1 of 1, with
+no retry and no rollback. Post-delete identity checks found the name and ID
+missing and zero exact project-list rows. All 24 frozen deployment IDs returned `Can't find`; both alias lookups returned HTTP 404
+`Project not found`; both alias origins returned HTTP 404
+`DEPLOYMENT_NOT_FOUND`; and immutable origin
+`dashboard-4gdp8qvoe-dwwww.vercel.app` returned HTTP 410 `GONE`.
+
+The project and its accepted project-scoped configuration were permanently
+removed; the external Git repository was preserved. During this authorized
+deletion run, no environment endpoint, value, metadata record, or provider
+ciphertext was read or persisted.
+
+`h2-sentinel-full` stayed at four aliases and three domains on `Ready`
+production `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU`; rollback deployment
+`dpl_CNFKRWQcgtjepBJnbh3J6mSqpJAf` remained `Ready`. Both public origins kept
+root HTTP 307 with exact `Location: /h2-sentinel/?mode=fixture`, both
+Fixture-form 200 results, API 404, JavaScript identity
+935,880 bytes / SHA-256
+`02ccb27f97ce0bc6098307e8ed8506577699a83ec5088ebed1a7b4b41610066d`,
+CSS identity 49,826 bytes / SHA-256
+`6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2`,
+TLS, HSTS, and DNS values. Remote refs `main@7889feb274dac77753fdd323df352c9c1335aebf`,
+`competition/h2-sentinel@39a599285cbd39b2575564d5dc79d078964c5bd7`,
+Epoch 6 `@1da8918e8f0735ac96c5289009234d042aa1c61d`, and the pre-Epoch-7
+receipt branch `@ee1f2c55236884c02a0093dacb26eee010740e3c` were unchanged
+during deletion.
+
+Deletion is `GO`; Static Fixture production remains `GO`; Live/Local analytics
+remains `NOT_EXPOSED`. Visual/interaction and every organizer outcome remain
+independent `UNKNOWN-HOLD` statuses.
