@@ -554,9 +554,9 @@ One no-body
 `DELETE /v9/projects/prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql` targeted the immutable
 project ID in the exact team scope and exited 0. This was attempt 1 of 1, with
 no retry and no rollback. Post-delete identity checks found the name and ID
-missing and zero exact project-list rows. All 24 frozen deployment IDs returned `Can't find`; both alias lookups returned HTTP 404
-`Project not found`; both alias origins returned HTTP 404
-`DEPLOYMENT_NOT_FOUND`; and immutable origin
+missing and zero exact project-list rows. All 24 frozen deployment IDs returned
+`Can't find`; both alias lookups returned HTTP 404 `Project not found`; both
+alias origins returned HTTP 404 `DEPLOYMENT_NOT_FOUND`; and immutable origin
 `dashboard-4gdp8qvoe-dwwww.vercel.app` returned HTTP 410 `GONE`.
 
 The project and its accepted project-scoped configuration were permanently

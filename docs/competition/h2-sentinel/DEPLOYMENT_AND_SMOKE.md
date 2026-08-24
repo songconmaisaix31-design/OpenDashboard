@@ -559,9 +559,9 @@ Post-delete checks established:
   `GONE`.
 
 The project and its accepted project-scoped configuration were permanently
-removed. The external Git repository and its history were preserved. No
-During this authorized deletion run, no environment endpoint, value, metadata
-record, or provider ciphertext was read, printed, copied, or persisted.
+removed. The external Git repository and its history were preserved. During
+this authorized deletion run, no environment endpoint, value, metadata record,
+or provider ciphertext was read, printed, copied, or persisted.
 
 Both H2 origins remained on `h2-sentinel-full`
 (`prj_KvPLDryNckM3lSaHVDG3YeMJyiCj`) deployment
