@@ -430,3 +430,104 @@ It does not mutate DNS or `full.204421.xyz`.
 | Organizer submission/receipt/acceptance | `UNKNOWN-HOLD` | Epoch 6 performed no organizer action. |
 | Official score | `UNKNOWN-HOLD` | Fixture and technical outputs are not an official score. |
 | Final submission archive | `UNKNOWN-HOLD` | No organizer archive was created or verified. |
+
+## 9. Epoch 7 dashboard shutdown HOLD receipt
+
+Epoch 7 attempted only the planned reversible pause of the obsolete Vercel
+project `dashboard`. The exact pause request was rejected by the provider, no
+shutdown occurred, and the result is `UNKNOWN-HOLD`. Project deletion,
+deployment promotion, alias removal, ProjectDomain changes, and DNS changes
+were not authorized as substitutes for a successful pause.
+
+### 9.1 Exact target and dependency boundary
+
+The shutdown target was bound to:
+
+- project name: `dashboard`;
+- project ID: `prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`;
+- active deployment observed by the narrow live alias registry:
+  `dpl_5qSx6duyyumiPz1iktqgdou9KhnT`; and
+- immutable deployment URL:
+  `dashboard-4gdp8qvoe-dwwww.vercel.app`.
+
+The live registry listed three provider-owned `*.vercel.app` aliases for
+`dashboard`, all targeting that deployment. It listed no custom alias for the
+project, and the `dashboard` ProjectDomain list remained empty. In particular,
+neither `204421.xyz` nor `full.204421.xyz` depended on this project.
+
+The two public H2 origins remained assigned to `h2-sentinel-full`, project
+`prj_KvPLDryNckM3lSaHVDG3YeMJyiCj`, production deployment
+`dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU`.
+
+### 9.2 Exact pause attempt and failed result
+
+The single bounded mutation attempt targeted only the exact project:
+
+```text
+POST /v1/projects/prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql/pause
+HTTP 400; client exit code 1
+Active production deployment does not exist
+```
+
+The provider did not accept the pause. No automatic retry was made. Fresh
+narrow checks found the same deployment and three aliases, and `/login` still
+returned HTTP 200 through all three aliases. The application therefore
+remained active; neither an HTTP error nor the attempted request is shutdown
+proof.
+
+The observed state is internally inconsistent: the live alias registry exposes
+an active application deployment, while the pause control reports no active
+production deployment. This requires a Vercel support or control-plane repair.
+After that repair, a new execution must repeat the complete narrow preflight
+and then retry only the same exact project pause. A blind retry is prohibited.
+
+### 9.3 Public no-drift and mutation boundary
+
+Post-failure checks found no drift at `https://204421.xyz` or
+`https://full.204421.xyz`:
+
+- root remained HTTP 307 with exact
+  `Location: /h2-sentinel/?mode=fixture`;
+- both Fixture slash forms remained HTTP 200;
+- `/api/v1/h2-sentinel/mode` remained HTTP 404;
+- JavaScript remained 935,880 bytes with SHA-256
+  `02ccb27f97ce0bc6098307e8ed8506577699a83ec5088ebed1a7b4b41610066d`;
+- CSS remained 49,826 bytes with SHA-256
+  `6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2`;
+  and
+- both origins remained bound to
+  `dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU`.
+
+The rejected POST caused no provider mutation. Epoch 7 changed no source or
+application code, deployment, promotion, alias, ProjectDomain, custom domain,
+DNS record, or protected branch.
+
+Removing the remaining aliases would only make individual origins unrouted;
+it would not prove a paused project. Deleting the project would destroy the
+reversible recovery path. Promoting or redeploying would create a new
+production state instead of shutting down the exact retained project. All
+three alternatives remain prohibited.
+
+### 9.4 Security boundary learned during preflight
+
+One delegated read-only preflight used a broader project GET than the minimum
+required scope. Its response exposed encrypted environment metadata and
+provider ciphertext. No plaintext secret was observed, used, copied into the
+receipt, or persisted. Subsequent broad project reads were stopped.
+
+Future work must use narrow project-identity, ProjectDomain, alias, deployment,
+and pause-state endpoints only. It must not retrieve broad project payloads,
+environment records, credential material, or ciphertext. This control applies
+even when an endpoint is nominally read-only.
+
+### 9.5 Independent decisions
+
+| Decision | Status | Evidence boundary |
+| --- | --- | --- |
+| `dashboard` project shutdown | `UNKNOWN-HOLD` | Exact pause POST returned HTTP 400 and the aliases continued serving the application. Provider repair and a fresh exact-pause run are required. |
+| Static Fixture production default | `GO` (unchanged) | Apex and full routes, artifacts, and deployment identity showed no drift after the rejected request. |
+| Alternative destructive or routing mutations | `PROHIBITED` | Delete, promotion, redeploy, alias removal, domain transfer, and DNS changes cannot substitute for reversible pause. |
+| Live/Local analytics | `NOT_EXPOSED` | The public API remained 404; no public analytics sidecar was introduced. |
+| Visual and interaction verification | `UNKNOWN-HOLD` | The user prohibited browser/computer control; HTTP and hashes are transport evidence only. |
+| Organizer submission/receipt/acceptance | `UNKNOWN-HOLD` | Epoch 7 performed no organizer action. |
+| Official score and final submission archive | `UNKNOWN-HOLD` | The shutdown attempt establishes neither an official score nor an organizer archive. |

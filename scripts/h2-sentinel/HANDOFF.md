@@ -467,3 +467,74 @@ Rollback is exact-apex-only and leaves DNS and `full.204421.xyz` untouched.
 | Receipt/acceptance | `UNKNOWN-HOLD` | No organizer receipt or acceptance evidence exists. |
 | Official score | `UNKNOWN-HOLD` | Fixture and technical metrics are not an official score. |
 | Final submission archive | `UNKNOWN-HOLD` | No final organizer archive identity is established. |
+
+## Epoch 7 dashboard shutdown HOLD handoff
+
+Epoch 7 attempted a reversible pause of exact Vercel project `dashboard`
+(`prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`). It did not authorize project deletion or
+any replacement routing mutation.
+
+### Attempt result and current state
+
+The narrow live alias registry bound the project's three provider-owned
+`*.vercel.app` aliases to deployment
+`dpl_5qSx6duyyumiPz1iktqgdou9KhnT`, including immutable URL
+`dashboard-4gdp8qvoe-dwwww.vercel.app`. The ProjectDomain list was empty, and
+no custom alias connected this project to `204421.xyz` or
+`full.204421.xyz`.
+
+One exact pause request ran:
+
+```text
+POST /v1/projects/prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql/pause
+HTTP 400; client exit code 1
+Active production deployment does not exist
+```
+
+The request caused no mutation. Fresh checks found the same alias and
+deployment relationships, and all three aliases still returned HTTP 200 at
+`/login`. `dashboard` therefore remains active and its shutdown status is
+`UNKNOWN-HOLD`, not `GO`.
+
+The provider control state conflicts with the live registry: the application
+is served from an existing deployment, but the pause operation cannot find an
+active production deployment. Vercel support or control-plane repair is the
+next prerequisite. After it is repaired, repeat a fresh narrow preflight and
+retry only the exact pause POST. Do not retry blindly.
+
+### Unchanged public production and prohibited substitutes
+
+`204421.xyz` and `full.204421.xyz` remained on `h2-sentinel-full` project
+`prj_KvPLDryNckM3lSaHVDG3YeMJyiCj`, production deployment
+`dpl_a65AW4vXf9CHHkcmK2NxVgS1xiTU`. Their root redirect, Fixture routes, API
+404, JavaScript hash
+`02ccb27f97ce0bc6098307e8ed8506577699a83ec5088ebed1a7b4b41610066d`,
+and CSS hash
+`6ec8757d71b6518408ac83a8a0ddb4a8bdc1e3c0a4c41a7572ee404561a169b2`
+showed no drift.
+
+No source or application code, deployment, promotion, alias, ProjectDomain,
+custom domain, DNS record, or protected branch changed. Do not delete the
+project, promote or redeploy an artifact, remove its remaining aliases, or
+move a domain to simulate shutdown. Those actions are destructive or prove
+only routing removal, not the required reversible project pause.
+
+### Security correction
+
+One delegated read-only preflight used a broad project GET and saw encrypted
+environment metadata and provider ciphertext. No plaintext secret was
+observed, used, copied, or persisted. Broad project reads stopped immediately.
+All follow-up and future attempts must use only narrow identity, domain, alias,
+deployment, and pause-state endpoints; environment and credential payloads
+remain out of scope.
+
+### Epoch 7 decision matrix
+
+| Decision | Status | Evidence boundary |
+| --- | --- | --- |
+| `dashboard` project shutdown | `UNKNOWN-HOLD` | Exact pause failed with HTTP 400; the application remained available through all three aliases. |
+| Provider remediation | `REQUIRED` | Control-plane state must be repaired before a fresh exact-pause attempt. |
+| Static Fixture production default | `GO` (unchanged) | Apex/full deployment identity, routes, and artifact hashes showed no drift. |
+| Delete, promote, redeploy, alias/domain/DNS mutation | `PROHIBITED` | These operations cannot serve as proof of a reversible pause. |
+| Visual and interaction verification | `UNKNOWN-HOLD` | No browser/computer control was used; transport evidence is not visual proof. |
+| Organizer submission, receipt, acceptance, score, or final archive | `UNKNOWN-HOLD` | Epoch 7 performed none of these actions. |
