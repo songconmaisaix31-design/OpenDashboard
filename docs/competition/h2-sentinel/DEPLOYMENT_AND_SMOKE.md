@@ -445,15 +445,16 @@ The shutdown target was bound to:
 
 - project name: `dashboard`;
 - project ID: `prj_iz4lkFju3j7MNjyigA2HF4oHR7Ql`;
-- active deployment observed by the narrow live alias registry:
+- deployment targeted by the narrow live alias registry:
   `dpl_5qSx6duyyumiPz1iktqgdou9KhnT`; and
 - immutable deployment URL:
   `dashboard-4gdp8qvoe-dwwww.vercel.app`.
 
-The live registry listed three provider-owned `*.vercel.app` aliases for
-`dashboard`, all targeting that deployment. It listed no custom alias for the
-project, and the `dashboard` ProjectDomain list remained empty. In particular,
-neither `204421.xyz` nor `full.204421.xyz` depended on this project.
+The live registry listed two provider-owned `*.vercel.app` aliases for
+`dashboard`, both targeting that deployment. The same deployment retained the
+immutable URL above. The registry listed no custom alias for the project, and
+the `dashboard` ProjectDomain list remained empty. In particular, neither
+`204421.xyz` nor `full.204421.xyz` depended on this project.
 
 The two public H2 origins remained assigned to `h2-sentinel-full`, project
 `prj_KvPLDryNckM3lSaHVDG3YeMJyiCj`, production deployment
@@ -470,10 +471,10 @@ Active production deployment does not exist
 ```
 
 The provider did not accept the pause. No automatic retry was made. Fresh
-narrow checks found the same deployment and three aliases, and `/login` still
-returned HTTP 200 through all three aliases. The application therefore
-remained active; neither an HTTP error nor the attempted request is shutdown
-proof.
+narrow checks found the same deployment, two aliases, and immutable deployment
+URL. `/login` still returned HTTP 200 through all three origins. The
+application therefore remained active; neither an HTTP error nor the attempted
+request is shutdown proof.
 
 The observed state is internally inconsistent: the live alias registry exposes
 an active application deployment, while the pause control reports no active

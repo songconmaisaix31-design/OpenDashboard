@@ -476,9 +476,9 @@ any replacement routing mutation.
 
 ### Attempt result and current state
 
-The narrow live alias registry bound the project's three provider-owned
+The narrow live alias registry bound the project's two provider-owned
 `*.vercel.app` aliases to deployment
-`dpl_5qSx6duyyumiPz1iktqgdou9KhnT`, including immutable URL
+`dpl_5qSx6duyyumiPz1iktqgdou9KhnT`. The same deployment retained immutable URL
 `dashboard-4gdp8qvoe-dwwww.vercel.app`. The ProjectDomain list was empty, and
 no custom alias connected this project to `204421.xyz` or
 `full.204421.xyz`.
@@ -491,10 +491,10 @@ HTTP 400; client exit code 1
 Active production deployment does not exist
 ```
 
-The request caused no mutation. Fresh checks found the same alias and
-deployment relationships, and all three aliases still returned HTTP 200 at
-`/login`. `dashboard` therefore remains active and its shutdown status is
-`UNKNOWN-HOLD`, not `GO`.
+The request caused no mutation. Fresh checks found the same two aliases,
+immutable deployment URL, and deployment relationships. All three origins
+still returned HTTP 200 at `/login`. `dashboard` therefore remains active and
+its shutdown status is `UNKNOWN-HOLD`, not `GO`.
 
 The provider control state conflicts with the live registry: the application
 is served from an existing deployment, but the pause operation cannot find an
@@ -532,7 +532,7 @@ remain out of scope.
 
 | Decision | Status | Evidence boundary |
 | --- | --- | --- |
-| `dashboard` project shutdown | `UNKNOWN-HOLD` | Exact pause failed with HTTP 400; the application remained available through all three aliases. |
+| `dashboard` project shutdown | `UNKNOWN-HOLD` | Exact pause failed with HTTP 400; the application remained available through both aliases and the immutable deployment URL. |
 | Provider remediation | `REQUIRED` | Control-plane state must be repaired before a fresh exact-pause attempt. |
 | Static Fixture production default | `GO` (unchanged) | Apex/full deployment identity, routes, and artifact hashes showed no drift. |
 | Delete, promote, redeploy, alias/domain/DNS mutation | `PROHIBITED` | These operations cannot serve as proof of a reversible pause. |
