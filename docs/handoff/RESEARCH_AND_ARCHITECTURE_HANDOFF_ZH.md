@@ -400,11 +400,11 @@ README 是产品入口，不应单独作为实现证明。CodeGraph 是影响分
 - `Tech-Spec.md`
 - `API_CONTRACT.md`
 - `docs/architecture/PLUGIN_FIRST_ARCHITECTURE.md`
-- `docs/architecture/REPOSITORY_CLEANUP_PLAN.md`
+- `docs/history/plugin-first-cleanup-plan-2026-08-17.md`
 - `docs/architecture/decisions/0001-static-runtime-before-loader.md`
 - `docs/architecture/decisions/0002-local-data-plane.md`
 - `docs/research/OPEN_SOURCE_REUSE_MATRIX.md`
-- `docs/plans/PLUGIN_FIRST_TASKS.md`
+- `docs/history/plugin-first-delivery-plan-2026-08-17.md`
 - `docs/verification/PLUGIN_BASELINE.md`
 - `docs/history/competition-demo-2026-08-16.md`
 
