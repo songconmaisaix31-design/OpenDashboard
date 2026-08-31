@@ -1,93 +1,71 @@
 # OpenDashboard
 
-> 面向单机开发者的本地服务观测、故障诊断与受控恢复控制台。
+> 一个处于实验阶段的本地 AI 控制台，用于演示单机服务的观测、故障诊断与受控恢复流程。
 
-OpenDashboard 的长期方向是“插件即能力”：本机目标、观测数据、诊断证据和受控动作都通过明确契约接入，核心只负责生命周期、权限边界、审计与组合。产品默认本地运行，首先服务在 Windows 开发机上同时运行多个 API、AI Agent 和工具进程的独立开发者。
+OpenDashboard 源自最初的“氢哨（H2 Sentinel）”故障诊断演示底盘，后来用于探索本地服务诊断与静态插件边界。它目前是 `LAB / MAINTENANCE` 项目，不是生产级企业控制中枢，也不是万能电脑管理器、远程运维平台或 Agent 平台。
 
-## 当前状态
+GOAI 参赛版本未进入复赛。H2 后续竞赛工作保留在独立分支、标签和独立仓库演进线上；本仓库 `main` 不合入 H2 后续实现，也不把本地未推送的 H2 修复当作当前能力。
 
-公开仓库目前包含一套可运行的中文 Fixture 演示，完整展示：异常发现、证据采集、人工审批、模拟恢复、恢复验证和脱敏报告。它不会扫描本机、不会控制真实进程，也没有第三方插件加载器。
+## 现在实际有什么
 
-本分支已经建立第一版插件优先架构基线：共享契约、静态可信插件注册表、可释放生命周期和 Fixture 插件迁移。Tier 2 Sidecar、真实本机探针、SQLite、自动化编辑器和插件市场仍属于后续阶段。
-
-| 能力 | 当前状态 |
+| 类别 | 当前事实 |
 |---|---|
-| 中文故障闭环演示 | 已实现，确定性 Fixture |
-| 插件 Manifest 与静态注册表 | 已实现，静态 Tier 0/1 边界 |
-| Fixture Demo 插件 | 已实现，无真实 I/O |
-| 本机只读数据桥 | 已规划，未实现 |
-| 真实进程/服务操作 | 未实现，需独立安全评审 |
-| 动态第三方插件、市场、WASM | 未实现 |
+| Fixture 行为 | 可运行的中文确定性演示，覆盖异常发现、证据展示、人工批准、结果验证和脱敏报告。数据、时间和状态转换都来自固定 Fixture。 |
+| 模拟操作 | “恢复”只改变内存中的演示状态，不会扫描主机、调用 Shell、重启进程或修改 Windows 服务。 |
+| 插件实验 | 共享 TypeScript 契约、静态可信插件注册表、生命周期回滚/释放，以及作为唯一数据源的 Fixture 插件。Manifest 是审计元数据，不是安全沙箱。 |
+| 未实现想法 | 真实主机探针、持久化、真实进程/服务控制、动态第三方插件、插件市场、WASM、远程主机和多机器控制均未实现。 |
 
-## 产品闭环
-
-```text
-Discover -> Observe -> Correlate -> Diagnose -> Act -> Verify -> Remember
-```
-
-第一阶段不会自动扫描并接管所有进程。用户先显式注册目标，系统通过只读适配器形成观测和证据；任何未来真实动作都必须绑定目标所有权、幂等键、人工审批和动作后的独立复核。
-
-## 插件分层目标
-
-- Tier 0：核心契约、注册表、事件、审计和证据边界。只能随核心发布。
-- Tier 1：仓库内审核过的只读或低风险 TypeScript 插件。第一版仅静态导入。
-- Tier 2：未来的独立进程或 WASM 插件。必须有版本协商、资源限制、健康检查和显式权限；当前不执行。
-
-Manifest 中的 capability 只是声明和审计输入，不是操作系统沙箱。进程内插件仍被视为完全可信代码。
+界面中的来源必须保持可见且机器可读：`Fixture`、`Mock`、`Planned` 与 `Live` 不能互相替代。当前仓库没有 `Live` provider。
 
 ## 快速开始
 
-要求 Node.js 22.12+ 和 npm 11。
+要求 Node.js 22.12+ 和 npm 11；`package-lock.json` 是依赖事实源。
 
 ```bash
 npm ci
 npm run dev
 ```
 
-验证当前源码：
+完整验证：
 
 ```bash
 npm run check
 ```
 
-当前真实脚本只有 `dev`、`build`、`typecheck`、`test` 和 `check`。仓库不使用 pnpm，也没有 `dev:minimal`、`dev:windows-dev` 或 `dev:ai-dev`。
+`check` 依次执行严格 TypeScript 检查、Node 测试和 Vite 生产构建。仓库不使用 pnpm。
 
 ## 当前源码结构
 
 ```text
-apps/web/                   中文界面与最终组成
+apps/web/                   中文 Fixture 界面与组合入口
 packages/contracts/        Demo 与 Plugin 的共享契约
 packages/plugin-runtime/   静态注册、依赖排序、回滚与释放
-plugins/fixture-demo/      确定性 Fixture provider
+plugins/fixture-demo/      确定性 Fixture provider，无真实 I/O
 docs/architecture/         当前架构决策
+docs/history/              历史快照、旧计划和本地残留分类
 docs/research/             开源复用与许可证评估
-docs/history/              历史发布恢复索引
+docs/verification/         已执行验证的边界说明
 ```
 
-## 安全边界
+## 安全与生产边界
 
 - 不读取或记录 `.env`、令牌、私钥或凭据存储。
-- 不提供任意 Shell、PID 强杀、自动提权或远程主机控制。
-- 未来本机服务只绑定 loopback，并校验 Host 与 Origin。
-- 证据默认脱敏；Fixture、Mock、Planned 与 Live 必须机器可读且界面可见。
-- 未通过单独威胁评审前，不加载未知代码，不执行第三方插件。
+- 不提供任意 Shell、PID 强杀、自动提权、远程主机或多机器控制。
+- 不加载用户提供的代码；进程内静态插件仍是完全可信代码。
+- 演示批准、审计轨迹和恢复结果不是操作系统授权、隔离或生产恢复证据。
+- 未经过独立威胁评审、故障注入和生产运维验证，不得用于真实恢复操作。
 
-## 竞赛演示归档
+## 维护方向
 
-2026-08-16 中文竞赛版本由 GitHub Release [`competition-demo-2026-08-16`](https://github.com/songconmaisaix31-design/OpenDashboard/releases/tag/competition-demo-2026-08-16) 保留。活跃分支会移除大体积视频、生成截图和已完成的 T0-T4 调度材料；这不会改写该 release tag。
+唯一候选里程碑是 PF3：在安全契约先行的前提下，实现显式启用、只读、仅 loopback、仅针对用户明确目标的本机健康适配器。它不包含进程控制、Shell、提权、LAN 扫描或远程主机；未获单独授权时，本项目维持有限维护。
 
-## 路线
+## 历史与证据
 
-1. 冻结插件契约与静态运行时，让现有 Fixture 成为第一个真实插件边界。
-2. 增加显式启用、只读、仅 loopback 的本机健康适配器。
-3. 引入持久证据账本和事件/故障聚合。
-4. 经过所有权与授权评审后，再实现 allowlisted Windows 服务操作。
-5. 只有出现可信第三方生态需求后，才实现 Tier 2 Sidecar/WASM 和分发机制。
-
-详细资料：
-
+- [项目状态](STATUS.md)
 - [插件优先架构](docs/architecture/PLUGIN_FIRST_ARCHITECTURE.md)
-- [最新实施规划](docs/plans/PLUGIN_FIRST_TASKS.md)
-- [调研与架构设计交接](docs/handoff/RESEARCH_AND_ARCHITECTURE_HANDOFF_ZH.md)
-- [开源复用与许可证评估](docs/research/OPEN_SOURCE_REUSE_MATRIX.md)
-- [仓库清理与恢复方案](docs/architecture/REPOSITORY_CLEANUP_PLAN.md)
+- [插件基线验证](docs/verification/PLUGIN_BASELINE.md)
+- [竞赛演示恢复索引](docs/history/competition-demo-2026-08-16.md)
+- [2026-09-01 本地残留审计](docs/history/local-residual-audit-2026-09-01.md)
+- [研究与架构交接](docs/handoff/RESEARCH_AND_ARCHITECTURE_HANDOFF_ZH.md)
+
+历史文档用于追溯，不代表当前实现或当前测试结果。可恢复的中文竞赛演示保留在不可变标签 `competition-demo-2026-08-16`。
