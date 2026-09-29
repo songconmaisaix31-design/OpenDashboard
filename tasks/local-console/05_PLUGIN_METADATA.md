@@ -26,4 +26,3 @@ merge, push, deploy, or access secrets.
 Deliver compatible and incompatible manifest Fixtures, integrity checks,
 stable errors, focused tests, limitations and commit SHA. The output is static
 compatibility metadata, not an executable plugin system.
-

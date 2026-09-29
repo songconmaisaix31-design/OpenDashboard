@@ -24,4 +24,3 @@ read another task branch, merge, push, deploy, or access secrets.
 Cover reordered, duplicate and incomplete evidence with deterministic
 Fixtures. Record stable outcomes, checks, changed files, limitations and commit
 SHA. The module consumes only Gate types and has no direct LC1-LC6 imports.
-

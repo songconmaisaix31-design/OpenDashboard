@@ -26,4 +26,3 @@ branch, merge, push, or deploy.
 Cover allow, deny, expiry, replay and race Fixtures. Record decisions, checks,
 changed files, limitations and commit SHA. Execution remains simulated and
 outside this task.
-

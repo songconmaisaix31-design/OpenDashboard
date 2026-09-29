@@ -22,4 +22,3 @@ merge authorization.
 Before dispatch, replace every placeholder for worktree, branch, Gate SHA, and
 accepted commit. Without those exact values, a prompt permits read-only
 planning inspection only.
-

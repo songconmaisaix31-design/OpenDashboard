@@ -26,4 +26,3 @@ read another task branch, merge, push, deploy, or access secrets.
 Deliver frozen assets/tokens, desktop and mobile screenshots, file hashes,
 Fixture-backed interaction checks, visual findings and commit SHA. Every card
 must show its own `fixture`, `local`, or `planned` provenance.
-

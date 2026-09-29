@@ -26,4 +26,3 @@ configuration, read another task branch, merge, push, or deploy.
 Deliver a privacy-field matrix, deterministic Fixture, focused tests, one
 public Gate-compatible output, commit SHA, and actual check results. No other
 LC module may be imported.
-

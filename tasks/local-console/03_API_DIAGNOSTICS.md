@@ -25,4 +25,3 @@ task branch, merge, push, deploy, or access secrets.
 Deliver correlated, conflicting, no-finding and error Fixtures; stable result
 codes; focused tests; limitations; checks and commit SHA. Output must be one of
 `finding`, `limited`, `no-finding`, or `error` as frozen by the Gate.
-

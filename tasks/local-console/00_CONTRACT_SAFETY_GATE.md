@@ -29,4 +29,3 @@ worktrees, merge, push, deploy, or modify external state.
 Record changed files, decisions, risks, checks actually run, the final commit,
 and the 40-character Gate SHA in `reports/local-console/LC0.md`. The result is a
 type-checkable contract and safety Gate, not a runnable local console.
-
