@@ -21,6 +21,8 @@
 - The default user Codex home reports an OAuth state for `chatcut`, while `vercel` is not logged in. The Orca runtime reports both as not logged in.
 - Do not copy credential files between Codex homes. Resolve the remaining startup warning by either authorizing the affected remote MCPs in the active runtime or explicitly disabling them where they are not needed.
 - A temporary `codegraph` command-path change was tested and fully reverted after current runtime logs showed that `codegraph` already initialized successfully.
+- On 2026-08-17, `motionsites` was migrated in both the default Codex home and the Orca runtime home from the `mcp-remote` stdio bridge to native Streamable HTTP OAuth. Both homes report `o_auth`; a 60-second startup timeout is required because OAuth discovery, initialization, and `tools/list` take about 20 seconds on a cold start. A fresh app-server reached `ready` and registered the four prompt-library tools without another OAuth callback.
+- A follow-up audit found that occasional MotionSites callback windows after the migration came from Codex TUI and app-server processes started before the config change, which retained the old stdio bridge in memory. No third active config existed. After any MCP transport change, restart existing Codex, ChatGPT desktop, and Orca Codex sessions; a newly created Orca terminal completed a read-only `motionsites.list_prompts` call without starting OAuth.
 
 ## Competition planning decisions
 
